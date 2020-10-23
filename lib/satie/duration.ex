@@ -1,6 +1,8 @@
 defmodule Satie.Duration do
   defstruct [:numerator, :denominator]
 
+  require Bitwise
+
   @doc """
 
     iex> Duration.new(1, 8)
