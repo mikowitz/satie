@@ -13,4 +13,16 @@ defmodule Satie.ContainerTest do
       assert length(@container.music) === 3
     end
   end
+
+  describe ".to_lilypond" do
+    test "/1 returns a lilypond formatted string" do
+      assert Satie.to_lilypond(@container) === """
+      {
+        c'4
+        r4
+        c'4
+      }
+      """ |> String.trim
+    end
+  end
 end

@@ -38,3 +38,17 @@ defmodule Satie.Chord do
       message: "#{inspect x} cannot be assigned as a pitch"
   end
 end
+
+defimpl Satie.ToLilypond, for: Satie.Chord do
+  def to_lilypond(%Satie.Chord{written_pitches: ps, written_duration: d}) do
+    pitches_to_lilypond(ps) <> Satie.to_lilypond(d)
+  end
+
+  defp pitches_to_lilypond(pitches) do
+    [
+      "<",
+      Enum.map(pitches, &Satie.to_lilypond/1),
+      ">"
+    ] |> List.flatten |> Enum.join(" ")
+  end
+end

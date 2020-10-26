@@ -19,3 +19,9 @@ defmodule Satie.Rest do
       message: "Duration<#{n}, #{d}> is unassignable"
   end
 end
+
+defimpl Satie.ToLilypond, for: Satie.Rest do
+  def to_lilypond(%Satie.Rest{written_duration: duration}) do
+    "r" <> Satie.to_lilypond(duration)
+  end
+end

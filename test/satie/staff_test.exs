@@ -30,4 +30,36 @@ defmodule Satie.StaffTest do
       assert is_nil(staff.name)
     end
   end
+
+  describe ".to_lilypond" do
+    test "/1 returns a properly formatted lilypond string for an unnamed staff" do
+      staff = Staff.new([@c4, @voice, @c4], name: "Violin")
+
+      assert Satie.to_lilypond(staff) === """
+      \\context Staff = "Violin" {
+        c'4
+        \\new Voice {
+          c'4
+          d'4
+        }
+        c'4
+      }
+      """ |> String.trim
+    end
+
+    test "/1 returns a properly formatted lilypond string for a named staff" do
+      staff = Staff.new([@c4, @voice, @c4])
+
+      assert Satie.to_lilypond(staff) === """
+      \\new Staff {
+        c'4
+        \\new Voice {
+          c'4
+          d'4
+        }
+        c'4
+      }
+      """ |> String.trim
+    end
+  end
 end

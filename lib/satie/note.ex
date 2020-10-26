@@ -22,3 +22,9 @@ defmodule Satie.Note do
       message: "Duration<#{n}, #{d}> is unassignable"
   end
 end
+
+defimpl Satie.ToLilypond, for: Satie.Note do
+  def to_lilypond(%Satie.Note{written_pitch: p, written_duration: d}) do
+    Satie.to_lilypond(p) <> Satie.to_lilypond(d)
+  end
+end
