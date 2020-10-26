@@ -27,4 +27,10 @@ defmodule Satie.NoteTest do
       end
     end
   end
+
+  describe "Satie.ToLilypond" do
+    test ".to_lilypond/1 returns the correct lilypond representation of the note" do
+      assert Note.new(Pitch.new(3,4), Duration.new(7, 32)) |> Satie.to_lilypond == "ef'8.."
+    end
+  end
 end

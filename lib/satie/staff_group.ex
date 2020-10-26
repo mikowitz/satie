@@ -8,3 +8,22 @@ defmodule Satie.StaffGroup do
     }
   end
 end
+
+defimpl Satie.ToLilypond, for: Satie.StaffGroup do
+  import Satie.Lilypond.Helpers
+
+  def to_lilypond(%Satie.StaffGroup{name: name, music: music}) do
+    [
+      opening_bracket(name),
+      Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
+      ">>"
+    ] |> List.flatten |> Enum.join("\n")
+  end
+
+  ## PRIVATE
+
+  defp opening_bracket(nil), do: "\\new StaffGroup <<"
+  defp opening_bracket(name) do
+    ~s(\\context StaffGroup = "#{name}" <<)
+  end
+end

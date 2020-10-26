@@ -36,4 +36,16 @@ defmodule Satie.PitchTest do
       }
     end
   end
+
+  describe "Satie.to_lilypond" do
+    test "/1 returns the correct lilypond representation of the pitch" do
+      assert Pitch.new |> Satie.to_lilypond == "c'"
+
+      assert Pitch.new(6, 5) |> Satie.to_lilypond == "fs''"
+
+      assert Pitch.new(3, 2) |> Satie.to_lilypond == "ef,"
+
+      assert Pitch.new(5, 3) |> Satie.to_lilypond == "f"
+    end
+  end
 end

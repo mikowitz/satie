@@ -26,4 +26,23 @@ defmodule Satie.VoiceTest do
       assert is_nil(@unnamed_voice.name)
     end
   end
+
+  describe ".to_lilypond" do
+    test "/1 returns a properly formatted lilypond string for a named voice" do
+      assert Satie.to_lilypond(@named_voice) === """
+      \\context Voice = "Soprano" {
+        c'4
+        r4
+      }
+      """ |> String.trim
+    end
+
+    test "/1 returns a properly formatted lilypond string for an unnamed voice" do
+      assert Satie.to_lilypond(@unnamed_voice) === """
+      \\new Voice {
+        c'4
+      }
+      """ |> String.trim
+    end
+  end
 end

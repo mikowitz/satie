@@ -59,4 +59,14 @@ defmodule Satie.ChordTest do
       end
     end
   end
+
+  describe "Satie.to_lilypond" do
+    test "returns a lilypond representation of the chord" do
+      chord = Chord.new(
+        [Pitch.new(7,4), Pitch.new(11,4), Pitch.new(2, 5)],
+        Duration.new(1,16)
+      )
+      assert Satie.to_lilypond(chord) === "< g' b' d'' >16"
+    end
+  end
 end

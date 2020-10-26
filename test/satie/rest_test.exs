@@ -20,4 +20,10 @@ defmodule Satie.RestTest do
       end
     end
   end
+
+  describe "Satie.ToLilypond" do
+    test ".to_lilypond/1 returns the correct lilypond representation of the rest" do
+      assert Rest.new(Duration.new(3, 8)) |> Satie.to_lilypond === "r4."
+    end
+  end
 end

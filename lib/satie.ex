@@ -8,4 +8,14 @@ defmodule Satie do
       music: List.flatten(List.insert_at(music, index, element_or_elements))
     }
   end
+
+  def show(music) do
+    Satie.Lilypond.show(music)
+  end
+
+  def save(music, filename \\ nil) do
+    Satie.Lilypond.save(music, filename)
+  end
+
+  defdelegate to_lilypond(music), to: Satie.ToLilypond
 end

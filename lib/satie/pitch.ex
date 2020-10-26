@@ -25,3 +25,21 @@ defmodule Satie.Pitch do
     end
   end
 end
+
+defimpl Satie.ToLilypond, for: Satie.Pitch do
+  @pitches ~w(c cs d ef e f fs g af a bf b)
+
+  def to_lilypond(%Satie.Pitch{pitch_class_index: pci, octave: o}) do
+    pitch_class_string(pci) <> octave_string(o)
+  end
+
+  ## PRIVATE
+
+  defp pitch_class_string(pitch_class_index) do
+    Enum.at(@pitches, pitch_class_index)
+  end
+
+  defp octave_string(3), do: ""
+  defp octave_string(o) when o < 3, do: String.duplicate(",", 3 - o)
+  defp octave_string(o) when o > 3, do: String.duplicate("'", o - 3)
+end
