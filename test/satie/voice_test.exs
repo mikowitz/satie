@@ -5,7 +5,6 @@ defmodule Satie.VoiceTest do
   doctest Voice
 
   @c4 Note.new(Pitch.new, Duration.new)
-  @d4 Note.new(Pitch.new(2, 4), Duration.new)
   @r4 Rest.new(Duration.new)
   @voice Voice.new([@c4])
   @named_voice Voice.new([@c4, @r4], name: "Soprano")
