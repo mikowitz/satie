@@ -1,4 +1,4 @@
-defmodule Satie.Voice do
+defmodule Satie.StaffGroup do
   defstruct [:music, :name]
 
   def new(music, opts \\ []) do

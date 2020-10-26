@@ -27,44 +27,4 @@ defmodule Satie.VoiceTest do
       assert is_nil(@unnamed_voice.name)
     end
   end
-
-  describe ".append/2" do
-    test "pushes an element to the end of the voice" do
-      voice = Voice.append(@voice, @r4)
-
-      assert length(voice.music) === 2
-    end
-
-    test "pushes multiple elements to the end of the voice" do
-      voice = Voice.append(@voice, [@r4, @c4])
-
-      assert length(voice.music) === 3
-      assert List.last(voice.music) === @c4
-    end
-  end
-
-  describe ".insert/2" do
-    test "inserts an element at the beginning of the voice" do
-      voice = Voice.insert(@voice, @r4)
-
-      assert length(voice.music) === 2
-      assert List.first(voice.music) === @r4
-    end
-
-    test "inserts multiple elements at the beginning of the voice" do
-      voice = Voice.insert(@voice, [@r4, @c4])
-
-      assert length(voice.music) === 3
-      assert List.first(voice.music) === @r4
-    end
-  end
-
-  describe ".insert/3" do
-    test "inserts an element at the given index" do
-      voice = Voice.insert(@voice, @d4, 2)
-
-      assert length(voice.music) === 2
-      assert voice.music === [@c4, @d4]
-    end
-  end
 end
