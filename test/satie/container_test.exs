@@ -4,8 +4,8 @@ defmodule Satie.ContainerTest do
   alias Satie.{Container, Duration, Note, Pitch, Rest}
   doctest Container
 
-  @c4 Note.new(Pitch.new, Duration.new)
-  @r4 Rest.new(Duration.new)
+  @c4 Note.new(Pitch.new(), Duration.new())
+  @r4 Rest.new(Duration.new())
   @container Container.new([@c4, @r4, @c4])
 
   describe ".new" do
@@ -16,13 +16,15 @@ defmodule Satie.ContainerTest do
 
   describe ".to_lilypond" do
     test "/1 returns a lilypond formatted string" do
-      assert Satie.to_lilypond(@container) === """
-      {
-        c'4
-        r4
-        c'4
-      }
-      """ |> String.trim
+      assert Satie.to_lilypond(@container) ===
+               """
+               {
+                 c'4
+                 r4
+                 c'4
+               }
+               """
+               |> String.trim()
     end
   end
 end

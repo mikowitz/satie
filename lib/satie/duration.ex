@@ -1,4 +1,6 @@
 defmodule Satie.Duration do
+  @moduledoc false
+
   defstruct [:numerator, :denominator]
 
   require Bitwise
@@ -41,7 +43,7 @@ defmodule Satie.Duration do
   end
 
   defp proper_subdivision?(%__MODULE__{denominator: d}) do
-    Bitwise.band(d, d-1) == 0
+    Bitwise.band(d, d - 1) == 0
   end
 
   defp not_tied?(%__MODULE__{numerator: n}) do
@@ -50,7 +52,7 @@ defmodule Satie.Duration do
 
   defp reduce(a, b) do
     with g <- Integer.gcd(a, b) do
-      { round(a / g), round(b / g) }
+      {round(a / g), round(b / g)}
     end
   end
 end
@@ -59,11 +61,12 @@ defimpl Satie.ToLilypond, for: Satie.Duration do
   alias Satie.Duration
 
   def to_lilypond(%Duration{numerator: n, denominator: d} = duration) do
-    with true <- Satie.Duration.assignable?(duration) do
-      base_duration_string(duration) <> String.duplicate(".", dots_count(duration))
-    else
-      false -> raise Satie.UnassignableDurationError,
-        message: "Duration<#{n}, #{d}> is unengraveable"
+    case Satie.Duration.assignable?(duration) do
+      true ->
+        base_duration_string(duration) <> String.duplicate(".", dots_count(duration))
+
+      false ->
+        raise Satie.UnassignableDurationError, message: "Duration<#{n}, #{d}> is unengraveable"
     end
   end
 

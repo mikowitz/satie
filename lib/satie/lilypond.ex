@@ -1,6 +1,8 @@
 defmodule Satie.Lilypond do
-  system_result = :os.cmd('lilypond -v')
-  [[version]|_] = Regex.scan(~r/[\d.]+/, to_string(system_result))
+  @moduledoc false
+
+  {system_result, 0} = System.cmd("lilypond", ["-v"])
+  [[version] | _] = Regex.scan(~r/[\d.]+/, system_result)
   @lilypond_version version
 
   def lilypond_version, do: @lilypond_version
@@ -15,14 +17,13 @@ defmodule Satie.Lilypond do
 
   def save(music, filename \\ nil) do
     with filename <- resolve_filename(filename),
-         content <- build_contents(music)
-    do
+         content <- build_contents(music) do
       File.write(filename, content)
       {:ok, filename}
     end
   end
 
-  defp resolve_filename(nil), do: "/tmp/#{:erlang.system_time}.ly"
+  defp resolve_filename(nil), do: "/tmp/#{:erlang.system_time()}.ly"
   defp resolve_filename(filename) when is_bitstring(filename), do: filename
 
   defp build_contents(%{music: _} = music) do
@@ -31,8 +32,10 @@ defmodule Satie.Lilypond do
       ~s(\\language "english"),
       "",
       Satie.to_lilypond(music)
-    ] |> Enum.join("\n")
+    ]
+    |> Enum.join("\n")
   end
+
   defp build_contents(leaf) do
     [
       ~s(\\version "#{@lilypond_version}"),
@@ -41,10 +44,11 @@ defmodule Satie.Lilypond do
       "{",
       "  " <> Satie.to_lilypond(leaf),
       "}"
-    ] |> Enum.join("\n")
+    ]
+    |> Enum.join("\n")
   end
 
-  def run(command) do
-    command |> to_charlist |> :os.cmd |> to_string
+  defp run(command) do
+    command |> to_charlist |> :os.cmd() |> to_string
   end
 end

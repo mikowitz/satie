@@ -6,12 +6,12 @@ defmodule Satie.RestTest do
 
   describe ".new" do
     test "/1 accepts a duration" do
-      assert Rest.new(Duration.new) == %Rest{
-        written_duration: %Duration{
-          numerator: 1,
-          denominator: 4
-        }
-      }
+      assert Rest.new(Duration.new()) == %Rest{
+               written_duration: %Duration{
+                 numerator: 1,
+                 denominator: 4
+               }
+             }
     end
 
     test "/1 throws an error if it receives an unassignable duration" do
@@ -23,7 +23,7 @@ defmodule Satie.RestTest do
 
   describe "Satie.ToLilypond" do
     test ".to_lilypond/1 returns the correct lilypond representation of the rest" do
-      assert Rest.new(Duration.new(3, 8)) |> Satie.to_lilypond === "r4."
+      assert Rest.new(Duration.new(3, 8)) |> Satie.to_lilypond() === "r4."
     end
   end
 end

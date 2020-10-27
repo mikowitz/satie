@@ -1,15 +1,18 @@
 defmodule Satie.Note do
+  @moduledoc false
+
   defstruct [:written_pitch, :written_duration]
 
   alias Satie.{Duration, Pitch}
 
-  def new(pitch = %Pitch{}, duration = %Duration{}) do
+  def new(%Pitch{} = pitch, %Duration{} = duration) do
     case Duration.assignable?(duration) do
       true ->
         %__MODULE__{
           written_pitch: pitch,
           written_duration: duration
         }
+
       false ->
         raise_unassignable_duration_error(duration)
     end

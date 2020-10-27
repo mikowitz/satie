@@ -4,8 +4,8 @@ defmodule Satie.StaffGroupTest do
   alias Satie.{Duration, Note, Pitch, Staff, StaffGroup}
   doctest StaffGroup
 
-  @c4 Note.new(Pitch.new, Duration.new)
-  @d4 Note.new(Pitch.new(2, 4), Duration.new)
+  @c4 Note.new(Pitch.new(), Duration.new())
+  @d4 Note.new(Pitch.new(2, 4), Duration.new())
 
   @staff1 Staff.new([@c4, @d4], name: "Violin")
   @staff2 Staff.new([@d4, @c4, @d4], name: "Cello")
@@ -36,19 +36,22 @@ defmodule Satie.StaffGroupTest do
   describe ".to_lilypond" do
     test "/1 returns a properly formatted lilypond string for a named voice" do
       staff_group = StaffGroup.new([@staff1, @staff2], name: "Strings")
-      assert Satie.to_lilypond(staff_group) === """
-      \\context StaffGroup = "Strings" <<
-        \\context Staff = "Violin" {
-          c'4
-          d'4
-        }
-        \\context Staff = "Cello" {
-          d'4
-          c'4
-          d'4
-        }
-      >>
-      """ |> String.trim
+
+      assert Satie.to_lilypond(staff_group) ===
+               """
+               \\context StaffGroup = "Strings" <<
+                 \\context Staff = "Violin" {
+                   c'4
+                   d'4
+                 }
+                 \\context Staff = "Cello" {
+                   d'4
+                   c'4
+                   d'4
+                 }
+               >>
+               """
+               |> String.trim()
     end
   end
 end

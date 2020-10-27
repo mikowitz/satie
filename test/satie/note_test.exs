@@ -8,17 +8,18 @@ defmodule Satie.NoteTest do
 
   describe ".new" do
     test "/2 accepts a pitch and a duration" do
-      duration = Duration.new(7,16)
+      duration = Duration.new(7, 16)
+
       assert Note.new(@pitch, duration) == %Note{
-        written_pitch: %Pitch{
-          pitch_class_index: 2,
-          octave: 3
-        },
-        written_duration: %Duration{
-          numerator: 7,
-          denominator: 16
-        }
-      }
+               written_pitch: %Pitch{
+                 pitch_class_index: 2,
+                 octave: 3
+               },
+               written_duration: %Duration{
+                 numerator: 7,
+                 denominator: 16
+               }
+             }
     end
 
     test "/2 throws an error if it receives an unassignable duration" do
@@ -30,7 +31,7 @@ defmodule Satie.NoteTest do
 
   describe "Satie.ToLilypond" do
     test ".to_lilypond/1 returns the correct lilypond representation of the note" do
-      assert Note.new(Pitch.new(3,4), Duration.new(7, 32)) |> Satie.to_lilypond == "ef'8.."
+      assert Note.new(Pitch.new(3, 4), Duration.new(7, 32)) |> Satie.to_lilypond() == "ef'8.."
     end
   end
 end

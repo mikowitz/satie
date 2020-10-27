@@ -1,4 +1,6 @@
 defprotocol Satie.ToLilypond do
+  @fallback_to_any true
+
   def to_lilypond(music)
 end
 

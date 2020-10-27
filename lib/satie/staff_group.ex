@@ -1,4 +1,6 @@
 defmodule Satie.StaffGroup do
+  @moduledoc false
+
   defstruct [:music, :name]
 
   def new(music, opts \\ []) do
@@ -17,12 +19,15 @@ defimpl Satie.ToLilypond, for: Satie.StaffGroup do
       opening_bracket(name),
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
       ">>"
-    ] |> List.flatten |> Enum.join("\n")
+    ]
+    |> List.flatten()
+    |> Enum.join("\n")
   end
 
   ## PRIVATE
 
   defp opening_bracket(nil), do: "\\new StaffGroup <<"
+
   defp opening_bracket(name) do
     ~s(\\context StaffGroup = "#{name}" <<)
   end

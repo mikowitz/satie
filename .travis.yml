@@ -14,3 +14,6 @@ jobs:
       otp_release: "23.0"
     - elixir: "1.11.1"
       otp_release: "23.0"
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install lilypond

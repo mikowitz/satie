@@ -1,4 +1,6 @@
 defmodule Satie.Rest do
+  @moduledoc false
+
   defstruct [:written_duration]
 
   alias Satie.Duration
@@ -6,7 +8,8 @@ defmodule Satie.Rest do
   def new(duration) do
     case Duration.assignable?(duration) do
       true ->
-        %__MODULE__{ written_duration: duration }
+        %__MODULE__{written_duration: duration}
+
       false ->
         raise_unassignable_duration_error(duration)
     end

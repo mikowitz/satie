@@ -4,9 +4,9 @@ defmodule Satie.TupletTest do
   alias Satie.{Duration, Note, Pitch, Tuplet}
   doctest Tuplet
 
-  @c4 Note.new(Pitch.new, Duration.new)
-  @d4 Note.new(Pitch.new(2, 4), Duration.new)
-  @tuplet Tuplet.new({2,3}, [@c4, @d4, @c4])
+  @c4 Note.new(Pitch.new(), Duration.new())
+  @d4 Note.new(Pitch.new(2, 4), Duration.new())
+  @tuplet Tuplet.new({2, 3}, [@c4, @d4, @c4])
 
   describe ".new" do
     test "/2 returns a tuplet with a given multiplier and music" do
@@ -17,13 +17,15 @@ defmodule Satie.TupletTest do
 
   describe ".to_lilypond" do
     test "/1 returns a formatted lilypond string of the tuplet" do
-      assert Satie.to_lilypond(@tuplet) === """
-      \\tuplet 3/2 {
-        c'4
-        d'4
-        c'4
-      }
-      """ |> String.trim
+      assert Satie.to_lilypond(@tuplet) ===
+               """
+               \\tuplet 3/2 {
+                 c'4
+                 d'4
+                 c'4
+               }
+               """
+               |> String.trim()
     end
   end
 end

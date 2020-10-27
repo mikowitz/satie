@@ -1,4 +1,6 @@
 defmodule Satie.Pitch do
+  @moduledoc false
+
   defstruct [:pitch_class_index, :octave]
 
   @doc """
