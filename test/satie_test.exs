@@ -63,7 +63,7 @@ defmodule SatieTest do
 
       assert ly_file ===
                """
-               \\version "#{Satie.Lilypond.lilypond_version()}"
+               \\version "#{Lilypond.lilypond_version()}"
                \\language "english"
 
                {
@@ -86,7 +86,7 @@ defmodule SatieTest do
 
       assert ly_file ===
                """
-               \\version "#{Satie.Lilypond.lilypond_version()}"
+               \\version "#{Lilypond.lilypond_version()}"
                \\language "english"
 
                {
