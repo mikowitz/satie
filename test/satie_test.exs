@@ -2,10 +2,14 @@ defmodule SatieTest do
   use ExUnit.Case
 
   alias Satie.{Container, Duration, Lilypond, Note, Pitch, Rest}
-  @c4 Note.new(Pitch.new(), Duration.new())
-  @d4 Note.new(Pitch.new(2, 4), Duration.new())
-  @r4 Rest.new(Duration.new())
-  @container Container.new([@c4, @r4, @c4])
+
+  setup do
+    c4 = Note.new(Pitch.new(), Duration.new())
+    d4 = Note.new(Pitch.new(2, 4), Duration.new())
+    r4 = Rest.new(Duration.new())
+    container = Container.new([c4, r4, c4])
+    {:ok, c4: c4, d4: d4, r4: r4, container: container}
+  end
 
   setup_all do
     :ok = File.mkdir_p("test/saved")
@@ -14,42 +18,42 @@ defmodule SatieTest do
   end
 
   describe ".append/2" do
-    test "pushes an element to the end of the container" do
-      container = Satie.append(@container, @r4)
+    test "pushes an element to the end of the container", context do
+      container = Satie.append(context.container, context.r4)
 
       assert length(container.music) === 4
     end
 
-    test "pushes multiple elements to the end of the container" do
-      container = Satie.append(@container, [@r4, @c4])
+    test "pushes multiple elements to the end of the container", context do
+      container = Satie.append(context.container, [context.r4, context.c4])
 
       assert length(container.music) === 5
-      assert List.last(container.music) === @c4
+      assert List.last(container.music) === context.c4
     end
   end
 
   describe ".insert/2" do
-    test "inserts an element at the beginning of the container" do
-      container = Satie.insert(@container, @r4)
+    test "inserts an element at the beginning of the container", context do
+      container = Satie.insert(context.container, context.r4)
 
       assert length(container.music) === 4
-      assert List.first(container.music) === @r4
+      assert List.first(container.music) === context.r4
     end
 
-    test "inserts multiple elements at the beginning of the container" do
-      container = Satie.insert(@container, [@r4, @c4])
+    test "inserts multiple elements at the beginning of the container", context do
+      container = Satie.insert(context.container, [context.r4, context.c4])
 
       assert length(container.music) === 5
-      assert List.first(container.music) === @r4
+      assert List.first(container.music) === context.r4
     end
   end
 
   describe ".insert/3" do
-    test "inserts an element at the given index" do
-      container = Satie.insert(@container, @d4, 2)
+    test "inserts an element at the given index", context do
+      container = Satie.insert(context.container, context.d4, 2)
 
       assert length(container.music) === 4
-      assert container.music === [@c4, @r4, @d4, @c4]
+      assert container.music === [context.c4, context.r4, context.d4, context.c4]
     end
   end
 

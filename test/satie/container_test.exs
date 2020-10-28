@@ -4,19 +4,21 @@ defmodule Satie.ContainerTest do
   alias Satie.{Container, Duration, Note, Pitch, Rest}
   doctest Container
 
-  @c4 Note.new(Pitch.new(), Duration.new())
-  @r4 Rest.new(Duration.new())
-  @container Container.new([@c4, @r4, @c4])
+  setup do
+    c4 = Note.new(Pitch.new(), Duration.new())
+    r4 = Rest.new(Duration.new())
+    {:ok, container: Container.new([c4, r4, c4])}
+  end
 
   describe ".new" do
-    test "/1 returns a container with the given contents" do
-      assert length(@container.music) === 3
+    test "/1 returns a container with the given contents", context do
+      assert length(context.container.music) === 3
     end
   end
 
   describe ".to_lilypond" do
-    test "/1 returns a lilypond formatted string" do
-      assert Satie.to_lilypond(@container) ===
+    test "/1 returns a lilypond formatted string", context do
+      assert Satie.to_lilypond(context.container) ===
                """
                {
                  c'4

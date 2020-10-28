@@ -4,13 +4,13 @@ defmodule Satie.ChordTest do
   alias Satie.{Chord, Duration, Pitch}
   doctest Chord
 
-  @d4 Pitch.new(2, 4)
-  @fs4 Pitch.new(6, 4)
-  @a4 Pitch.new(9, 4)
+  setup do
+    {:ok, d4: Pitch.new(2, 4), fs4: Pitch.new(6, 4), a4: Pitch.new(9, 4)}
+  end
 
   describe ".new" do
-    test "/2 accepts a list of pitches and a duration" do
-      assert Chord.new([@d4, @fs4, @a4], Duration.new(1, 8)) == %Chord{
+    test "/2 accepts a list of pitches and a duration", context do
+      assert Chord.new([context.d4, context.fs4, context.a4], Duration.new(1, 8)) == %Chord{
                written_pitches: [
                  %Pitch{
                    pitch_class_index: 2,
@@ -32,8 +32,8 @@ defmodule Satie.ChordTest do
              }
     end
 
-    test "/2 accepts a single pitch and a duration" do
-      assert Chord.new(@d4, Duration.new(3, 16)) == %Chord{
+    test "/2 accepts a single pitch and a duration", context do
+      assert Chord.new(context.d4, Duration.new(3, 16)) == %Chord{
                written_pitches: [
                  %Pitch{
                    pitch_class_index: 2,
@@ -47,15 +47,15 @@ defmodule Satie.ChordTest do
              }
     end
 
-    test "/2 throws an error if it receives an unassignable duration" do
+    test "/2 throws an error if it receives an unassignable duration", context do
       assert_raise Satie.UnassignableDurationError, fn ->
-        Chord.new([@d4, @fs4, @a4], Duration.new(5, 1))
+        Chord.new([context.d4, context.fs4, context.a4], Duration.new(5, 1))
       end
     end
 
-    test "/2 throws an error if it is passed a non-pitch" do
+    test "/2 throws an error if it is passed a non-pitch", context do
       assert_raise Satie.UnassignablePitchError, fn ->
-        Chord.new([@d4, 7], Duration.new(1, 8))
+        Chord.new([context.d4, 7], Duration.new(1, 8))
       end
     end
   end
