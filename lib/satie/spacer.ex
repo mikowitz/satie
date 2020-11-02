@@ -1,7 +1,7 @@
 defmodule Satie.Spacer do
   @moduledoc false
 
-  defstruct [:written_duration]
+  defstruct [:written_duration, attachments: []]
 
   alias Satie.Duration
 
