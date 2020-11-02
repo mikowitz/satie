@@ -1,7 +1,7 @@
 defmodule Satie.Chord do
   @moduledoc false
 
-  defstruct [:written_pitches, :written_duration, attachments: []]
+  defstruct [:written_pitches, :written_duration, :id, attachments: [], spanners: []]
 
   alias Satie.{Duration, Pitch}
 
@@ -16,7 +16,8 @@ defmodule Satie.Chord do
           true ->
             %__MODULE__{
               written_pitches: pitches,
-              written_duration: duration
+              written_duration: duration,
+              id: make_ref()
             }
 
           false ->
@@ -46,7 +47,7 @@ defmodule Satie.Chord do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Chord do
-  def to_lilypond(%Satie.Chord{written_pitches: ps, written_duration: d}) do
+  def to_lilypond(%Satie.Chord{written_pitches: ps, written_duration: d}, _) do
     pitches_to_lilypond(ps) <> Satie.to_lilypond(d)
   end
 

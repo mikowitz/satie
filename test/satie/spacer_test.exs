@@ -1,17 +1,17 @@
 defmodule Satie.SpacerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Duration, Spacer}
   doctest Spacer
 
   describe ".new" do
     test "/1 accepts a duration" do
-      assert Spacer.new(Duration.new(3, 16)) == %Spacer{
-               written_duration: %Duration{
-                 numerator: 3,
-                 denominator: 16
-               }
-             }
+      spacer = Spacer.new(Duration.new(3, 16))
+
+      assert %Duration{
+               numerator: 3,
+               denominator: 16
+             } == spacer.written_duration
     end
 
     test "/1 throws an error if it receives an unassignable duration" do

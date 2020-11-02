@@ -12,7 +12,7 @@ defmodule Satie.Articulation do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Articulation do
-  def to_lilypond(%Satie.Articulation{name: name, position: position}) do
+  def to_lilypond(%Satie.Articulation{name: name, position: position}, _) do
     position_prefix(position) <> "\\" <> name
   end
 

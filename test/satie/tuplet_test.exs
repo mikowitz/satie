@@ -1,5 +1,5 @@
 defmodule Satie.TupletTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Duration, Note, Pitch, Tuplet}
   doctest Tuplet

@@ -1,5 +1,5 @@
 defmodule Satie.MeasureTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Duration, Measure, Note, Pitch, Rest}
   doctest Measure

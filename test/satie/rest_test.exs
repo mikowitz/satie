@@ -1,17 +1,17 @@
 defmodule Satie.RestTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Duration, Rest}
   doctest Rest
 
   describe ".new" do
     test "/1 accepts a duration" do
-      assert Rest.new(Duration.new()) == %Rest{
-               written_duration: %Duration{
-                 numerator: 1,
-                 denominator: 4
-               }
-             }
+      rest = Rest.new(Duration.new())
+
+      assert %Duration{
+               numerator: 1,
+               denominator: 4
+             } == rest.written_duration
     end
 
     test "/1 throws an error if it receives an unassignable duration" do

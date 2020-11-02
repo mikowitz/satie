@@ -1,9 +1,14 @@
 defmodule Satie.Lilypond do
   @moduledoc false
 
-  {system_result, 0} = System.cmd("lilypond", ["-v"])
-  [[version] | _] = Regex.scan(~r/[\d.]+/, system_result)
-  @lilypond_version version
+  if Version.compare(System.version(), "1.10.0") == :lt do
+    # credo:disable-for-lines:2 Credo.Check.Warning.ApplicationConfigInModuleAttribute
+    @runner Application.get_env(:satie, :runner)
+    @lilypond_version Application.get_env(:satie, :lilypond_version)
+  else
+    @runner Application.compile_env(:satie, :runner)
+    @lilypond_version Application.compile_env(:satie, :lilypond_version)
+  end
 
   def lilypond_version, do: @lilypond_version
 
@@ -49,6 +54,8 @@ defmodule Satie.Lilypond do
   end
 
   defp run(command) do
-    command |> to_charlist |> :os.cmd() |> to_string
+    with command <- to_charlist(command) do
+      @runner.(command) |> to_string
+    end
   end
 end

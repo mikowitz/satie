@@ -12,7 +12,7 @@ defmodule Satie.Dynamic do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Dynamic do
-  def to_lilypond(%Satie.Dynamic{name: name, position: position}) do
+  def to_lilypond(%Satie.Dynamic{name: name, position: position}, _) do
     position_prefix(position) <> "\\" <> name
   end
 

@@ -1,14 +1,17 @@
 defmodule Satie.Spacer do
   @moduledoc false
 
-  defstruct [:written_duration, attachments: []]
+  defstruct [:written_duration, :id, attachments: [], spanners: []]
 
   alias Satie.Duration
 
   def new(duration) do
     case Duration.assignable?(duration) do
       true ->
-        %__MODULE__{written_duration: duration}
+        %__MODULE__{
+          written_duration: duration,
+          id: make_ref()
+        }
 
       false ->
         raise_unassignable_duration_error(duration)
@@ -24,7 +27,7 @@ defmodule Satie.Spacer do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Spacer do
-  def to_lilypond(%Satie.Spacer{written_duration: duration}) do
+  def to_lilypond(%Satie.Spacer{written_duration: duration}, _) do
     "s" <> Satie.to_lilypond(duration)
   end
 end

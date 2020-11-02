@@ -1,5 +1,5 @@
 defmodule Satie.StaffGroupTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Duration, Note, Pitch, Staff, StaffGroup}
   doctest StaffGroup

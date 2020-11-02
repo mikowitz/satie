@@ -2,6 +2,7 @@ defmodule Satie.Score do
   @moduledoc false
 
   defstruct [:music, :name]
+  use Satie.Access
 
   def new(music, opts \\ []) do
     %__MODULE__{
@@ -14,7 +15,7 @@ end
 defimpl Satie.ToLilypond, for: Satie.Score do
   import Satie.Lilypond.Helpers
 
-  def to_lilypond(%Satie.Score{name: name, music: music}) do
+  def to_lilypond(%Satie.Score{name: name, music: music}, _) do
     [
       opening_bracket(name),
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),

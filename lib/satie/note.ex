@@ -1,7 +1,7 @@
 defmodule Satie.Note do
   @moduledoc false
 
-  defstruct [:written_pitch, :written_duration, attachments: []]
+  defstruct [:written_pitch, :written_duration, :id, attachments: [], spanners: []]
 
   alias Satie.{Duration, Pitch}
 
@@ -10,7 +10,8 @@ defmodule Satie.Note do
       true ->
         %__MODULE__{
           written_pitch: pitch,
-          written_duration: duration
+          written_duration: duration,
+          id: make_ref()
         }
 
       false ->
@@ -29,10 +30,16 @@ end
 defimpl Satie.ToLilypond, for: Satie.Note do
   import Satie.Lilypond.Helpers
 
-  def to_lilypond(%Satie.Note{written_pitch: p, written_duration: d, attachments: a}) do
+  def to_lilypond(
+        %Satie.Note{written_pitch: p, written_duration: d, attachments: a, spanners: s},
+        _
+      ) do
     [
       Satie.to_lilypond(p) <> Satie.to_lilypond(d),
-      Enum.map(a, fn attachment -> indent(Satie.to_lilypond(attachment)) end)
+      Enum.map(a, fn attachment -> indent(Satie.to_lilypond(attachment)) end),
+      Enum.map(s, fn {spanner, position} ->
+        indent(Satie.to_lilypond(spanner, spanner_position: position))
+      end)
     ]
     |> List.flatten()
     |> Enum.join("\n")

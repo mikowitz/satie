@@ -31,7 +31,7 @@ end
 defimpl Satie.ToLilypond, for: Satie.Pitch do
   @pitches ~w(c cs d ef e f fs g af a bf b)
 
-  def to_lilypond(%Satie.Pitch{pitch_class_index: pci, octave: o}) do
+  def to_lilypond(%Satie.Pitch{pitch_class_index: pci, octave: o}, _) do
     pitch_class_string(pci) <> octave_string(o)
   end
 
