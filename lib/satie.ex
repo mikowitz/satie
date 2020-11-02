@@ -17,5 +17,9 @@ defmodule Satie do
     Satie.Lilypond.save(music, filename)
   end
 
+  def attach(%{attachments: atts} = music, attachment) do
+    %{music | attachments: [attachment | atts]}
+  end
+
   defdelegate to_lilypond(music), to: Satie.ToLilypond
 end

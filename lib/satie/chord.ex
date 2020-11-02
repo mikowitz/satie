@@ -1,7 +1,7 @@
 defmodule Satie.Chord do
   @moduledoc false
 
-  defstruct [:written_pitches, :written_duration]
+  defstruct [:written_pitches, :written_duration, attachments: []]
 
   alias Satie.{Duration, Pitch}
 
