@@ -60,7 +60,7 @@ end
 defimpl Satie.ToLilypond, for: Satie.Duration do
   alias Satie.Duration
 
-  def to_lilypond(%Duration{numerator: n, denominator: d} = duration) do
+  def to_lilypond(%Duration{numerator: n, denominator: d} = duration, _) do
     case Satie.Duration.assignable?(duration) do
       true ->
         base_duration_string(duration) <> String.duplicate(".", dots_count(duration))

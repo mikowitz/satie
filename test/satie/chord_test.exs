@@ -1,5 +1,5 @@
 defmodule Satie.ChordTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Chord, Duration, Pitch}
   doctest Chord
@@ -10,41 +10,40 @@ defmodule Satie.ChordTest do
 
   describe ".new" do
     test "/2 accepts a list of pitches and a duration", context do
-      assert Chord.new([context.d4, context.fs4, context.a4], Duration.new(1, 8)) == %Chord{
-               written_pitches: [
-                 %Pitch{
-                   pitch_class_index: 2,
-                   octave: 4
-                 },
-                 %Pitch{
-                   pitch_class_index: 6,
-                   octave: 4
-                 },
-                 %Pitch{
-                   pitch_class_index: 9,
-                   octave: 4
-                 }
-               ],
-               written_duration: %Duration{
-                 numerator: 1,
-                 denominator: 8
+      chord = Chord.new([context.d4, context.fs4, context.a4], Duration.new(1, 8))
+
+      assert [
+               %Pitch{
+                 pitch_class_index: 2,
+                 octave: 4
+               },
+               %Pitch{
+                 pitch_class_index: 6,
+                 octave: 4
+               },
+               %Pitch{
+                 pitch_class_index: 9,
+                 octave: 4
                }
-             }
+             ] == chord.written_pitches
+
+      assert %Duration{numerator: 1, denominator: 8} == chord.written_duration
     end
 
     test "/2 accepts a single pitch and a duration", context do
-      assert Chord.new(context.d4, Duration.new(3, 16)) == %Chord{
-               written_pitches: [
-                 %Pitch{
-                   pitch_class_index: 2,
-                   octave: 4
-                 }
-               ],
-               written_duration: %Duration{
-                 numerator: 3,
-                 denominator: 16
+      chord = Chord.new(context.d4, Duration.new(3, 16))
+
+      assert [
+               %Pitch{
+                 pitch_class_index: 2,
+                 octave: 4
                }
-             }
+             ] == chord.written_pitches
+
+      assert %Duration{
+               numerator: 3,
+               denominator: 16
+             } == chord.written_duration
     end
 
     test "/2 throws an error if it receives an unassignable duration", context do

@@ -11,11 +11,7 @@ defmodule Satie.Barline do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Barline do
-  def to_lilypond(%Satie.Barline{symbol: symbol}) do
+  def to_lilypond(%Satie.Barline{symbol: symbol}, _) do
     ~s(\\bar "#{symbol}")
   end
-
-  defp position_prefix(nil), do: ""
-  defp position_prefix(:up), do: "^"
-  defp position_prefix(:down), do: "_"
 end

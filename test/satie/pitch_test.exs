@@ -1,5 +1,5 @@
 defmodule Satie.PitchTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.Pitch
   doctest Pitch

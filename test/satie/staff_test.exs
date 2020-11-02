@@ -1,7 +1,7 @@
 defmodule Satie.StaffTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Note, Pitch, Rest, Staff, Voice}
+  alias Satie.{Beam, Duration, Note, Pitch, Rest, Staff, Tuplet, Voice}
 
   setup do
     c4 = Note.new(Pitch.new(), Duration.new())
@@ -67,6 +67,57 @@ defmodule Satie.StaffTest do
                }
                """
                |> String.trim()
+    end
+
+    test "with a spanner crossing nested trees", %{c4: c4, d4: d4} do
+      tuplet = Tuplet.new({2, 3}, [c4, d4, c4])
+      staff = Staff.new([c4, d4, tuplet, d4, c4])
+
+      {_, staff} = Satie.attach_spanner(staff, Beam.new(), 3..6)
+
+      assert Satie.to_lilypond(staff) ===
+               """
+               \\new Staff {
+                 c'4
+                 d'4
+                 \\tuplet 3/2 {
+                   c'4
+                   d'4
+                     [
+                   c'4
+                 }
+                 d'4
+                 c'4
+                   ]
+               }
+               """
+               |> String.trim()
+    end
+  end
+
+  describe "Access behaviour" do
+    test "fetch handles nested fetches correctly", context do
+      staff = Staff.new([context.c4, context.voice, context.c4])
+
+      assert context.c4 === get_in(staff, [1, 0])
+    end
+
+    test "get_and_update_in works with nested containers", context do
+      r2 = Rest.new(Duration.new(1, 2))
+
+      staff = Staff.new([context.c4, context.voice, context.c4])
+
+      staff = update_in(staff, [1, 0], fn _ -> r2 end)
+
+      assert [r2, context.d4] === staff[1].music
+    end
+
+    test "pop works with nested containers", context do
+      staff = Staff.new([context.c4, context.voice, context.c4])
+
+      {_, staff} = pop_in(staff, [1, 0])
+
+      assert [context.d4] === staff[1].music
     end
   end
 end

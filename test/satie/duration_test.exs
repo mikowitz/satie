@@ -1,5 +1,5 @@
 defmodule Satie.DurationTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.Duration
   doctest Duration

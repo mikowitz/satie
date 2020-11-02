@@ -1,5 +1,5 @@
 defmodule Satie.NoteTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.{Articulation, Duration, Note, Pitch}
   doctest Note
@@ -11,17 +11,10 @@ defmodule Satie.NoteTest do
   describe ".new" do
     test "/2 accepts a pitch and a duration", context do
       duration = Duration.new(7, 16)
+      note = Note.new(context.pitch, duration)
 
-      assert Note.new(context.pitch, duration) == %Note{
-               written_pitch: %Pitch{
-                 pitch_class_index: 2,
-                 octave: 3
-               },
-               written_duration: %Duration{
-                 numerator: 7,
-                 denominator: 16
-               }
-             }
+      assert %Pitch{pitch_class_index: 2, octave: 3} == note.written_pitch
+      assert %Duration{numerator: 7, denominator: 16} === note.written_duration
     end
 
     test "/2 throws an error if it receives an unassignable duration", context do

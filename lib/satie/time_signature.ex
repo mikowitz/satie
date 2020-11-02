@@ -12,7 +12,7 @@ defmodule Satie.TimeSignature do
 end
 
 defimpl Satie.ToLilypond, for: Satie.TimeSignature do
-  def to_lilypond(%Satie.TimeSignature{numerator: n, denominator: d}) do
+  def to_lilypond(%Satie.TimeSignature{numerator: n, denominator: d}, _) do
     "\\time #{n}/#{d}"
   end
 end

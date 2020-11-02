@@ -1,5 +1,5 @@
 defmodule Satie.ArticulationTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Satie.Articulation
 
