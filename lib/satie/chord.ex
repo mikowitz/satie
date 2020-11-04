@@ -1,9 +1,9 @@
 defmodule Satie.Chord do
   @moduledoc false
 
-  defstruct [:written_pitches, :written_duration, :id, attachments: [], spanners: []]
+  use Satie.Leaf, [:written_pitches, :written_duration]
 
-  alias Satie.{Duration, Pitch}
+  alias Satie.Pitch
 
   def new(%Pitch{} = pitch, %Duration{} = duration) do
     new(List.wrap(pitch), duration)
@@ -35,11 +35,6 @@ defmodule Satie.Chord do
   defp validate_pitches([%Pitch{} | pitches]), do: validate_pitches(pitches)
   defp validate_pitches([x | _]), do: {:error, x}
 
-  defp raise_unassignable_duration_error(%Duration{numerator: n, denominator: d}) do
-    raise Satie.UnassignableDurationError,
-      message: "Duration<#{n}, #{d}> is unassignable"
-  end
-
   defp raise_unassignable_pitch_error(x) do
     raise Satie.UnassignablePitchError,
       message: "#{inspect(x)} cannot be assigned as a pitch"
@@ -47,8 +42,18 @@ defmodule Satie.Chord do
 end
 
 defimpl Satie.ToLilypond, for: Satie.Chord do
-  def to_lilypond(%Satie.Chord{written_pitches: ps, written_duration: d}, _) do
-    pitches_to_lilypond(ps) <> Satie.to_lilypond(d)
+  import Satie.Lilypond.Helpers
+
+  def to_lilypond(
+        %Satie.Chord{written_pitches: ps, written_duration: d, attachments: a, spanners: s},
+        _
+      ) do
+    [
+      pitches_to_lilypond(ps) <> Satie.to_lilypond(d),
+      attachments_to_lilypond(a),
+      spanners_to_lilypond(s)
+    ]
+    |> join()
   end
 
   defp pitches_to_lilypond(pitches) do
@@ -57,7 +62,6 @@ defimpl Satie.ToLilypond, for: Satie.Chord do
       Enum.map(pitches, &Satie.to_lilypond/1),
       ">"
     ]
-    |> List.flatten()
-    |> Enum.join(" ")
+    |> join(" ")
   end
 end

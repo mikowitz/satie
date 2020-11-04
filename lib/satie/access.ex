@@ -5,8 +5,8 @@ defmodule Satie.Access do
     quote do
       @behaviour Access
 
-      def get(%__MODULE__{} = container, key, default \\ nil) do
-        case fetch(container, key) do
+      def get(%__MODULE__{} = tree, key, default \\ nil) do
+        case fetch(tree, key) do
           :error -> default
           {:ok, value} -> value
         end
@@ -34,63 +34,63 @@ defmodule Satie.Access do
         end
       end
 
-      def fetch(%__MODULE__{} = container, %{id: id}) do
-        fetch(container, id)
+      def fetch(%__MODULE__{} = tree, %{id: id}) do
+        fetch(tree, id)
       end
 
       @impl Access
-      def get_and_update(%__MODULE__{music: music} = container, key, func) when is_number(key) do
-        case fetch(container, key) do
+      def get_and_update(%__MODULE__{music: music} = tree, key, func) when is_number(key) do
+        case fetch(tree, key) do
           :error ->
-            {nil, container}
+            {nil, tree}
 
           {:ok, value} ->
             case func.(value) do
               {get, update} ->
-                {get, %{container | music: List.replace_at(music, key, update)}}
+                {get, %{tree | music: List.replace_at(music, key, update)}}
 
               :pop ->
-                {value, %{container | music: List.delete_at(music, key)}}
+                {value, %{tree | music: List.delete_at(music, key)}}
             end
         end
       end
 
-      def get_and_update(%__MODULE__{} = container, %{id: id}, func) do
-        get_and_update(container, id, func)
+      def get_and_update(%__MODULE__{} = tree, %{id: id}, func) do
+        get_and_update(tree, id, func)
       end
 
-      def get_and_update(%__MODULE__{music: music} = container, key, func) do
-        case fetch(container, key) do
+      def get_and_update(%__MODULE__{music: music} = tree, key, func) do
+        case fetch(tree, key) do
           :error ->
-            {nil, container}
+            {nil, tree}
 
           {:ok, value} ->
-            get_and_update(container, Enum.find_index(music, fn x -> x == value end), func)
+            get_and_update(tree, Enum.find_index(music, fn x -> x == value end), func)
         end
       end
 
       @impl Access
-      def pop(%__MODULE__{music: music} = container, key) when is_number(key) do
-        case fetch(container, key) do
+      def pop(%__MODULE__{music: music} = tree, key) when is_number(key) do
+        case fetch(tree, key) do
           :error ->
-            {nil, container}
+            {nil, tree}
 
           {:ok, value} ->
-            {value, %{container | music: List.delete_at(music, key)}}
+            {value, %{tree | music: List.delete_at(music, key)}}
         end
       end
 
-      def pop(%__MODULE__{} = container, %{id: id}) do
-        pop(container, id)
+      def pop(%__MODULE__{} = tree, %{id: id}) do
+        pop(tree, id)
       end
 
-      def pop(%__MODULE__{music: music} = container, key) do
-        case fetch(container, key) do
+      def pop(%__MODULE__{music: music} = tree, key) do
+        case fetch(tree, key) do
           :error ->
-            {nil, container}
+            {nil, tree}
 
           {:ok, value} ->
-            pop(container, Enum.find_index(music, fn x -> x == value end))
+            pop(tree, Enum.find_index(music, fn x -> x == value end))
         end
       end
     end

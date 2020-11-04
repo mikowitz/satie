@@ -1,8 +1,7 @@
 defmodule Satie.Measure do
   @moduledoc false
 
-  defstruct [:time_signature, :music, :id]
-  use Satie.Access
+  use Satie.Tree, [:time_signature]
 
   def new({_, _} = time_signature, music) do
     %__MODULE__{
@@ -24,7 +23,6 @@ defimpl Satie.ToLilypond, for: Satie.Measure do
       indent("|"),
       "}"
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 end
