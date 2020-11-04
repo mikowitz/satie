@@ -1,8 +1,7 @@
 defmodule Satie.Score do
   @moduledoc false
 
-  defstruct [:music, :name]
-  use Satie.Access
+  use Satie.Tree, [:name]
 
   def new(music, opts \\ []) do
     %__MODULE__{
@@ -21,8 +20,7 @@ defimpl Satie.ToLilypond, for: Satie.Score do
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
       ">>"
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 
   ## PRIVATE

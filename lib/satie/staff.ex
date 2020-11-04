@@ -1,8 +1,7 @@
 defmodule Satie.Staff do
   @moduledoc false
 
-  defstruct [:music, :name, :id]
-  use Satie.Access
+  use Satie.Tree, [:name]
 
   def new(music, opts \\ []) do
     %__MODULE__{
@@ -22,8 +21,7 @@ defimpl Satie.ToLilypond, for: Satie.Staff do
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
       "}"
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 
   defp opening_bracket(nil), do: "\\new Staff {"

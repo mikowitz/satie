@@ -1,8 +1,7 @@
 defmodule Satie.Tuplet do
   @moduledoc false
 
-  defstruct [:multiplier, :music, :id]
-  use Satie.Access
+  use Satie.Tree, [:multiplier]
 
   def new({_, _} = multiplier, music) do
     %__MODULE__{
@@ -22,7 +21,6 @@ defimpl Satie.ToLilypond, for: Satie.Tuplet do
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
       "}"
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 end

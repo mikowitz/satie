@@ -1,9 +1,9 @@
 defmodule Satie.Note do
   @moduledoc false
 
-  defstruct [:written_pitch, :written_duration, :id, attachments: [], spanners: []]
+  use Satie.Leaf, [:written_pitch, :written_duration]
 
-  alias Satie.{Duration, Pitch}
+  alias Satie.Pitch
 
   def new(%Pitch{} = pitch, %Duration{} = duration) do
     case Duration.assignable?(duration) do
@@ -18,13 +18,6 @@ defmodule Satie.Note do
         raise_unassignable_duration_error(duration)
     end
   end
-
-  ## PRIVATE
-
-  defp raise_unassignable_duration_error(%Duration{numerator: n, denominator: d}) do
-    raise Satie.UnassignableDurationError,
-      message: "Duration<#{n}, #{d}> is unassignable"
-  end
 end
 
 defimpl Satie.ToLilypond, for: Satie.Note do
@@ -36,12 +29,9 @@ defimpl Satie.ToLilypond, for: Satie.Note do
       ) do
     [
       Satie.to_lilypond(p) <> Satie.to_lilypond(d),
-      Enum.map(a, fn attachment -> indent(Satie.to_lilypond(attachment)) end),
-      Enum.map(s, fn {spanner, position} ->
-        indent(Satie.to_lilypond(spanner, spanner_position: position))
-      end)
+      attachments_to_lilypond(a),
+      spanners_to_lilypond(s)
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 end

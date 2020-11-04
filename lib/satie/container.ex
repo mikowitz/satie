@@ -1,8 +1,7 @@
 defmodule Satie.Container do
   @moduledoc false
 
-  defstruct [:music, :id]
-  use Satie.Access
+  use Satie.Tree
 
   def new(music) do
     %__MODULE__{
@@ -21,7 +20,6 @@ defimpl Satie.ToLilypond, for: Satie.Container do
       Enum.map(music, fn m -> indent(Satie.to_lilypond(m)) end),
       "}"
     ]
-    |> List.flatten()
-    |> Enum.join("\n")
+    |> join()
   end
 end
