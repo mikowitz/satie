@@ -11,6 +11,11 @@ defmodule Satie.MeasureTest do
   end
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      measure = Measure.new("{ \\time 3/16 c'8 d'8 e'8 }")
+      assert {3, 16} == measure.time_signature
+    end
+
     test "/2 accepts a time signature and music", %{measure: measure} do
       assert length(measure.music) === 2
       assert {3, 4} === measure.time_signature

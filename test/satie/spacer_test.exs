@@ -5,6 +5,15 @@ defmodule Satie.SpacerTest do
   doctest Spacer
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      spacer = Spacer.new("s2.")
+
+      assert %Duration{
+               numerator: 3,
+               denominator: 4
+             } == spacer.written_duration
+    end
+
     test "/1 accepts a duration" do
       spacer = Spacer.new(Duration.new(3, 16))
 

@@ -9,6 +9,13 @@ defmodule Satie.NoteTest do
   end
 
   describe ".new" do
+    test "/1 can parse a note from a string" do
+      note = Note.new("d''8.")
+
+      assert %Duration{numerator: 3, denominator: 16} == note.written_duration
+      assert %Pitch{pitch_class_index: 2, octave: 5} == note.written_pitch
+    end
+
     test "/2 accepts a pitch and a duration", context do
       duration = Duration.new(7, 16)
       note = Note.new(context.pitch, duration)
