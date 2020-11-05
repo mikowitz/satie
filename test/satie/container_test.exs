@@ -12,6 +12,13 @@ defmodule Satie.ContainerTest do
   end
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      container = Container.new("{ c'4 d'4 ef'8. d16 }")
+
+      assert length(container.music) == 4
+      assert [0, 2, 3, 2] == container.music |> Enum.map(& &1.written_pitch.pitch_class_index)
+    end
+
     test "/1 returns a container with the given contents", context do
       assert length(context.container.music) === 3
     end

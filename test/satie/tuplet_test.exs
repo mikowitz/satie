@@ -12,6 +12,17 @@ defmodule Satie.TupletTest do
   end
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      tuplet = Tuplet.new("\\tuplet 3/2 { c'4 d'4 e'4 }")
+
+      assert {2, 3} == tuplet.multiplier
+      [c, d, e] = tuplet.music
+
+      assert Pitch.new(0, 4) == c.written_pitch
+      assert Pitch.new(2, 4) == d.written_pitch
+      assert Pitch.new(4, 4) == e.written_pitch
+    end
+
     test "/2 returns a tuplet with a given multiplier and music", context do
       assert context.tuplet.multiplier === {2, 3}
       assert length(context.tuplet.music) === 3

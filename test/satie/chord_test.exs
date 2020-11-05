@@ -9,6 +9,13 @@ defmodule Satie.ChordTest do
   end
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      chord = Chord.new("<c' ef' a'>8")
+
+      assert %Duration{numerator: 1, denominator: 8} == chord.written_duration
+      assert [0, 3, 9] == chord.written_pitches |> Enum.map(& &1.pitch_class_index)
+    end
+
     test "/2 accepts a list of pitches and a duration", context do
       chord = Chord.new([context.d4, context.fs4, context.a4], Duration.new(1, 8))
 

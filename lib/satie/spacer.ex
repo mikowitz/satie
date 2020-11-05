@@ -3,7 +3,7 @@ defmodule Satie.Spacer do
 
   use Satie.Leaf, [:written_duration]
 
-  def new(duration) do
+  def new(%Duration{} = duration) do
     case Duration.assignable?(duration) do
       true ->
         %__MODULE__{

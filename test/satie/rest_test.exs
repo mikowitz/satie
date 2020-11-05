@@ -5,6 +5,15 @@ defmodule Satie.RestTest do
   doctest Rest
 
   describe ".new" do
+    test "/1 accepts a lilypond string" do
+      rest = Rest.new("r4..")
+
+      assert %Duration{
+               numerator: 7,
+               denominator: 16
+             } == rest.written_duration
+    end
+
     test "/1 accepts a duration" do
       rest = Rest.new(Duration.new())
 
