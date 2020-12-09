@@ -49,6 +49,7 @@ defimpl Satie.ToLilypond, for: Satie.Chord do
         _
       ) do
     [
+      before_leaf_attachments_to_lilypond(a),
       pitches_to_lilypond(ps) <> Satie.to_lilypond(d),
       attachments_to_lilypond(a),
       spanners_to_lilypond(s)
