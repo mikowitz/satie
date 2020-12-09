@@ -1,12 +1,16 @@
 defmodule Satie.Examples.Bartok do
   import Satie
-  alias Satie.{Container, Measure, Note, Score, Staff, StaffGroup, Voice}
+  alias Satie.{Command, Container, Measure, Note, Score, Staff, StaffGroup, Voice}
 
   def build_score do
     score = Score.new([
       StaffGroup.new([
         upper_staff(),
         lower_staff()
+        |> update_in([3, 0, 0], fn n -> Satie.attach(n, Command.new("voiceOne")) end)
+        |> update_in([4, 0, 0], fn n -> Satie.attach(n, Command.new("voiceOne")) end)
+        |> update_in([3, 1, 0], fn n -> Satie.attach(n, Command.new("voiceTwo")) end)
+        |> update_in([4, 1, 0], fn n -> Satie.attach(n, Command.new("voiceTwo")) end)
       ], name: "Piano")
     ])
   end
@@ -29,19 +33,19 @@ defmodule Satie.Examples.Bartok do
       Container.new([
         Voice.new([
           Note.new("b2")
-        ]),
+        ], name: "Upper Voice"),
         Voice.new([
           Note.new("b4"), Note.new("a4")
-        ])
-      ]),
+        ], name: "Lower Voice")
+      ], simultaneous: true),
       Container.new([
         Voice.new([
           Note.new("b2")
-        ]),
+        ], name: "Upper Voice"),
         Voice.new([
           Note.new("g2")
-        ])
-      ])
+        ], name: "Lower Voice")
+      ], simultaneous: true)
     ], name: "Lower_Staff")
   end
 end
