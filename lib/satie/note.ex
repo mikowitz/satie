@@ -28,6 +28,7 @@ defimpl Satie.ToLilypond, for: Satie.Note do
         _
       ) do
     [
+      before_leaf_attachments_to_lilypond(a),
       Satie.to_lilypond(p) <> Satie.to_lilypond(d),
       attachments_to_lilypond(a),
       spanners_to_lilypond(s)

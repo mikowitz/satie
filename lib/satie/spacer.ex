@@ -22,6 +22,7 @@ defimpl Satie.ToLilypond, for: Satie.Spacer do
 
   def to_lilypond(%Satie.Spacer{written_duration: d, attachments: a, spanners: s}, _) do
     [
+      before_leaf_attachments_to_lilypond(a),
       "s" <> Satie.to_lilypond(d),
       attachments_to_lilypond(a),
       spanners_to_lilypond(s)

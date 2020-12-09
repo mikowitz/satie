@@ -1,7 +1,7 @@
 defmodule Satie.ContainerTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Beam, Container, Duration, Note, Pitch, Rest}
+  alias Satie.{Beam, Container, Duration, Note, Pitch, Rest, Voice}
   doctest Container
 
   setup do
@@ -33,6 +33,33 @@ defmodule Satie.ContainerTest do
                  r4
                  d'4
                }
+               """
+               |> String.trim()
+    end
+
+    test "/1 returns a container with simultaneous voices", %{c4: c4, d4: d4, r4: r4} do
+      container =
+        Container.new(
+          [
+            Voice.new([c4, d4]),
+            Voice.new([r4, c4, d4])
+          ],
+          simultaneous: true
+        )
+
+      assert Satie.to_lilypond(container) ===
+               """
+               <<
+                 \\new Voice {
+                   c'4
+                   d'4
+                 }
+                 \\new Voice {
+                   r4
+                   c'4
+                   d'4
+                 }
+               >>
                """
                |> String.trim()
     end

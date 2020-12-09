@@ -8,8 +8,17 @@ defmodule Satie.Lilypond.Helpers do
     |> Enum.join(joiner)
   end
 
+  @before_leaf_attachments [Satie.Command]
+
+  def before_leaf_attachments_to_lilypond(attachments) when is_list(attachments) do
+    attachments
+    |> Enum.filter(&(&1.__struct__ in @before_leaf_attachments))
+    |> Enum.map(&Satie.to_lilypond/1)
+  end
+
   def attachments_to_lilypond(attachments) when is_list(attachments) do
     attachments
+    |> Enum.reject(&(&1.__struct__ in @before_leaf_attachments))
     |> Enum.map(&Satie.to_lilypond/1)
     |> indent
   end
