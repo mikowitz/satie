@@ -1,12 +1,12 @@
 defmodule Satie.ScoreTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Note, Pitch, Rest, Score, Staff, StaffGroup}
+  alias Satie.{Note, Rest, Score, Staff, StaffGroup}
   doctest Score
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    d4 = Note.new(Pitch.new(2, 4), Duration.new())
+    c4 = Note.new("c'4")
+    d4 = Note.new("d'4")
 
     staff1 = Staff.new([c4, d4], name: "Violin")
     staff2 = Staff.new([d4, c4, d4])
@@ -85,7 +85,7 @@ defmodule Satie.ScoreTest do
     end
 
     test "get_and_update can search by container name", context do
-      rest = Rest.new(Duration.new(1, 2))
+      rest = Rest.new("r2")
       score = Score.new([context.staff_group1])
 
       score = update_in(score, ["Strings", "Violin", 0], fn _ -> rest end)

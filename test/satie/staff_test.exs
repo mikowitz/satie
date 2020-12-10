@@ -1,12 +1,12 @@
 defmodule Satie.StaffTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Beam, Duration, Note, Pitch, Rest, Staff, Tuplet, Voice}
+  alias Satie.{Beam, Note, Rest, Staff, Tuplet, Voice}
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    d4 = Note.new(Pitch.new(2, 4), Duration.new())
-    r4 = Rest.new(Duration.new())
+    c4 = Note.new("c'4")
+    d4 = Note.new("d'4")
+    r4 = Rest.new("r4")
     voice = Voice.new([c4, d4])
     {:ok, c4: c4, d4: d4, r4: r4, voice: voice}
   end
@@ -103,7 +103,7 @@ defmodule Satie.StaffTest do
     end
 
     test "get_and_update_in works with nested containers", context do
-      r2 = Rest.new(Duration.new(1, 2))
+      r2 = Rest.new("r2")
 
       staff = Staff.new([context.c4, context.voice, context.c4])
 

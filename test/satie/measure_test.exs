@@ -1,12 +1,12 @@
 defmodule Satie.MeasureTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Measure, Note, Pitch, Rest}
+  alias Satie.{Measure, Note, Rest}
   doctest Measure
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    r4 = Rest.new(Duration.new())
+    c4 = Note.new("c'4")
+    r4 = Rest.new("r4")
     {:ok, measure: Measure.new({3, 4}, [c4, r4])}
   end
 
