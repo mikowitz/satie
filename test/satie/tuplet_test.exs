@@ -1,12 +1,12 @@
 defmodule Satie.TupletTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Note, Pitch, Tuplet}
+  alias Satie.{Note, Pitch, Tuplet}
   doctest Tuplet
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    d4 = Note.new(Pitch.new(2, 4), Duration.new())
+    c4 = Note.new("c'4")
+    d4 = Note.new("d'4")
     tuplet = Tuplet.new({2, 3}, [c4, d4, c4])
     {:ok, tuplet: tuplet}
   end

@@ -1,13 +1,13 @@
 defmodule Satie.ContainerTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Beam, Container, Duration, Note, Pitch, Rest, Voice}
+  alias Satie.{Beam, Container, Note, Rest, Voice}
   doctest Container
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    d4 = Note.new(Pitch.new(2, 4), Duration.new())
-    r4 = Rest.new(Duration.new())
+    c4 = Note.new("c'4")
+    d4 = Note.new("d'4")
+    r4 = Rest.new("r4")
     {:ok, container: Container.new([c4, r4, d4]), c4: c4, d4: d4, r4: r4}
   end
 
@@ -105,14 +105,14 @@ defmodule Satie.ContainerTest do
     end
 
     test "get_and_update/3 works by ref", context do
-      r2 = Rest.new(Duration.new(1, 2))
+      r2 = Rest.new("r2")
       container = update_in(context.container, [context.r4.id], fn _ -> r2 end)
 
       assert r2 === container[1]
     end
 
     test "get_and_update/3 fetches by item", context do
-      r2 = Rest.new(Duration.new(1, 2))
+      r2 = Rest.new("r2")
 
       container = update_in(context.container, [context.d4], fn _ -> r2 end)
 

@@ -1,12 +1,12 @@
 defmodule Satie.StaffGroupTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Note, Pitch, Staff, StaffGroup}
+  alias Satie.{Note, Staff, StaffGroup}
   doctest StaffGroup
 
   setup do
-    c4 = Note.new(Pitch.new(), Duration.new())
-    d4 = Note.new(Pitch.new(2, 4), Duration.new())
+    c4 = Note.new("c'4")
+    d4 = Note.new("d'4")
 
     staff1 = Staff.new([c4, d4], name: "Violin")
     staff2 = Staff.new([d4, c4, d4], name: "Cello")
