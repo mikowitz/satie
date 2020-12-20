@@ -2,7 +2,18 @@ defmodule SatieTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureIO
 
-  alias Satie.{Container, Duration, Lilypond, Note, Pitch, Rest, Slur, Tuplet, Voice}
+  alias Satie.{
+    Articulation,
+    Container,
+    Duration,
+    Lilypond,
+    Note,
+    Pitch,
+    Rest,
+    Slur,
+    Tuplet,
+    Voice
+  }
 
   setup do
     c4 = Note.new(Pitch.new(), Duration.new())
@@ -16,6 +27,27 @@ defmodule SatieTest do
     :ok = File.mkdir_p("test/saved")
 
     on_exit(fn -> {:ok, _} = File.rm_rf("test/saved") end)
+  end
+
+  describe "attach_in" do
+    test "it attaches the given attachment at the path in the tree" do
+      container = Container.new("{ c'4 d'4 e'4 }")
+
+      accent = Articulation.new("accent", :up)
+
+      container = Satie.attach_in(container, [1], accent)
+
+      assert Satie.to_lilypond(container) ===
+               """
+               {
+                 c'4
+                 d'4
+                   ^\\accent
+                 e'4
+               }
+               """
+               |> String.trim()
+    end
   end
 
   describe "attach_spanner" do

@@ -14,6 +14,12 @@ defmodule Satie.VoiceTest do
   end
 
   describe ".new" do
+    test "/1 creates an unnamed voice from the provide lilypond string" do
+      voice = Voice.new("{ c'4 d'4 e'4 f'4 }")
+      assert length(voice.music) === 4
+      assert is_nil(voice.name)
+    end
+
     test "/1 creates an unnamed voice with the provided music", context do
       assert length(context.voice.music) === 1
       assert is_nil(context.voice.name)
@@ -27,6 +33,16 @@ defmodule Satie.VoiceTest do
     test "/2 ignores other options keys", context do
       assert length(context.unnamed_voice.music) === 1
       assert is_nil(context.unnamed_voice.name)
+    end
+  end
+
+  describe "naming" do
+    test "can be done after voice creation" do
+      voice = Voice.new("{ c'4 d'4 e'4 f'4 }")
+      assert is_nil(voice.name)
+      voice = %{voice | name: "Voice_Name"}
+      assert voice.__struct__ === Satie.Voice
+      assert voice.name === "Voice_Name"
     end
   end
 
