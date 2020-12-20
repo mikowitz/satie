@@ -21,7 +21,24 @@ defmodule Satie do
     %{music | attachments: [attachment | atts]}
   end
 
+  def attach_in(%{music: _} = tree, path, attachment) do
+    update_in(tree, path, fn leaf -> Satie.attach(leaf, attachment) end)
+  end
+
+  defp normalize_spanner_range(_.._ = range, _), do: range
+  defp normalize_spanner_range([h | _] = range, _) when is_integer(h), do: range
+
+  defp normalize_spanner_range([_ | _] = range, tree) do
+    with pathed_leaves <- pathed_leaves(tree) do
+      Enum.map(range, fn leaf ->
+        Enum.find_index(pathed_leaves, fn {_, l} -> l == leaf end)
+      end)
+    end
+  end
+
   def attach_spanner(%{music: _} = tree, spanner, range) do
+    range = normalize_spanner_range(range, tree)
+
     with pathed_leaves <- pathed_leaves(tree) do
       tree =
         Enum.reduce(range, tree, fn index, t ->
@@ -66,6 +83,41 @@ defmodule Satie do
   defp spanner_position(a, a.._), do: :beginning
   defp spanner_position(b, _..b), do: :end
   defp spanner_position(_, _.._), do: :middle
+  defp spanner_position(a, [a | _]), do: :beginning
+
+  defp spanner_position(b, [_ | tail]) do
+    case Enum.reverse(tail) do
+      [^b | _] -> :end
+      _ -> :middle
+    end
+  end
+
+  def parentage(leaf, root) do
+    leaves = pathed_leaves(root)
+    {path, ^leaf} = Enum.find(leaves, fn {_, l} -> l == leaf end)
+
+    all_paths =
+      List.foldl(path, [], fn x, acc ->
+        case acc do
+          [] -> [[x]]
+          [h | _] -> [[x | h] | acc]
+        end
+      end)
+      |> Enum.map(&Enum.reverse/1)
+      |> Enum.drop(1)
+
+    Enum.map(all_paths, &get_in(root, &1)) ++ [root]
+  end
+
+  def leaves_in(%{music: _} = tree, name) do
+    tree
+    |> leaves()
+    |> Enum.filter(fn leaf ->
+      with p <- parentage(leaf, tree) do
+        Enum.any?(p, fn ancestor -> Map.get(ancestor, :name) == name end)
+      end
+    end)
+  end
 
   def leaves(%{music: music}) do
     Enum.map(music, &leaves/1) |> List.flatten()

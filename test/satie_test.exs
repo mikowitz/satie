@@ -2,7 +2,18 @@ defmodule SatieTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureIO
 
-  alias Satie.{Container, Duration, Lilypond, Note, Pitch, Rest, Slur}
+  alias Satie.{
+    Articulation,
+    Container,
+    Duration,
+    Lilypond,
+    Note,
+    Pitch,
+    Rest,
+    Slur,
+    Tuplet,
+    Voice
+  }
 
   setup do
     c4 = Note.new(Pitch.new(), Duration.new())
@@ -16,6 +27,208 @@ defmodule SatieTest do
     :ok = File.mkdir_p("test/saved")
 
     on_exit(fn -> {:ok, _} = File.rm_rf("test/saved") end)
+  end
+
+  describe "attach_in" do
+    test "it attaches the given attachment at the path in the tree" do
+      container = Container.new("{ c'4 d'4 e'4 }")
+
+      accent = Articulation.new("accent", :up)
+
+      container = Satie.attach_in(container, [1], accent)
+
+      assert Satie.to_lilypond(container) ===
+               """
+               {
+                 c'4
+                 d'4
+                   ^\\accent
+                 e'4
+               }
+               """
+               |> String.trim()
+    end
+  end
+
+  describe "attach_spanner" do
+    test "can add a slur across adjacent leaves with a range" do
+      container =
+        Container.new([
+          Voice.new(
+            [
+              Note.new("c4"),
+              Note.new("d4")
+            ],
+            name: "Voice_One"
+          ),
+          Container.new(
+            [
+              Voice.new(
+                [
+                  Note.new("g4"),
+                  Note.new("a4")
+                ],
+                name: "Voice_Two"
+              ),
+              Voice.new(
+                [
+                  Note.new("e4"),
+                  Note.new("f4")
+                ],
+                name: "Voice_One"
+              )
+            ],
+            simultaneous: true
+          )
+        ])
+
+      slur = Slur.new()
+
+      {_, container} = Satie.attach_spanner(container, slur, 0..1)
+
+      assert Satie.to_lilypond(container) ===
+               """
+               {
+                 \\context Voice = "Voice_One" {
+                   c4
+                     (
+                   d4
+                     )
+                 }
+                 <<
+                   \\context Voice = "Voice_Two" {
+                     g4
+                     a4
+                   }
+                   \\context Voice = "Voice_One" {
+                     e4
+                     f4
+                   }
+                 >>
+               }
+               """
+               |> String.trim()
+    end
+
+    test "can add a slur across non-adjacent leaves with a list of leaves" do
+      container =
+        Container.new([
+          Voice.new(
+            [
+              Note.new("c4"),
+              Note.new("d4")
+            ],
+            name: "Voice_One"
+          ),
+          Container.new(
+            [
+              Voice.new(
+                [
+                  Note.new("g4"),
+                  Note.new("a4")
+                ],
+                name: "Voice_Two"
+              ),
+              Voice.new(
+                [
+                  Note.new("e4"),
+                  Note.new("f4")
+                ],
+                name: "Voice_One"
+              )
+            ],
+            simultaneous: true
+          )
+        ])
+
+      voice_one_leaves = Satie.leaves_in(container, "Voice_One")
+
+      assert length(voice_one_leaves) === 4
+
+      {_, container} = Satie.attach_spanner(container, Slur.new(), voice_one_leaves)
+
+      assert Satie.to_lilypond(container) ===
+               """
+               {
+                 \\context Voice = "Voice_One" {
+                   c4
+                     (
+                   d4
+                 }
+                 <<
+                   \\context Voice = "Voice_Two" {
+                     g4
+                     a4
+                   }
+                   \\context Voice = "Voice_One" {
+                     e4
+                     f4
+                       )
+                   }
+                 >>
+               }
+               """
+               |> String.trim()
+    end
+
+    test "can add a slur across non-adjacent leaves with a list" do
+      container =
+        Container.new([
+          Voice.new(
+            [
+              Note.new("c4"),
+              Note.new("d4")
+            ],
+            name: "Voice_One"
+          ),
+          Container.new(
+            [
+              Voice.new(
+                [
+                  Note.new("g4"),
+                  Note.new("a4")
+                ],
+                name: "Voice_Two"
+              ),
+              Voice.new(
+                [
+                  Note.new("e4"),
+                  Note.new("f4")
+                ],
+                name: "Voice_One"
+              )
+            ],
+            simultaneous: true
+          )
+        ])
+
+      slur = Slur.new()
+
+      {_, container} = Satie.attach_spanner(container, slur, [0, 1, 4, 5])
+
+      assert Satie.to_lilypond(container) ===
+               """
+               {
+                 \\context Voice = "Voice_One" {
+                   c4
+                     (
+                   d4
+                 }
+                 <<
+                   \\context Voice = "Voice_Two" {
+                     g4
+                     a4
+                   }
+                   \\context Voice = "Voice_One" {
+                     e4
+                     f4
+                       )
+                   }
+                 >>
+               }
+               """
+               |> String.trim()
+    end
   end
 
   describe "pathed_leaves/1" do
@@ -97,9 +310,11 @@ defmodule SatieTest do
   end
 
   describe ".show" do
-    music = Note.new(Pitch.new(1, 4), Duration.new(1, 8))
-    output = capture_io(fn -> Satie.show(music) end)
-    assert Regex.match?(~r/lilypond -o (.*) \1\.ly\nopen \1\.pdf/, output)
+    test "will compile and open the resulting file" do
+      music = Note.new(Pitch.new(1, 4), Duration.new(1, 8))
+      output = capture_io(fn -> Satie.show(music) end)
+      assert Regex.match?(~r/lilypond -o (.*) \1\.ly\nopen \1\.pdf/, output)
+    end
   end
 
   describe ".save" do
@@ -144,6 +359,33 @@ defmodule SatieTest do
                }
                """
                |> String.trim()
+    end
+  end
+
+  describe ".parentage" do
+    test "returns the full parentage of a leaf" do
+      tuplet = Tuplet.new("\\tuplet 3/2 { c'4 d'4 e'4 }")
+
+      voice =
+        Voice.new(
+          [
+            Note.new("c4"),
+            Rest.new("r4"),
+            tuplet
+          ],
+          name: "Voice_One"
+        )
+
+      container = Container.new([voice])
+
+      leaves = Satie.leaves(container)
+      c = Enum.at(leaves, 2)
+
+      assert Satie.parentage(c, container) === [
+               tuplet,
+               voice,
+               container
+             ]
     end
   end
 end

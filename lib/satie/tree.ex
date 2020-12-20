@@ -10,7 +10,12 @@ defmodule Satie.Tree do
       use Satie.Access
 
       def new(lilypond_string) when is_bitstring(lilypond_string) do
-        with {:ok, %__MODULE__{} = tree} <- Parser.parse(lilypond_string), do: tree
+        with {:ok, tree} <- Parser.parse(lilypond_string) do
+          case __MODULE__ do
+            Satie.Voice -> Satie.Voice.new(tree.music)
+            _ -> tree
+          end
+        end
       end
     end
   end
