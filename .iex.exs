@@ -1,0 +1,3 @@
+alias Satie.{
+  IntervalClass
+}
