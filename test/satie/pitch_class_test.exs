@@ -25,4 +25,17 @@ defmodule Satie.PitchClassTest do
       end)
     end
   end
+
+  describe inspect(&PitchClass.alteration/1) do
+    test "regression" do
+      File.read!("test/regression_data/pitch_class/alteration.txt")
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.split(&1, ","))
+      |> Enum.map(fn [input, alteration] ->
+        {alteration, ""} = Float.parse(alteration)
+
+        assert PitchClass.new(input) |> PitchClass.alteration() == alteration
+      end)
+    end
+  end
 end

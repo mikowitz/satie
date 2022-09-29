@@ -24,5 +24,20 @@ defmodule Satie.AccidentalTest do
                }
       end)
     end
+
+    test "regression from numbers" do
+      File.read!("test/regression_data/accidental/new_from_number.txt")
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.split(&1, ","))
+      |> Enum.map(fn [input, name, semitones] ->
+        {input, ""} = Float.parse(input)
+        {semitones, ""} = Float.parse(semitones)
+
+        assert Accidental.new(input) == %Accidental{
+                 name: name,
+                 semitones: semitones
+               }
+      end)
+    end
   end
 end
