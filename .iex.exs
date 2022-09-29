@@ -1,3 +1,6 @@
 alias Satie.{
-  IntervalClass
+  Accidental,
+  IntervalClass,
+  Interval,
+  PitchClass
 }

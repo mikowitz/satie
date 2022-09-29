@@ -31,6 +31,8 @@ defmodule Satie.Accidental do
   defp correct_name(%{name: ""}), do: %{name: "natural"}
   defp correct_name(%{name: "+"}), do: %{name: "qs"}
   defp correct_name(%{name: "~"}), do: %{name: "qf"}
+  defp correct_name(%{name: "sqs"}), do: %{name: "tqs"}
+  defp correct_name(%{name: "fqf"}), do: %{name: "tqf"}
   defp correct_name(map), do: map
 
   defp calculate_semitones(%{name: name} = map) do
