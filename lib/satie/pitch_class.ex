@@ -2,16 +2,7 @@ defmodule Satie.PitchClass do
   defstruct [:name, :accidental, :semitones, :diatonic_pitch_class]
 
   alias Satie.Accidental
-
-  @dpc_to_semitones %{
-    "c" => 0,
-    "d" => 2,
-    "e" => 4,
-    "f" => 5,
-    "g" => 7,
-    "a" => 9,
-    "b" => 11
-  }
+  import Satie.PitchHelpers
 
   @re ~r/^
     (?<diatonic_pitch_class>[abcdefg])
@@ -33,6 +24,8 @@ defmodule Satie.PitchClass do
     end
   end
 
+  def alteration(%__MODULE__{accidental: %Accidental{semitones: semitones}}), do: semitones
+
   defp build_accidental(%{accidental: accidental} = map) do
     %{map | accidental: Accidental.new(accidental)}
   end
@@ -48,7 +41,7 @@ defmodule Satie.PitchClass do
   end
 
   defp calculate_semitones(%{accidental: acc, diatonic_pitch_class: dpc} = map) do
-    semitones = acc.semitones + @dpc_to_semitones[dpc]
+    semitones = acc.semitones + dpc_to_semitones(dpc)
 
     semitones =
       case semitones do

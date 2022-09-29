@@ -112,4 +112,19 @@ defmodule Satie.Helpers do
   def quartertone_string_to_number(""), do: 0.0
   def quartertone_string_to_number("+"), do: 0.5
   def quartertone_string_to_number("~"), do: -0.5
+
+  def sign(n) when n == 0, do: 0
+  def sign(n) when n > 0, do: 1
+  def sign(n) when n < 0, do: -1
+
+  def mod(a, b) do
+    case :math.fmod(a, b) do
+      n when n < 0 -> n + b
+      n -> n
+    end
+  end
+
+  def octave_to_string(3), do: ""
+  def octave_to_string(o) when o > 3, do: String.duplicate("'", o - 3)
+  def octave_to_string(o) when o < 3, do: String.duplicate(",", 3 - o)
 end
