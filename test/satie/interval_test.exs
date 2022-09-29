@@ -14,7 +14,6 @@ defmodule Satie.IntervalTest do
       assert Interval.new("m15") == {:error, :interval_invalid_quality, {"m", 15}}
     end
 
-    @tag :focus
     test "regression" do
       File.read!("test/regression_data/interval/new.txt")
       |> String.split("\n", trim: true)
