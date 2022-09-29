@@ -13,8 +13,8 @@ f,f,-1
 ff,ff,-2
 fff,fff,-3
 ffff,ffff,-4
-sqs,sqs,1.5
-fqf,fqf,-1.5
+sqs,tqs,1.5
+fqf,tqf,-1.5
 ssqs,ssqs,2.5
 ffqf,ffqf,-2.5
 sssqs,sssqs,3.5
