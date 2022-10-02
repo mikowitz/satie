@@ -1,6 +1,7 @@
 defmodule Satie.PitchClassTest do
   use ExUnit.Case, async: true
 
+  import Satie.RegressionDataStreamer
   alias Satie.{Accidental, PitchClass}
 
   describe inspect(&PitchClass.new/1) do
@@ -9,33 +10,38 @@ defmodule Satie.PitchClassTest do
       assert PitchClass.new("atqsf") == {:error, :pitch_class_new, "atqsf"}
     end
 
-    test "regression" do
-      File.read!("test/regression_data/pitch_class/new.txt")
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn [input, name, semitones, accidental, pc_name] ->
-        {semitones, ""} = Float.parse(semitones)
-
-        assert PitchClass.new(input) == %PitchClass{
-                 name: name,
-                 accidental: Accidental.new(accidental),
-                 semitones: semitones,
-                 diatonic_pitch_class: pc_name
-               }
-      end)
+    test "returns a PitchClass from a string" do
+      assert PitchClass.new("bqf") == %PitchClass{
+               name: "bqf",
+               accidental: Accidental.new("~"),
+               semitones: 10.5,
+               diatonic_pitch_class: "b"
+             }
     end
+
+    regression_test(:pitch_class, :new, fn [input, name, semitones, accidental, pc_name] ->
+      {semitones, ""} = Float.parse(semitones)
+
+      assert PitchClass.new(input) == %PitchClass{
+               name: name,
+               accidental: Accidental.new(accidental),
+               semitones: semitones,
+               diatonic_pitch_class: pc_name
+             }
+    end)
   end
 
   describe inspect(&PitchClass.alteration/1) do
-    test "regression" do
-      File.read!("test/regression_data/pitch_class/alteration.txt")
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn [input, alteration] ->
-        {alteration, ""} = Float.parse(alteration)
-
-        assert PitchClass.new(input) |> PitchClass.alteration() == alteration
-      end)
+    test "returns the accidental's semitones" do
+      assert PitchClass.new("d") |> PitchClass.alteration() == 0
+      assert PitchClass.new("eqf") |> PitchClass.alteration() == -0.5
+      assert PitchClass.new("ftqs") |> PitchClass.alteration() == 1.5
     end
+
+    regression_test(:pitch_class, :alteration, fn [input, alteration] ->
+      {alteration, ""} = Float.parse(alteration)
+
+      assert PitchClass.new(input) |> PitchClass.alteration() == alteration
+    end)
   end
 end
