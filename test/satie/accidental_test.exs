@@ -1,6 +1,7 @@
 defmodule Satie.AccidentalTest do
   use ExUnit.Case, async: true
 
+  import Satie.RegressionDataStreamer
   alias Satie.Accidental
 
   describe inspect(&Accidental.new/1) do
@@ -11,33 +12,42 @@ defmodule Satie.AccidentalTest do
       assert Accidental.new("s+") == {:error, :accidental_new, "s+"}
     end
 
-    test "regression" do
-      File.read!("test/regression_data/accidental/new.txt")
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn [input, name, semitones] ->
-        {semitones, ""} = Float.parse(semitones)
+    test "returns an accidental from a string" do
+      assert Accidental.new("") == %Accidental{
+               name: "natural",
+               semitones: 0.0
+             }
 
-        assert Accidental.new(input) == %Accidental{
-                 name: name,
-                 semitones: semitones
-               }
-      end)
+      assert Accidental.new("tqf") == %Accidental{
+               name: "tqf",
+               semitones: -1.5
+             }
     end
 
-    test "regression from numbers" do
-      File.read!("test/regression_data/accidental/new_from_number.txt")
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn [input, name, semitones] ->
-        {input, ""} = Float.parse(input)
-        {semitones, ""} = Float.parse(semitones)
-
-        assert Accidental.new(input) == %Accidental{
-                 name: name,
-                 semitones: semitones
-               }
-      end)
+    test "returns an accidental from a number" do
+      assert Accidental.new(3.5) == %Accidental{
+               name: "sssqs",
+               semitones: 3.5
+             }
     end
+
+    regression_test(:accidental, :new, fn [input, name, semitones] ->
+      {semitones, ""} = Float.parse(semitones)
+
+      assert Accidental.new(input) == %Accidental{
+               name: name,
+               semitones: semitones
+             }
+    end)
+
+    regression_test(:accidental, :new_from_number, fn [input, name, semitones] ->
+      {input, ""} = Float.parse(input)
+      {semitones, ""} = Float.parse(semitones)
+
+      assert Accidental.new(input) == %Accidental{
+               name: name,
+               semitones: semitones
+             }
+    end)
   end
 end

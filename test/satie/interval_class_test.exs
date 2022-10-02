@@ -1,6 +1,7 @@
 defmodule Satie.IntervalClassTest do
   use ExUnit.Case, async: true
 
+  import Satie.RegressionDataStreamer
   alias Satie.IntervalClass
 
   describe inspect(&IntervalClass.new/1) do
@@ -14,21 +15,32 @@ defmodule Satie.IntervalClassTest do
       assert IntervalClass.new("m4") == {:error, :interval_class_invalid_quality, {"m", 4}}
     end
 
-    test "regression" do
-      File.read!("test/regression_data/interval_class/new.txt")
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, " "))
-      |> Enum.map(fn [input, name, size, quality, polarity] ->
-        {size, ""} = Integer.parse(size)
-        {polarity, ""} = Integer.parse(polarity)
+    test "returns an interval class from a string" do
+      assert IntervalClass.new("m2") == %IntervalClass{
+               name: "+m2",
+               size: 2,
+               quality: "m",
+               polarity: 1
+             }
 
-        assert IntervalClass.new(input) == %IntervalClass{
-                 name: name,
-                 size: size,
-                 quality: quality,
-                 polarity: polarity
-               }
-      end)
+      assert IntervalClass.new("P+4") == %IntervalClass{
+               name: "+P+4",
+               size: 4,
+               quality: "P+",
+               polarity: 1
+             }
     end
+
+    regression_test(:interval_class, :new, fn [input, name, size, quality, polarity] ->
+      {size, ""} = Integer.parse(size)
+      {polarity, ""} = Integer.parse(polarity)
+
+      assert IntervalClass.new(input) == %IntervalClass{
+               name: name,
+               size: size,
+               quality: quality,
+               polarity: polarity
+             }
+    end)
   end
 end
