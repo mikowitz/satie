@@ -100,4 +100,19 @@ defmodule Satie.PitchTest do
       assert diff.name == expected
     end)
   end
+
+  describe inspect(&Pitch.transpose/2) do
+    test "transposes a pitch by the given interval" do
+      assert Pitch.new("c") |> Pitch.transpose(Interval.new("m3")) == Pitch.new("ef")
+      assert Pitch.new("c") |> Pitch.transpose(Interval.new("-m3")) == Pitch.new("a,")
+    end
+
+    regression_test(:pitch, :transpose, fn [input1, input2, expected] ->
+      pitch = Pitch.new(input1)
+      interval = Interval.new(input2)
+      pitch2 = Pitch.transpose(pitch, interval)
+
+      assert pitch2 == Pitch.new(expected)
+    end)
+  end
 end
