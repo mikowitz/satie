@@ -5,6 +5,17 @@ defmodule Satie.Pitch do
   import Satie.Helpers, except: [build_name: 1]
   import Satie.PitchHelpers
 
+  @diatonic_number_to_quality_dictionary %{
+    1 => %{"d" => -1, "P" => 0, "A" => 1},
+    2 => %{"d" => 0, "m" => 1, "M" => 2, "A" => 3},
+    3 => %{"d" => 2, "m" => 3, "M" => 4, "A" => 5},
+    4 => %{"d" => 4, "P" => 5, "A" => 6},
+    5 => %{"d" => 6, "P" => 7, "A" => 8},
+    6 => %{"d" => 7, "m" => 8, "M" => 9, "A" => 10},
+    7 => %{"d" => 9, "m" => 10, "M" => 11, "A" => 12},
+    8 => %{"d" => 11, "P" => 12, "A" => 13}
+  }
+
   @re ~r/^
     (?<pitch_class>[abcdefg](t?q[sf]|s+(qs)?|f+(qf)?|\+|~)?)
     (?<octave>,*|'*)
@@ -27,7 +38,11 @@ defmodule Satie.Pitch do
   end
 
   def add(%__MODULE__{} = pitch, %__MODULE__{} = rhs) do
-    %{pitch: pitch, interval: to_interval(rhs)}
+    transpose(pitch, to_interval(rhs))
+  end
+
+  def transpose(%__MODULE__{} = pitch, %Interval{} = rhs) do
+    %{pitch: pitch, interval: rhs}
     |> calculate_total_semitones()
     |> calculate_diatonic_pitch_class()
     |> calculate_accidental()
@@ -48,6 +63,19 @@ defmodule Satie.Pitch do
       |> build_interval_name()
       |> Interval.new()
     end
+  end
+
+  def subtract(%__MODULE__{} = pitch, %__MODULE__{} = rhs) do
+    %{pitch: pitch, rhs: rhs}
+    |> calculate_staff_spaces_and_semitones()
+    |> calculate_named_interval_data()
+    |> calculate_numbered_interval_data()
+    |> calculate_named_interval_class_and_octaves()
+    |> calculate_numbered_interval_class_and_quartertone()
+    |> calculate_quality()
+    |> calculate_polarity()
+    |> build_interval_name()
+    |> Interval.new()
   end
 
   defp calculate_semitones_and_quartertone(%{semitones: semitones} = map) do
@@ -154,68 +182,6 @@ defmodule Satie.Pitch do
     Map.put_new(map, :semitones, semitones)
   end
 
-  @diatonic_number_to_quality_dictionary %{
-    1 => %{"d" => -1, "P" => 0, "A" => 1},
-    2 => %{"d" => 0, "m" => 1, "M" => 2, "A" => 3},
-    3 => %{"d" => 2, "m" => 3, "M" => 4, "A" => 5},
-    4 => %{"d" => 4, "P" => 5, "A" => 6},
-    5 => %{"d" => 6, "P" => 7, "A" => 8},
-    6 => %{"d" => 7, "m" => 8, "M" => 9, "A" => 10},
-    7 => %{"d" => 9, "m" => 10, "M" => 11, "A" => 12},
-    8 => %{"d" => 11, "P" => 12, "A" => 13}
-  }
-
-  def subtract(%__MODULE__{} = pitch, %__MODULE__{} = rhs) do
-    degree_1 = get_staff_spaces(pitch)
-    degree_2 = get_staff_spaces(rhs)
-    named_sign = sign(degree_1 - degree_2)
-    named_i_number = abs(degree_1 - degree_2) + 1
-    numbered_sign = sign(pitch.semitones - rhs.semitones)
-    numbered_i_number = abs(pitch.semitones - rhs.semitones)
-    {octaves, named_ic_number} = to_octave_and_diatonic_remainder(named_i_number)
-
-    numbered_ic_number = numbered_i_number - 12 * octaves
-
-    numbered_ic_number =
-      case named_sign != 0 && named_sign == -numbered_sign do
-        true -> numbered_ic_number * -1
-        false -> numbered_ic_number
-      end
-
-    {numbered_ic_number, quartertone} =
-      case :math.fmod(numbered_ic_number, 1) do
-        0.0 -> {numbered_ic_number, ""}
-        _ -> {numbered_ic_number - 0.5, "+"}
-      end
-
-    quality_to_semitones = @diatonic_number_to_quality_dictionary[named_ic_number]
-
-    {min, max} = Enum.min_max(Map.values(quality_to_semitones))
-
-    quality =
-      case numbered_ic_number do
-        n when n > max ->
-          String.duplicate("A", round(n - max) + 1)
-
-        n when n < min ->
-          String.duplicate("d", round(abs(min - n) + 1))
-
-        n ->
-          Enum.find(quality_to_semitones, fn {_k, v} -> v == n end)
-          |> elem(0)
-      end
-
-    quality = quality <> quartertone
-
-    polarity =
-      case should_reverse_polarity?(rhs, pitch) do
-        true -> -1
-        false -> 1
-      end
-
-    Interval.new(polarity_to_string(polarity) <> quality <> to_string(abs(named_i_number)))
-  end
-
   defp should_reverse_polarity?(pitch, rhs) do
     p_dpn = get_staff_spaces(pitch)
     rhs_dpn = get_staff_spaces(rhs)
@@ -237,5 +203,101 @@ defmodule Satie.Pitch do
     octaves = div(number - 1, 7)
     remainder = number - 7 * octaves
     {octaves, remainder}
+  end
+
+  defp calculate_staff_spaces_and_semitones(%{pitch: pitch, rhs: rhs} = map) do
+    Map.put_new(map, :staff_spaces, get_staff_spaces(pitch) - get_staff_spaces(rhs))
+    |> Map.put_new(:semitones, pitch.semitones - rhs.semitones)
+  end
+
+  defp calculate_named_interval_data(%{staff_spaces: staff_spaces} = map) do
+    named_interval = %{
+      sign: sign(staff_spaces),
+      number: abs(staff_spaces) + 1
+    }
+
+    Map.put_new(map, :named_interval, named_interval)
+    |> Map.put_new(:diatonic_number, named_interval.number)
+  end
+
+  defp calculate_numbered_interval_data(%{semitones: semitones} = map) do
+    numbered_interval = %{
+      sign: sign(semitones),
+      number: abs(semitones)
+    }
+
+    Map.put_new(map, :numbered_interval, numbered_interval)
+  end
+
+  defp calculate_named_interval_class_and_octaves(%{named_interval: %{number: number}} = map) do
+    {octaves, named_interval_class} = to_octave_and_diatonic_remainder(number)
+
+    Map.put_new(map, :octaves, octaves)
+    |> Map.put_new(:named_interval_class, named_interval_class)
+  end
+
+  defp calculate_numbered_interval_class_and_quartertone(
+         %{
+           numbered_interval: numbered,
+           named_interval: named,
+           octaves: octaves
+         } = map
+       ) do
+    %{number: numbered_number, sign: numbered_sign} = numbered
+    %{sign: named_sign} = named
+
+    numbered_interval_class = numbered_number - 12 * octaves
+
+    numbered_interval_class =
+      case named_sign != 0 && named_sign == -numbered_sign do
+        true -> numbered_interval_class * -1
+        false -> numbered_interval_class
+      end
+
+    {numbered_interval_class, quartertone} =
+      case :math.fmod(numbered_interval_class, 1) do
+        0.0 -> {numbered_interval_class, ""}
+        _ -> {numbered_interval_class - 0.5, "+"}
+      end
+
+    Map.put_new(map, :numbered_interval_class, numbered_interval_class)
+    |> Map.put_new(:quartertone, quartertone)
+  end
+
+  defp calculate_quality(
+         %{
+           named_interval_class: named_interval_class,
+           numbered_interval_class: numbered_interval_class,
+           quartertone: quartertone
+         } = map
+       ) do
+    quality_to_semitones_map = @diatonic_number_to_quality_dictionary[named_interval_class]
+
+    {min, max} = Enum.min_max(Map.values(quality_to_semitones_map))
+
+    quality =
+      case numbered_interval_class do
+        n when n > max ->
+          String.duplicate("A", round(n - max) + 1)
+
+        n when n < min ->
+          String.duplicate("d", round(abs(min - n) + 1))
+
+        n ->
+          Enum.find(quality_to_semitones_map, fn {_k, v} -> v == n end)
+          |> elem(0)
+      end
+
+    Map.put_new(map, :quality, quality <> quartertone)
+  end
+
+  defp calculate_polarity(%{pitch: pitch, rhs: rhs} = map) do
+    polarity =
+      case should_reverse_polarity?(rhs, pitch) do
+        true -> -1
+        false -> 1
+      end
+
+    Map.put_new(map, :polarity, polarity)
   end
 end
