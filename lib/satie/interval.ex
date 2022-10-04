@@ -33,7 +33,11 @@ defmodule Satie.Interval do
     end
   end
 
-  def calculate_octaves(%{size: size} = map) do
+  def negate(%__MODULE__{name: "+" <> name}), do: new("-" <> name)
+  def negate(%__MODULE__{name: "-" <> name}), do: new("+" <> name)
+  def negate(%__MODULE__{} = interval), do: interval
+
+  defp calculate_octaves(%{size: size} = map) do
     {normal_size, octaves} = normalize_size_with_octaves(size, 0)
 
     octaves =

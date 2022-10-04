@@ -2,7 +2,7 @@ defmodule Satie.PitchClassTest do
   use ExUnit.Case, async: true
 
   import Satie.RegressionDataStreamer
-  alias Satie.{Accidental, PitchClass}
+  alias Satie.{Accidental, IntervalClass, PitchClass}
 
   describe inspect(&PitchClass.new/1) do
     test "returns an error when the input is invalid" do
@@ -44,4 +44,42 @@ defmodule Satie.PitchClassTest do
       assert PitchClass.new(input) |> PitchClass.alteration() == alteration
     end)
   end
+
+  describe inspect(&PitchClass.add/2) do
+    test "returns the sum of two pitch classes" do
+      c = PitchClass.new("c")
+      d = PitchClass.new("d")
+      b = PitchClass.new("b")
+
+      assert PitchClass.add(c, d) == d
+      assert PitchClass.add(b, d) == PitchClass.new("cs")
+    end
+
+    regression_test(:pitch_class, :add, fn [input1, input2, expected] ->
+      pc1 = PitchClass.new(input1)
+      pc2 = PitchClass.new(input2)
+      sum = PitchClass.add(pc1, pc2)
+
+      assert sum.name == expected
+    end)
+  end
+
+  # describe inspect(&PitchClass.subtract/2) do
+  #   test "returns the interval between two pitch classes" do
+  #     c = PitchClass.new("c")
+  #     d = PitchClass.new("d")
+  #     b = PitchClass.new("b")
+  #
+  #     assert PitchClass.subtract(c, d) == IntervalClass.new("M2")
+  #     assert PitchClass.subtract(b, d) == IntervalClass.new("m3")
+  #   end
+  #
+  #   regression_test(:pitch_class, :add, fn [input1, input2, expected] ->
+  #     pc1 = PitchClass.new(input1)
+  #     pc2 = PitchClass.new(input2)
+  #     interval = PitchClass.subtract(pc1, pc2)
+  #
+  #     assert interval.name == expected
+  #   end)
+  # end
 end

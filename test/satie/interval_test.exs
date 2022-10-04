@@ -57,4 +57,18 @@ defmodule Satie.IntervalTest do
              }
     end)
   end
+
+  describe inspect(&Interval.negate/1) do
+    test "returns the negated interval" do
+      assert Interval.new("P1") |> Interval.negate() == Interval.new("P1")
+      assert Interval.new("m3") |> Interval.negate() == Interval.new("-m3")
+      assert Interval.new("-P4") |> Interval.negate() == Interval.new("P4")
+    end
+
+    regression_test(:interval, :negate, fn [input, expected] ->
+      interval = Interval.new(input)
+
+      assert Interval.negate(interval) == Interval.new(expected)
+    end)
+  end
 end

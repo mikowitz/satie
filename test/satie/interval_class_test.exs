@@ -43,4 +43,46 @@ defmodule Satie.IntervalClassTest do
              }
     end)
   end
+
+  describe inspect(&IntervalClass.add/2) do
+    test "returns the sum of two interval classes" do
+      maj2 = IntervalClass.new("M2")
+      m3 = IntervalClass.new("m3")
+      np4 = IntervalClass.new("-P4")
+      maj7 = IntervalClass.new("M7")
+
+      assert IntervalClass.add(maj2, m3) == IntervalClass.new("P4")
+      assert IntervalClass.add(maj7, np4) == IntervalClass.new("d5")
+      assert IntervalClass.add(m3, maj7) == IntervalClass.new("M2")
+      assert IntervalClass.add(maj2, np4) == IntervalClass.new("-m3")
+    end
+
+    regression_test(:interval_class, :add, fn [input1, input2, expected] ->
+      ic1 = IntervalClass.new(input1)
+      ic2 = IntervalClass.new(input2)
+      sum = IntervalClass.add(ic1, ic2)
+
+      assert sum.name == expected
+    end)
+  end
+
+  # describe inspect(&IntervalClass.subtract/2) do
+  #   test "returns the interval class between two interval classes" do
+  #     maj2 = IntervalClass.new("M2")
+  #     m3 = IntervalClass.new("m3")
+  #     np4 = IntervalClass.new("-P4")
+  #     maj7 = IntervalClass.new("M7")
+  #
+  #     assert IntervalClass.subtract(maj2, m3) == IntervalClass.new("-m2")
+  #     assert IntervalClass.subtract(maj7, np4) == IntervalClass.new("M3")
+  #   end
+  #
+  #   regression_test(:interval_class, :subtract, fn [input1, input2, expected] ->
+  #     ic1 = IntervalClass.new(input1)
+  #     ic2 = IntervalClass.new(input2)
+  #     diff = IntervalClass.subtract(ic1, ic2)
+  #
+  #     assert diff.name == expected
+  #   end)
+  # end
 end

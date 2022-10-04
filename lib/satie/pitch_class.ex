@@ -1,7 +1,7 @@
 defmodule Satie.PitchClass do
   defstruct [:name, :accidental, :semitones, :diatonic_pitch_class]
 
-  alias Satie.Accidental
+  alias Satie.{Accidental, Pitch}
   import Satie.PitchHelpers
 
   @re ~r/^
@@ -22,6 +22,20 @@ defmodule Satie.PitchClass do
         |> calculate_semitones()
         |> then(&struct(__MODULE__, &1))
     end
+  end
+
+  def add(%__MODULE__{} = pitch_class, %__MODULE__{} = rhs) do
+    pitch = Pitch.new(pitch_class.name <> "'")
+    rhs = Pitch.new(rhs.name <> "'")
+
+    Pitch.add(pitch, rhs).pitch_class
+  end
+
+  def subtract(%__MODULE__{} = pitch_class, %__MODULE__{} = rhs) do
+    pitch = Pitch.new(pitch_class.name <> "'")
+    rhs = Pitch.new(rhs.name <> "'")
+
+    Pitch.subtract(pitch, rhs).interval_class
   end
 
   def alteration(%__MODULE__{accidental: %Accidental{semitones: semitones}}), do: semitones

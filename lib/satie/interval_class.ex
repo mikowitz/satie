@@ -2,6 +2,7 @@ defmodule Satie.IntervalClass do
   defstruct [:name, :size, :quality, :polarity]
 
   import Satie.Helpers
+  alias Satie.{Interval, Pitch}
 
   def new(interval_class) when is_bitstring(interval_class) do
     case Regex.named_captures(interval_regex(), interval_class) do
@@ -26,6 +27,30 @@ defmodule Satie.IntervalClass do
             |> then(&struct(__MODULE__, &1))
         end)
     end
+  end
+
+  def add(%__MODULE__{} = interval_class, %__MODULE__{} = rhs) do
+    p = Pitch.new("c'")
+    interval = Interval.new(interval_class.name)
+    rhs = Interval.new(rhs.name)
+
+    p
+    |> Pitch.transpose(interval)
+    |> Pitch.transpose(rhs)
+    |> Pitch.to_interval()
+    |> then(& &1.interval_class)
+  end
+
+  def subtract(%__MODULE__{} = interval_class, %__MODULE__{} = rhs) do
+    p = Pitch.new("c'")
+    interval = Interval.new(interval_class.name)
+    rhs = Interval.new(rhs.name)
+
+    p
+    |> Pitch.transpose(interval)
+    |> Pitch.transpose(rhs)
+    |> Pitch.to_interval()
+    |> then(& &1.interval_class)
   end
 
   defp correct_size_and_polarity(%{size: size, polarity: polarity} = map) do
