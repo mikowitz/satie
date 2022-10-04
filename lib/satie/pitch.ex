@@ -78,6 +78,10 @@ defmodule Satie.Pitch do
     |> Interval.new()
   end
 
+  def invert(%__MODULE__{} = pitch, %__MODULE__{} = axis) do
+    transpose(axis, subtract(pitch, axis))
+  end
+
   defp calculate_semitones_and_quartertone(%{semitones: semitones} = map) do
     {semitones, quartertone} =
       case :math.fmod(semitones, 1) do
