@@ -38,7 +38,11 @@ defmodule Satie.Pitch do
   end
 
   def add(%__MODULE__{} = pitch, %__MODULE__{} = rhs) do
-    %{pitch: pitch, interval: to_interval(rhs)}
+    transpose(pitch, to_interval(rhs))
+  end
+
+  def transpose(%__MODULE__{} = pitch, %Interval{} = rhs) do
+    %{pitch: pitch, interval: rhs}
     |> calculate_total_semitones()
     |> calculate_diatonic_pitch_class()
     |> calculate_accidental()
