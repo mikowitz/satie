@@ -115,4 +115,24 @@ defmodule Satie.PitchTest do
       assert pitch2 == Pitch.new(expected)
     end)
   end
+
+  describe inspect(&Pitch.invert/2) do
+    test "inverts a pitch around another pitch serving as the axis" do
+      c4 = Pitch.new("c'")
+      bf3 = Pitch.new("bf")
+      b4 = Pitch.new("b'")
+
+      assert Pitch.invert(c4, bf3) == Pitch.new("af")
+      assert Pitch.invert(bf3, c4) == Pitch.new("d'")
+      assert Pitch.invert(b4, c4) == Pitch.new("df")
+    end
+
+    regression_test(:pitch, :invert, fn [input1, input2, expected] ->
+      pitch = Pitch.new(input1)
+      pitch2 = Pitch.new(input2)
+      inverted = Pitch.invert(pitch, pitch2)
+
+      assert inverted == Pitch.new(expected)
+    end)
+  end
 end
