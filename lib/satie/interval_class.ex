@@ -1,7 +1,8 @@
 defmodule Satie.IntervalClass do
   defstruct [:name, :size, :quality, :polarity]
 
-  import Satie.Helpers
+  import Satie.Helpers, only: [normalize_size: 1]
+  import Satie.IntervalHelpers
 
   def new(interval_class) when is_bitstring(interval_class) do
     case Regex.named_captures(interval_regex(), interval_class) do

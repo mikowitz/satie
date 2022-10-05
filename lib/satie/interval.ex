@@ -2,7 +2,14 @@ defmodule Satie.Interval do
   defstruct ~w(interval_class name size polarity octaves quality semitones staff_spaces)a
 
   alias Satie.IntervalClass
-  import Satie.Helpers
+  import Satie.IntervalHelpers
+
+  import Satie.Helpers,
+    only: [
+      normalize_size: 1,
+      polarity_to_string: 1,
+      quartertone_string_to_number: 1
+    ]
 
   def new(interval) when is_bitstring(interval) do
     case Regex.named_captures(interval_regex(), interval) do
@@ -80,7 +87,7 @@ defmodule Satie.Interval do
     normal_size = normalize_size_accounting_for_perfect_octave(map)
 
     semitones =
-      size_to_semitones(normal_size) + quality_to_semitones(normal_size, quality) +
+      interval_size_to_semitones(normal_size) + quality_to_semitones(normal_size, quality) +
         quartertone_string_to_number(quartertone)
 
     semitones = if abs(size) == 1, do: abs(semitones), else: semitones + octaves * 12

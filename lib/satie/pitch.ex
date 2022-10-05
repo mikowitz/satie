@@ -2,19 +2,14 @@ defmodule Satie.Pitch do
   defstruct [:name, :pitch_class, :semitones, :octave]
 
   alias Satie.{Accidental, Interval, PitchClass}
-  import Satie.Helpers, except: [build_name: 1]
-  import Satie.PitchHelpers
 
-  @diatonic_number_to_quality_dictionary %{
-    1 => %{"d" => -1, "P" => 0, "A" => 1},
-    2 => %{"d" => 0, "m" => 1, "M" => 2, "A" => 3},
-    3 => %{"d" => 2, "m" => 3, "M" => 4, "A" => 5},
-    4 => %{"d" => 4, "P" => 5, "A" => 6},
-    5 => %{"d" => 6, "P" => 7, "A" => 8},
-    6 => %{"d" => 7, "m" => 8, "M" => 9, "A" => 10},
-    7 => %{"d" => 9, "m" => 10, "M" => 11, "A" => 12},
-    8 => %{"d" => 11, "P" => 12, "A" => 13}
-  }
+  import Satie.Helpers,
+    only: [
+      polarity_to_string: 1,
+      sign: 1
+    ]
+
+  import Satie.PitchHelpers
 
   @re ~r/^
     (?<pitch_class>[abcdefg](t?q[sf]|s+(qs)?|f+(qf)?|\+|~)?)
@@ -275,7 +270,7 @@ defmodule Satie.Pitch do
            quartertone: quartertone
          } = map
        ) do
-    quality_to_semitones_map = @diatonic_number_to_quality_dictionary[named_interval_class]
+    quality_to_semitones_map = diatonic_number_to_quality_dictionary(named_interval_class)
 
     {min, max} = Enum.min_max(Map.values(quality_to_semitones_map))
 
@@ -304,4 +299,15 @@ defmodule Satie.Pitch do
 
     Map.put_new(map, :polarity, polarity)
   end
+
+  defp mod(a, b) do
+    case :math.fmod(a, b) do
+      n when n < 0 -> n + b
+      n -> n
+    end
+  end
+
+  defp octave_to_string(3), do: ""
+  defp octave_to_string(o) when o > 3, do: String.duplicate("'", o - 3)
+  defp octave_to_string(o) when o < 3, do: String.duplicate(",", 3 - o)
 end
