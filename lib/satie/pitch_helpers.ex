@@ -1,33 +1,11 @@
 defmodule Satie.PitchHelpers do
-  @dpc_to_semitones %{
-    "c" => 0,
-    "d" => 2,
-    "e" => 4,
-    "f" => 5,
-    "g" => 7,
-    "a" => 9,
-    "b" => 11
-  }
+  @diatonic_pitch_classes ~w(c d e f g a b)
+  @semitones [0, 2, 4, 5, 7, 9, 11]
+  @staff_spaces 0..6
 
-  @dpc_to_staff_spaces %{
-    "c" => 0,
-    "d" => 1,
-    "e" => 2,
-    "f" => 3,
-    "g" => 4,
-    "a" => 5,
-    "b" => 6
-  }
-
-  @staff_spaces_to_dpc %{
-    0 => "c",
-    1 => "d",
-    2 => "e",
-    3 => "f",
-    4 => "g",
-    5 => "a",
-    6 => "b"
-  }
+  @dpc_to_semitones Enum.zip(@diatonic_pitch_classes, @semitones) |> Enum.into(%{})
+  @dpc_to_staff_spaces Enum.zip(@diatonic_pitch_classes, @staff_spaces) |> Enum.into(%{})
+  @staff_spaces_to_dpc Enum.zip(@staff_spaces, @diatonic_pitch_classes) |> Enum.into(%{})
 
   @semitones_to_quality_and_diatonic_number %{
     0 => {"P", 1},
@@ -45,6 +23,17 @@ defmodule Satie.PitchHelpers do
     12 => {"P", 8}
   }
 
+  @diatonic_number_to_quality_dictionary %{
+    1 => %{"d" => -1, "P" => 0, "A" => 1},
+    2 => %{"d" => 0, "m" => 1, "M" => 2, "A" => 3},
+    3 => %{"d" => 2, "m" => 3, "M" => 4, "A" => 5},
+    4 => %{"d" => 4, "P" => 5, "A" => 6},
+    5 => %{"d" => 6, "P" => 7, "A" => 8},
+    6 => %{"d" => 7, "m" => 8, "M" => 9, "A" => 10},
+    7 => %{"d" => 9, "m" => 10, "M" => 11, "A" => 12},
+    8 => %{"d" => 11, "P" => 12, "A" => 13}
+  }
+
   def dpc_to_semitones(diatonic_pitch_class) do
     @dpc_to_semitones[diatonic_pitch_class]
   end
@@ -59,5 +48,14 @@ defmodule Satie.PitchHelpers do
 
   def semitones_to_quality_and_diatonic_number(semitones) do
     @semitones_to_quality_and_diatonic_number[semitones]
+  end
+
+  def diatonic_number_to_quality_dictionary(diatonic_number) do
+    @diatonic_number_to_quality_dictionary[diatonic_number]
+  end
+
+  def size_to_quality(size) do
+    diatonic_number_to_quality_dictionary(size)
+    |> Map.keys()
   end
 end
