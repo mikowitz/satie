@@ -44,4 +44,20 @@ defmodule Satie.PitchClassTest do
       assert PitchClass.new(input) |> PitchClass.alteration() == alteration
     end)
   end
+
+  describe inspect(&String.Chars.to_string/1) do
+    test "returns a string representation of the pitch class" do
+      assert PitchClass.new("c+") |> to_string() == "cqs"
+      assert PitchClass.new("fff") |> to_string() == "fff"
+      assert PitchClass.new("bssqs") |> to_string() == "bssqs"
+    end
+  end
+
+  describe inspect(&Inspect.inspect/2) do
+    test "returns the pitch class formatted for IEx" do
+      assert PitchClass.new("c~") |> inspect() == "#Satie.PitchClass<cqf>"
+      assert PitchClass.new("asqs") |> inspect() == "#Satie.PitchClass<atqs>"
+      assert PitchClass.new("dtqf") |> inspect() == "#Satie.PitchClass<dtqf>"
+    end
+  end
 end

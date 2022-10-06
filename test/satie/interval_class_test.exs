@@ -43,4 +43,20 @@ defmodule Satie.IntervalClassTest do
              }
     end)
   end
+
+  describe inspect(&String.Chars.to_string/1) do
+    test "returns a string representation of the interval class" do
+      assert IntervalClass.new("P1") |> to_string() == "P1"
+      assert IntervalClass.new("m~3") |> to_string() == "+m~3"
+      assert IntervalClass.new("-M+14") |> to_string() == "-M+7"
+    end
+  end
+
+  describe inspect(&Inspect.inspect/2) do
+    test "returns the interval class formatted for IEx" do
+      assert IntervalClass.new("P1") |> inspect() == "#Satie.IntervalClass<P1>"
+      assert IntervalClass.new("-M~3") |> inspect() == "#Satie.IntervalClass<-M~3>"
+      assert IntervalClass.new("M+14") |> inspect() == "#Satie.IntervalClass<+M+7>"
+    end
+  end
 end
