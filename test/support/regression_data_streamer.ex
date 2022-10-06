@@ -12,8 +12,6 @@ defmodule Satie.RegressionDataStreamer do
         {[data], client}
 
       :done ->
-        # no more data, tell stream to close
-        # and move to function 3
         {:halt, client}
 
       {:error, reason} ->
