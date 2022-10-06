@@ -50,4 +50,20 @@ defmodule Satie.AccidentalTest do
              }
     end)
   end
+
+  describe inspect(&String.Chars.to_string/1) do
+    test "returns a string representation of the accidental" do
+      assert Accidental.new("") |> to_string() == "natural"
+      assert Accidental.new(2.5) |> to_string() == "ssqs"
+      assert Accidental.new("tqf") |> to_string() == "tqf"
+    end
+  end
+
+  describe inspect(&Inspect.inspect/2) do
+    test "returns the accidental formatted for IEx" do
+      assert Accidental.new("") |> inspect() == "#Satie.Accidental<natural>"
+      assert Accidental.new(-4.5) |> inspect() == "#Satie.Accidental<ffffqf>"
+      assert Accidental.new("sss") |> inspect() == "#Satie.Accidental<sss>"
+    end
+  end
 end

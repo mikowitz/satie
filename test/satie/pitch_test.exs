@@ -135,4 +135,20 @@ defmodule Satie.PitchTest do
       assert inverted == Pitch.new(expected)
     end)
   end
+
+  describe inspect(&String.Chars.to_string/1) do
+    test "returns a string representation of the pitch" do
+      assert Pitch.new("c+'") |> to_string() == "cqs'"
+      assert Pitch.new("fff,,") |> to_string() == "fff,,"
+      assert Pitch.new("bsqs") |> to_string() == "btqs"
+    end
+  end
+
+  describe inspect(&Inspect.inspect/2) do
+    test "returns the pitch formatted for IEx" do
+      assert Pitch.new("c~,") |> inspect() == "#Satie.Pitch<cqf,>"
+      assert Pitch.new("asqs'") |> inspect() == "#Satie.Pitch<atqs'>"
+      assert Pitch.new("dqf") |> inspect() == "#Satie.Pitch<dqf>"
+    end
+  end
 end

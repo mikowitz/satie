@@ -91,4 +91,20 @@ defmodule Satie.Accidental do
 
     Map.put_new(map, :semitones, semitones)
   end
+
+  defimpl String.Chars do
+    def to_string(%@for{name: name}), do: name
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(%@for{} = accidental, _opts) do
+      concat([
+        "#Satie.Accidental<",
+        to_string(accidental),
+        ">"
+      ])
+    end
+  end
 end

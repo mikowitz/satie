@@ -52,4 +52,20 @@ defmodule Satie.PitchClass do
 
     Map.put_new(map, :semitones, semitones)
   end
+
+  defimpl String.Chars do
+    def to_string(%@for{name: name}), do: name
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(%@for{} = pitch_class, _opts) do
+      concat([
+        "#Satie.PitchClass<",
+        to_string(pitch_class),
+        ">"
+      ])
+    end
+  end
 end

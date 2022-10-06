@@ -71,4 +71,20 @@ defmodule Satie.IntervalTest do
       assert Interval.negate(interval) == Interval.new(expected)
     end)
   end
+
+  describe inspect(&String.Chars.to_string/1) do
+    test "returns a string representation of the interval" do
+      assert Interval.new("P1") |> to_string() == "P1"
+      assert Interval.new("m~10") |> to_string() == "+m~10"
+      assert Interval.new("-M+7") |> to_string() == "-M+7"
+    end
+  end
+
+  describe inspect(&Inspect.inspect/2) do
+    test "returns the interval formatted for IEx" do
+      assert Interval.new("P1") |> inspect() == "#Satie.Interval<P1>"
+      assert Interval.new("-M~21") |> inspect() == "#Satie.Interval<-M~21>"
+      assert Interval.new("M+14") |> inspect() == "#Satie.Interval<+M+14>"
+    end
+  end
 end

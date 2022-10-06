@@ -112,4 +112,20 @@ defmodule Satie.Interval do
       false -> normal_size
     end
   end
+
+  defimpl String.Chars do
+    def to_string(%@for{name: name}), do: name
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(%@for{} = interval, _opts) do
+      concat([
+        "#Satie.Interval<",
+        to_string(interval),
+        ">"
+      ])
+    end
+  end
 end

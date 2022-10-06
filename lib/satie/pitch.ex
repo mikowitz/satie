@@ -310,4 +310,20 @@ defmodule Satie.Pitch do
   defp octave_to_string(3), do: ""
   defp octave_to_string(o) when o > 3, do: String.duplicate("'", o - 3)
   defp octave_to_string(o) when o < 3, do: String.duplicate(",", 3 - o)
+
+  defimpl String.Chars do
+    def to_string(%@for{name: name}), do: name
+  end
+
+  defimpl Inspect do
+    import Inspect.Algebra
+
+    def inspect(%@for{} = pitch, _opts) do
+      concat([
+        "#Satie.Pitch<",
+        to_string(pitch),
+        ">"
+      ])
+    end
+  end
 end
