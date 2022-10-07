@@ -151,4 +151,12 @@ defmodule Satie.PitchTest do
       assert Pitch.new("dqf") |> inspect() == "#Satie.Pitch<dqf>"
     end
   end
+
+  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
+    test "returns a lilypond representation of the pitch" do
+      assert Pitch.new("c''") |> Satie.to_lilypond() == "c''"
+      assert Pitch.new("c+") |> Satie.to_lilypond() == "cqs"
+      assert Pitch.new("ftqs,") |> Satie.to_lilypond() == "ftqs,"
+    end
+  end
 end
