@@ -16,9 +16,42 @@ defmodule Satie.Duration do
     |> Enum.all?(& &1.(duration))
   end
 
+  def add(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{numerator: n2, denominator: d2}) do
+    new(n1 * d2 + n2 * d1, d1 * d2)
+  end
+
+  def subtract(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
+        numerator: n2,
+        denominator: d2
+      }) do
+    new(n1 * d2 - n2 * d1, d1 * d2)
+  end
+
+  def multiply(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
+        numerator: n2,
+        denominator: d2
+      }) do
+    new(n1 * n2, d1 * d2)
+  end
+
+  def multiply(%__MODULE__{numerator: n, denominator: d}, i) when is_integer(i) do
+    new(n * i, d)
+  end
+
+  def divide(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
+        numerator: n2,
+        denominator: d2
+      }) do
+    new(n1 * d2, n2 * d1)
+  end
+
+  def divide(%__MODULE__{numerator: n, denominator: d}, i) when is_integer(i) and i != 0 do
+    new(n, d * i)
+  end
+
   defp proper_length?(%__MODULE__{numerator: n, denominator: d}) do
     f = n / d
-    0 < f && f < 2
+    0 < f && f < 16
   end
 
   defp printable_subdivision?(%__MODULE__{denominator: d}) do
@@ -42,7 +75,7 @@ defmodule Satie.Duration do
   defimpl String.Chars do
     def to_string(%@for{} = duration) do
       case Satie.ToLilypond.to_lilypond(duration) do
-        ly when is_bitstring(ly) -> ly
+        ly when is_bitstring(ly) -> String.replace(ly, "\\", "")
         {:error, :unprintable_duration, {n, d}} -> "(#{n},#{d})"
       end
     end
@@ -60,6 +93,8 @@ defmodule Satie.Duration do
     end
   end
 
+  def to_float(%__MODULE__{numerator: n, denominator: d}), do: n / d
+
   defimpl Satie.ToLilypond do
     def to_lilypond(%@for{numerator: n, denominator: d} = duration) do
       case @for.printable?(duration) do
@@ -69,7 +104,12 @@ defmodule Satie.Duration do
     end
 
     defp base_duration_string(%@for{denominator: d} = duration) do
-      :math.pow(2, :math.log2(d) - dots_count(duration)) |> round() |> to_string()
+      case @for.to_float(duration) do
+        n when n >= 8 -> "\\maxima"
+        n when n >= 4 -> "\\longa"
+        n when n >= 2 -> "\\breve"
+        _ -> :math.pow(2, :math.log2(d) - dots_count(duration)) |> round() |> to_string()
+      end
     end
 
     defp dots_count(%@for{numerator: n}) do
