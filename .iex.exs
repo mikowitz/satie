@@ -1,7 +1,10 @@
 alias Satie.{
   Accidental,
-  IntervalClass,
+  Duration,
   Interval,
+  IntervalClass,
   Pitch,
-  PitchClass
+  PitchClass,
+  Rest
 }
+import Satie, only: [to_lilypond: 1]
