@@ -3,6 +3,7 @@ alias Satie.{
   Duration,
   Interval,
   IntervalClass,
+  Notehead,
   Pitch,
   PitchClass,
   Rest
