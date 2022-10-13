@@ -1,6 +1,37 @@
 defmodule Satie.Duration do
   defstruct [:numerator, :denominator]
 
+  @duration_re ~r/^(?<base>\\breve|\\longa|\\maxima|\d+)(?<dots>.*)$/
+
+  def new(duration) when is_bitstring(duration) do
+    case Regex.named_captures(@duration_re, duration) do
+      %{"base" => base, "dots" => dots} ->
+        dots_count = String.length(dots)
+        {n, base} = parse_base_duration(base)
+
+        {numerator, denominator} =
+          case n do
+            1 ->
+              {round(:math.pow(2, dots_count + 1) - 1),
+               round(:math.pow(2, :math.log2(base) + dots_count))}
+
+            _ ->
+              case dots_count do
+                0 ->
+                  {n, 1}
+
+                _ ->
+                  {round(:math.pow(2, dots_count + 1) - 1), round(:math.pow(2, dots_count) / n)}
+              end
+          end
+
+        new(numerator, denominator)
+
+      nil ->
+        {:error, :duration_new, duration}
+    end
+  end
+
   def new(numerator, denominator)
       when is_integer(numerator) and is_integer(denominator) and denominator != 0 do
     {numerator, denominator}
@@ -71,6 +102,15 @@ defmodule Satie.Duration do
 
   defp correct_polarity({a, b}) when b < 0, do: {a * -1, b * -1}
   defp correct_polarity({a, b}), do: {a, b}
+
+  defp parse_base_duration("\\breve"), do: {2, 1}
+  defp parse_base_duration("\\longa"), do: {4, 1}
+  defp parse_base_duration("\\maxima"), do: {8, 1}
+
+  defp parse_base_duration(dur) do
+    {dur, ""} = Integer.parse(dur)
+    {1, dur}
+  end
 
   defimpl String.Chars do
     def to_string(%@for{} = duration) do

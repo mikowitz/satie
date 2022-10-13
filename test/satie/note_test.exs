@@ -3,6 +3,22 @@ defmodule Satie.NoteTest do
 
   alias Satie.{Duration, Note, Notehead, Pitch}
 
+  describe inspect(&Note.new/1) do
+    test "returns a note from a string" do
+      assert Note.new("fqf?4") == %Note{
+               written_duration: Duration.new(1, 4),
+               notehead: %Notehead{
+                 written_pitch: Pitch.new("fqf"),
+                 accidental_display: :cautionary
+               }
+             }
+    end
+
+    test "returns an error when it's unparseable as a note" do
+      assert Note.new("sss??4-") == {:error, :duration_new, "sss??4-"}
+    end
+  end
+
   describe inspect(&Note.new/2) do
     test "returns a note from a notehead and duration" do
       notehead = Notehead.new(Pitch.new("c"))

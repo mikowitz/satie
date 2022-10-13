@@ -12,6 +12,23 @@ defmodule Satie.NoteheadTest do
                accidental_display: :neutral
              }
     end
+
+    test "can initialize from a string" do
+      assert Notehead.new("ftqs") == %Notehead{
+               written_pitch: Pitch.new("ftqs"),
+               accidental_display: :neutral
+             }
+
+      assert Notehead.new("af?") == %Notehead{
+               written_pitch: Pitch.new("af"),
+               accidental_display: :cautionary
+             }
+
+      assert Notehead.new("g!") == %Notehead{
+               written_pitch: Pitch.new("g"),
+               accidental_display: :forced
+             }
+    end
   end
 
   describe inspect(&Notehead.new/2) do

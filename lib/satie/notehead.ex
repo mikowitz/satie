@@ -1,16 +1,39 @@
 defmodule Satie.Notehead do
   defstruct [:written_pitch, :accidental_display]
 
+  @accidental_display_options ~w(forced cautionary neutral)a
+
+  @pitch_re ~r/^(?<pitch>[^?!]+)(?<accidental_display>[?!]?)$/
+
   alias Satie.Pitch
 
-  def new(%Pitch{} = pitch, opts \\ []) do
+  def new(pitch, opts \\ [])
+
+  def new(%Pitch{} = pitch, opts) do
     %__MODULE__{
       written_pitch: pitch,
       accidental_display: accidental_display_from_opts(opts)
     }
   end
 
-  @accidental_display_options ~w(forced cautionary neutral)a
+  def new(pitch, _opts) when is_bitstring(pitch) do
+    {pitch, accidental_display} = parse_pitch_and_accidental_display(pitch)
+
+    pitch
+    |> Pitch.new()
+    |> new(accidental_display: accidental_display)
+  end
+
+  defp parse_pitch_and_accidental_display(pitch) do
+    %{"pitch" => pitch, "accidental_display" => accidental_display} =
+      Regex.named_captures(@pitch_re, pitch)
+
+    {pitch, translate_accidental_display(accidental_display)}
+  end
+
+  defp translate_accidental_display("?"), do: :cautionary
+  defp translate_accidental_display("!"), do: :forced
+  defp translate_accidental_display(""), do: :neutral
 
   defp accidental_display_from_opts(opts) do
     Enum.find(@accidental_display_options, :neutral, &(&1 == opts[:accidental_display]))

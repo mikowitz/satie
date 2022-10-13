@@ -10,6 +10,12 @@ defmodule Satie.RestTest do
              }
     end
 
+    test "returns a rest struct from a parseable string" do
+      assert Rest.new("r8.") == %Rest{
+               written_duration: Duration.new(3, 16)
+             }
+    end
+
     test "returns an error when the duration is not assignable" do
       assert Rest.new(Duration.new(1, 5)) == {:error, :rest_new, {:unassignable_duration, 1, 5}}
     end
