@@ -4,6 +4,39 @@ defmodule Satie.DurationTest do
   import Satie.RegressionDataStreamer
   alias Satie.Duration
 
+  describe inspect(&Duration.new/1) do
+    test "can parse a duration from a lilypond string" do
+      assert Duration.new("4") == %Duration{
+               numerator: 1,
+               denominator: 4
+             }
+
+      assert Duration.new("4.") == %Duration{
+               numerator: 3,
+               denominator: 8
+             }
+
+      assert Duration.new("\\breve") == %Duration{
+               numerator: 2,
+               denominator: 1
+             }
+
+      assert Duration.new("\\longa..") == %Duration{
+               numerator: 7,
+               denominator: 1
+             }
+
+      assert Duration.new("\\breve..") == %Duration{
+               numerator: 7,
+               denominator: 2
+             }
+    end
+
+    test "returns an error if the duration string cannot be parsed into a valid duration" do
+      assert Duration.new("q+") == {:error, :duration_new, "q+"}
+    end
+  end
+
   describe inspect(&Duration.new/2) do
     test "returns a duration from numerator and denominator" do
       assert Duration.new(1, 4) == %Duration{

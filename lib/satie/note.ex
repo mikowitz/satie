@@ -1,7 +1,19 @@
 defmodule Satie.Note do
   defstruct [:written_duration, :notehead]
 
+  @note_re ~r/^(?<notehead>[^?!]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
+
   alias Satie.{Duration, Notehead}
+
+  def new(note) when is_bitstring(note) do
+    case Regex.named_captures(@note_re, note) do
+      %{"notehead" => notehead, "duration" => duration} ->
+        new(Notehead.new(notehead), Duration.new(duration))
+
+      nil ->
+        {:error, :duration_new, note}
+    end
+  end
 
   def new(%Notehead{} = notehead, %Duration{numerator: n, denominator: d} = duration) do
     case Duration.printable?(duration) do

@@ -10,6 +10,15 @@ defmodule Satie.Rest do
     end
   end
 
+  @rest_re ~r/^r(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
+
+  def new(rest) when is_bitstring(rest) do
+    case Regex.named_captures(@rest_re, rest) do
+      %{"duration" => duration} -> new(Duration.new(duration))
+      nil -> {:error, :rest_new, rest}
+    end
+  end
+
   defimpl String.Chars do
     def to_string(%@for{} = rest) do
       Satie.to_lilypond(rest)
