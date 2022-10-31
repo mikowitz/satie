@@ -1,7 +1,7 @@
 defmodule Satie.ChordTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Chord, Duration, Notehead}
+  alias Satie.{Chord, Duration, Interval, Notehead, Pitch}
 
   describe inspect(&Chord.new/1) do
     test "returns a chord from a parseable string" do
@@ -46,6 +46,54 @@ defmodule Satie.ChordTest do
     test "returns an error when the duration is not assignable" do
       assert Chord.new([Notehead.new("c'")], Duration.new(1, 5)) ==
                {:error, :chord_new, {[Notehead.new("c'")], Duration.new(1, 5)}}
+    end
+  end
+
+  describe inspect(&Chord.transpose/2) do
+    test "transposes the full chord" do
+      chord =
+        Chord.new(
+          [
+            Notehead.new("c'"),
+            Notehead.new("e'"),
+            Notehead.new("g'")
+          ],
+          Duration.new(3, 8)
+        )
+
+      assert Chord.transpose(chord, Interval.new("M2")) ==
+               Chord.new(
+                 [
+                   Notehead.new("d'"),
+                   Notehead.new("fs'"),
+                   Notehead.new("a'")
+                 ],
+                 Duration.new(3, 8)
+               )
+    end
+  end
+
+  describe inspect(&Chord.invert/2) do
+    test "transposes the full chord" do
+      chord =
+        Chord.new(
+          [
+            Notehead.new("c'"),
+            Notehead.new("e'"),
+            Notehead.new("g'")
+          ],
+          Duration.new(3, 8)
+        )
+
+      assert Chord.invert(chord, Pitch.new("f'")) ==
+               Chord.new(
+                 [
+                   Notehead.new("bf'"),
+                   Notehead.new("gf'"),
+                   Notehead.new("ef'")
+                 ],
+                 Duration.new(3, 8)
+               )
     end
   end
 

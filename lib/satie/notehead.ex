@@ -24,6 +24,8 @@ defmodule Satie.Notehead do
     |> new(accidental_display: accidental_display)
   end
 
+  use Satie.Transposable, :written_pitch
+
   defp parse_pitch_and_accidental_display(pitch) do
     %{"pitch" => pitch, "accidental_display" => accidental_display} =
       Regex.named_captures(@pitch_re, pitch)

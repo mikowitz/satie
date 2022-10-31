@@ -36,6 +36,8 @@ defmodule Satie.Chord do
   defp do_validate_noteheads([%Notehead{} | rest]), do: do_validate_noteheads(rest)
   defp do_validate_noteheads([_ | _]), do: :error
 
+  use Satie.Transposable, :noteheads
+
   defimpl String.Chars do
     def to_string(%@for{noteheads: noteheads, written_duration: duration}) do
       [
