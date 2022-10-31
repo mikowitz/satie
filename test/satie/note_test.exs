@@ -1,7 +1,7 @@
 defmodule Satie.NoteTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Note, Notehead, Pitch}
+  alias Satie.{Duration, Interval, Note, Notehead, Pitch}
 
   describe inspect(&Note.new/1) do
     test "returns a note from a string" do
@@ -35,6 +35,33 @@ defmodule Satie.NoteTest do
       duration = Duration.new(5, 4)
 
       assert Note.new(notehead, duration) == {:error, :note_new, {:unassignable_duration, 5, 4}}
+    end
+  end
+
+  describe inspect(&Note.transpose/2) do
+    test "returns a note transposed by the given interval" do
+      note = Note.new("c'4")
+
+      assert Note.transpose(note, Interval.new("+A4")) ==
+               Note.new("fs'4")
+
+      assert Note.transpose(note, Interval.new("-P4")) ==
+               Note.new("g4")
+    end
+  end
+
+  describe inspect(&Note.invert/2) do
+    test "returns a note inverted around the given axis" do
+      note = Note.new("c'4")
+
+      assert Note.invert(note, Pitch.new("g'")) ==
+               Note.new("d''4")
+
+      assert Note.invert(note, Pitch.new("a'")) ==
+               Note.new("fs''4")
+
+      assert Note.invert(note, Pitch.new("af")) ==
+               Note.new("ff4")
     end
   end
 

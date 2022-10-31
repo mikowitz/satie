@@ -1,7 +1,7 @@
 defmodule Satie.NoteheadTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Notehead, Pitch}
+  alias Satie.{Interval, Notehead, Pitch}
 
   describe inspect(&Notehead.new/1) do
     test "returns a notehead from a pitch" do
@@ -53,6 +53,33 @@ defmodule Satie.NoteheadTest do
                written_pitch: pitch,
                accidental_display: :neutral
              }
+    end
+  end
+
+  describe inspect(&Notehead.transpose/2) do
+    test "returns a notehead transposed by the given interval" do
+      notehead = Notehead.new("c'")
+
+      assert Notehead.transpose(notehead, Interval.new("+m3")) ==
+               Notehead.new("ef'")
+
+      assert Notehead.transpose(notehead, Interval.new("-P5")) ==
+               Notehead.new("f")
+    end
+  end
+
+  describe inspect(&Notehead.invert/2) do
+    test "returns a notehead inverted around the given axis" do
+      notehead = Notehead.new("c'")
+
+      assert Notehead.invert(notehead, Pitch.new("f'")) ==
+               Notehead.new("bf'")
+
+      assert Notehead.invert(notehead, Pitch.new("bf'")) ==
+               Notehead.new("af''")
+
+      assert Notehead.invert(notehead, Pitch.new("a")) ==
+               Notehead.new("fs")
     end
   end
 

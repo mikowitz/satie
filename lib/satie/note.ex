@@ -28,6 +28,8 @@ defmodule Satie.Note do
     end
   end
 
+  use Satie.Transposable, :notehead
+
   defimpl String.Chars do
     def to_string(%@for{notehead: notehead, written_duration: duration}) do
       Kernel.to_string(notehead) <> Kernel.to_string(duration)

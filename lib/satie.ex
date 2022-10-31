@@ -7,4 +7,12 @@ defmodule Satie do
   end
 
   def lilypondable?(_), do: false
+
+  def transpose(%{__struct__: struct} = transposable, %Satie.Interval{} = interval) do
+    struct.transpose(transposable, interval)
+  end
+
+  def invert(%{__struct__: struct} = transposable, %Satie.Pitch{} = axis) do
+    struct.invert(transposable, axis)
+  end
 end
