@@ -26,3 +26,6 @@ satie-*.tar
 /tmp/
 
 scratch
+
+.DS_Store
+.elixir_ls/
