@@ -1,6 +1,8 @@
 defmodule Satie.Measure do
   defstruct [:time_signature, :contents]
 
+  use Satie.Tree
+
   alias Satie.TimeSignature
 
   def new(time_signature, contents \\ [])

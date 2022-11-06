@@ -1,6 +1,8 @@
 defmodule Satie.Container do
   defstruct [:contents]
 
+  use Satie.Tree
+
   def new(contents \\ []) when is_list(contents) do
     with {:ok, contents} <- validate_contents(contents) do
       %__MODULE__{contents: contents}

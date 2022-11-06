@@ -33,4 +33,24 @@ defmodule Satie do
         {:error, "#{inspect(content)} cannot be formatted in Lilypond"}
     end
   end
+
+  def append(%{contents: _}, [_ | _] = list) do
+    {:error, :cannot_append_by_list, list}
+  end
+
+  def append(%{contents: contents} = container, elem) do
+    %{container | contents: List.insert_at(contents, -1, elem)}
+  end
+
+  def append(x, _), do: {:error, :cannot_append_to_non_container, x}
+
+  def extend(%{contents: contents} = container, [_ | _] = list) do
+    %{container | contents: contents ++ list}
+  end
+
+  def extend(%{contents: _}, x) do
+    {:error, :cannot_extend_by_single_element, x}
+  end
+
+  def extend(x, _), do: {:error, :cannot_extend_a_non_container, x}
 end

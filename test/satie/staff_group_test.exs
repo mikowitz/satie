@@ -126,4 +126,93 @@ defmodule Satie.StaffGroupTest do
                |> String.trim()
     end
   end
+
+  describe "append/2" do
+    test "adds a single element to the end of a staff group" do
+      staff_group =
+        StaffGroup.new(
+          [
+            Staff.new([Note.new("c'4")], name: "Violin One"),
+            Staff.new([Note.new("d'4")], name: "Violin Two"),
+            Staff.new([Note.new("e'4")], name: "Viola")
+          ],
+          name: "Strings"
+        )
+
+      staff = Staff.new([Note.new("f'4")], name: "Cello")
+
+      staff_group = Satie.append(staff_group, staff)
+
+      assert length(staff_group.contents) == 4
+    end
+
+    test "cannot append a list" do
+      staff_group =
+        StaffGroup.new(
+          [
+            Staff.new([Note.new("c'4")], name: "Violin One"),
+            Staff.new([Note.new("d'4")], name: "Violin Two"),
+            Staff.new([Note.new("e'4")], name: "Viola")
+          ],
+          name: "Strings"
+        )
+
+      staff = Staff.new([Note.new("f'4")], name: "Cello")
+
+      assert Satie.append(staff_group, [staff]) == {:error, :cannot_append_by_list, [staff]}
+    end
+
+    test "cannot append to a non-tree-type" do
+      note = Note.new("c'4")
+
+      assert Satie.append(note, Note.new("d'4")) ==
+               {:error, :cannot_append_to_non_container, note}
+    end
+  end
+
+  describe "extend/2" do
+    test "adds a list to the end of a staff group" do
+      staff_group =
+        StaffGroup.new(
+          [
+            Staff.new([Note.new("c'4")], name: "Violin One"),
+            Staff.new([Note.new("d'4")], name: "Violin Two"),
+            Staff.new([Note.new("e'4")], name: "Viola")
+          ],
+          name: "Strings"
+        )
+
+      new_staves = [
+        Staff.new([Note.new("f'4")], name: "Cello"),
+        Staff.new([Note.new("f,4")], name: "Contrabass")
+      ]
+
+      staff_group = Satie.extend(staff_group, new_staves)
+
+      assert length(staff_group.contents) == 5
+    end
+
+    test "cannot extend by a single element" do
+      staff_group =
+        StaffGroup.new(
+          [
+            Staff.new([Note.new("c'4")], name: "Violin One"),
+            Staff.new([Note.new("d'4")], name: "Violin Two"),
+            Staff.new([Note.new("e'4")], name: "Viola")
+          ],
+          name: "Strings"
+        )
+
+      staff = Staff.new([Note.new("f'4")], name: "Cello")
+
+      assert Satie.extend(staff_group, staff) == {:error, :cannot_extend_by_single_element, staff}
+    end
+
+    test "cannot extend to a non-tree-type" do
+      note = Note.new("c'4")
+
+      assert Satie.extend(note, [Note.new("d'4")]) ==
+               {:error, :cannot_extend_a_non_container, note}
+    end
+  end
 end

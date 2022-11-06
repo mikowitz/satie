@@ -1,6 +1,8 @@
 defmodule Satie.Tuplet do
   defstruct [:multiplier, :contents]
 
+  use Satie.Tree
+
   alias Satie.Multiplier
 
   def new(multiplier, contents \\ [])
