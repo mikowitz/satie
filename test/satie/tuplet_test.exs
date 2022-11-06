@@ -1,7 +1,7 @@
 defmodule Satie.TupletTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Multiplier, Note, Rest, Tuplet}
+  alias Satie.{Container, Multiplier, Note, Rest, Tuplet}
 
   describe inspect(&Tuplet.new/2) do
     test "takes a multiplier and contents" do
@@ -129,6 +129,59 @@ defmodule Satie.TupletTest do
                }
                """
                |> String.trim()
+    end
+  end
+
+  describe "Enumerable" do
+    setup do
+      tuplet =
+        Tuplet.new({5, 3}, [
+          Tuplet.new({2, 3}, [
+            Note.new("c'4"),
+            Note.new("d'4"),
+            Note.new("ef'4")
+          ]),
+          Rest.new("r4")
+        ])
+
+      {:ok, tuplet: tuplet}
+    end
+
+    test "responds to length", %{tuplet: tuplet} do
+      assert Enum.count(tuplet) == 2
+      assert Enum.count(tuplet[0]) == 3
+    end
+
+    test "can test membership", %{tuplet: tuplet} do
+      assert Rest.new("r4") in tuplet
+    end
+
+    test "can be reduced", %{tuplet: tuplet} do
+      assert Enum.reduce(tuplet[0], "", fn note, acc ->
+               acc <> to_string(note)
+             end) == "c'4d'4ef'4"
+    end
+
+    test "can be reduced using another Satie tree", %{tuplet: tuplet} do
+      assert Enum.reduce(tuplet[0], Container.new([]), fn note, acc ->
+               Satie.append(acc, note)
+             end) ==
+               Container.new([
+                 Note.new("c'4"),
+                 Note.new("d'4"),
+                 Note.new("ef'4")
+               ])
+    end
+
+    test "can return a sliced set of contents", %{tuplet: tuplet} do
+      assert Enum.slice(tuplet[0], 0, 2) == [
+               Note.new("c'4"),
+               Note.new("d'4")
+             ]
+    end
+
+    test "can slice beyond bounds", %{tuplet: tuplet} do
+      assert Enum.slice(tuplet, 1, 10) == [Rest.new("r4")]
     end
   end
 end

@@ -94,4 +94,59 @@ defmodule Satie.ContainerTest do
                |> String.trim()
     end
   end
+
+  describe "Access" do
+    setup do
+      inner =
+        Container.new([
+          Note.new("c'4"),
+          Note.new("d'4")
+        ])
+
+      container = Container.new([inner])
+
+      {:ok, container: container, inner: inner}
+    end
+
+    test "[]", %{container: container, inner: inner} do
+      assert container[0] == inner
+
+      assert container[0][1] == Note.new("d'4")
+
+      refute container[0][2]
+    end
+
+    test "update_in", %{container: container} do
+      new_container =
+        update_in(container, [0], fn inner ->
+          new_contents =
+            Enum.map(inner.contents, fn note ->
+              %{note | written_duration: Satie.Duration.new(1, 8)}
+            end)
+
+          %{inner | contents: new_contents}
+        end)
+
+      assert new_container ==
+               Container.new([
+                 Container.new([
+                   Note.new("c'8"),
+                   Note.new("d'8")
+                 ])
+               ])
+    end
+
+    test "pop", %{container: container} do
+      {old_note, new_container} = pop_in(container, [0, 1])
+
+      assert old_note == Note.new("d'4")
+
+      assert new_container ==
+               Container.new([
+                 Container.new([
+                   Note.new("c'4")
+                 ])
+               ])
+    end
+  end
 end

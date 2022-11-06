@@ -1,6 +1,8 @@
 defmodule Satie.Score do
   defstruct [:contents, :name, :simultaneous]
 
+  use Satie.Tree
+
   def new(contents \\ [], opts \\ []) do
     with {:ok, contents} <- validate_contents(contents) do
       %__MODULE__{
