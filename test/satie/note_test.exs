@@ -15,7 +15,7 @@ defmodule Satie.NoteTest do
     end
 
     test "returns an error when it's unparseable as a note" do
-      assert Note.new("sss??4-") == {:error, :duration_new, "sss??4-"}
+      assert Note.new("sss??4-") == {:error, :note_new, "sss??4-"}
     end
   end
 

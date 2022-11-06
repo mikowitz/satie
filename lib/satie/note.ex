@@ -1,7 +1,7 @@
 defmodule Satie.Note do
   defstruct [:written_duration, :notehead]
 
-  @note_re ~r/^(?<notehead>[^?!]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
+  @note_re ~r/^(?<notehead>[^?!\d]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
 
   alias Satie.{Duration, Notehead}
 
@@ -11,7 +11,7 @@ defmodule Satie.Note do
         new(Notehead.new(notehead), Duration.new(duration))
 
       nil ->
-        {:error, :duration_new, note}
+        {:error, :note_new, note}
     end
   end
 
