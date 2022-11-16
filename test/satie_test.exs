@@ -2,7 +2,7 @@ defmodule SatieTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureIO
 
-  alias Satie.{Note, Voice}
+  alias Satie.{Articulation, Clef, Note, Voice}
 
   describe "show/1" do
     test "returns an error if the input is not a lilypondable object" do
@@ -45,6 +45,62 @@ defmodule SatieTest do
 
     test "returns an error tuple when passed a non-tree-type struct" do
       assert Satie.empty(Note.new("c'4")) == {:error, :cannot_empty_non_tree, Note.new("c'4")}
+    end
+  end
+
+  describe "attach/2" do
+    test "can attach an articulation to a note" do
+      note = Note.new("c'4")
+      accent = Articulation.new("accent")
+
+      note = Satie.attach(note, accent)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\accent
+               """
+               |> String.trim()
+    end
+
+    test "cannot attach duplicate articulations to the same note" do
+      note = Note.new("c'4")
+      accent = Articulation.new("accent")
+
+      note = Satie.attach(note, accent)
+
+      assert Satie.attach(note, accent) ==
+               {:error, :duplicate_attachment, Articulation.new("accent")}
+    end
+
+    test "cannot attach non-articulations to a note" do
+      note = Note.new("c'4")
+
+      assert Satie.attach(note, "accent") == {:error, :not_attachable, "accent"}
+    end
+
+    test "cannot attach articulations to a non-musical type" do
+      accent = Articulation.new("accent")
+
+      assert Satie.attach("note", accent) == {:error, :cannot_attach_to, "note"}
+    end
+
+    test "some attachments go before the leaf" do
+      note = Note.new("c'4")
+      accent = Articulation.new("accent")
+      clef = Clef.new("treble")
+
+      note =
+        Satie.attach(note, accent)
+        |> Satie.attach(clef)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               \\clef "treble"
+               c'4
+                 - \\accent
+               """
+               |> String.trim()
     end
   end
 end

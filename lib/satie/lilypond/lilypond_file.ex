@@ -18,6 +18,7 @@ defmodule Satie.Lilypond.LilypondFile do
   def save(%__MODULE__{content: content} = file, source_path \\ construct_filepath()) do
     file_contents = build_contents(content)
 
+    File.mkdir_p!(Path.dirname(source_path))
     :ok = File.write(source_path, file_contents)
 
     %__MODULE__{file | source_path: source_path}

@@ -31,4 +31,22 @@ defmodule Satie.Lilypond.OutputHelpers do
   def context_signature(context_name, name) do
     ~s(\\context #{context_name} = "#{to_string(name)}")
   end
+
+  def ordered_attachments(attachments, location) do
+    attachments
+    |> Enum.filter(fn attachment -> Satie.IsAttachable.location(attachment) == location end)
+    |> Enum.sort_by(&Satie.IsAttachable.priority(&1))
+  end
+
+  def attachments_to_lilypond(%{attachments: attachments}) do
+    attachments_before = ordered_attachments(attachments, :before)
+
+    attachments_after = ordered_attachments(attachments, :after)
+
+    [attachments_before, attachments_after]
+    |> Enum.map(fn attachments ->
+      Enum.map(attachments, &Satie.to_lilypond/1)
+    end)
+    |> List.to_tuple()
+  end
 end

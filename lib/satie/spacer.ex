@@ -1,5 +1,5 @@
 defmodule Satie.Spacer do
-  defstruct [:written_duration]
+  use Satie.Leaf
 
   alias Satie.Duration
 
@@ -38,8 +38,19 @@ defmodule Satie.Spacer do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{written_duration: duration}) do
-      "s" <> Satie.to_lilypond(duration)
+    import Satie.Lilypond.OutputHelpers
+
+    def to_lilypond(%@for{written_duration: duration} = spacer) do
+      {attachments_before, attachments_after} = attachments_to_lilypond(spacer)
+
+      [
+        attachments_before,
+        "s" <> Satie.to_lilypond(duration),
+        attachments_after
+      ]
+      |> List.flatten()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join("\n")
     end
   end
 end

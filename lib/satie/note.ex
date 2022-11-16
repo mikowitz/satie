@@ -1,5 +1,5 @@
 defmodule Satie.Note do
-  defstruct [:written_duration, :notehead]
+  use Satie.Leaf, [:notehead]
 
   @note_re ~r/^(?<notehead>[^?!\d]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
 
@@ -49,6 +49,19 @@ defmodule Satie.Note do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = note), do: to_string(note)
+    import Satie.Lilypond.OutputHelpers
+
+    def to_lilypond(%@for{} = note) do
+      {attachments_before, attachments_after} = attachments_to_lilypond(note)
+
+      [
+        attachments_before,
+        to_string(note),
+        Enum.map(attachments_after, &indent/1)
+      ]
+      |> List.flatten()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join("\n")
+    end
   end
 end

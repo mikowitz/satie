@@ -1,5 +1,5 @@
 defmodule Satie.Chord do
-  defstruct [:noteheads, :written_duration]
+  use Satie.Leaf, [:noteheads]
 
   @re ~r/^<s*(?<noteheads>([^?!]+[?!]?\s*)+)s*>(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
 
@@ -63,13 +63,20 @@ defmodule Satie.Chord do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{noteheads: noteheads, written_duration: duration}) do
+    import Satie.Lilypond.OutputHelpers
+
+    def to_lilypond(%@for{noteheads: noteheads, written_duration: duration} = chord) do
+      {attachments_before, attachments_after} = attachments_to_lilypond(chord)
+
       [
+        attachments_before,
         "<",
         Enum.map(noteheads, &"  #{Satie.to_lilypond(&1)}"),
-        ">#{Satie.to_lilypond(duration)}"
+        ">#{Satie.to_lilypond(duration)}",
+        Enum.map(attachments_after, &indent/1)
       ]
       |> List.flatten()
+      |> Enum.reject(&is_nil/1)
       |> Enum.join("\n")
     end
   end
