@@ -53,4 +53,10 @@ defmodule Satie do
   end
 
   def extend(x, _), do: {:error, :cannot_extend_a_non_container, x}
+
+  def empty(%{contents: _} = tree) do
+    %{tree | contents: []}
+  end
+
+  def empty(x), do: {:error, :cannot_empty_non_tree, x}
 end
