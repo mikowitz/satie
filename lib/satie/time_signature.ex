@@ -1,6 +1,8 @@
 defmodule Satie.TimeSignature do
   defstruct [:numerator, :denominator]
 
+  use Satie.Attachable, location: :before, priority: 3
+
   @re ~r/^(\\time\s+)?(?<numerator>\d+)\/(?<denominator>\d+)$/
 
   def new(time_signature) when is_bitstring(time_signature) do

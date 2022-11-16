@@ -20,4 +20,23 @@ alias Satie.{
   Tuplet,
   Voice
 }
+
+alias Satie.{
+  Articulation,
+  BreathMark,
+  Clef,
+  Dynamic,
+  Fermata,
+  KeySignature,
+  LaissezVibrer,
+  RepeatTie,
+  StartBeam,
+  StartPhrasingSlur,
+  StartSlur,
+  StopBeam,
+  StopPhrasingSlur,
+  StopSlur,
+  Tie
+}
+
 import Satie, only: [to_lilypond: 1]
