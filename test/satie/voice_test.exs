@@ -1,7 +1,7 @@
 defmodule Satie.VoiceTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Container, Note, Voice}
+  alias Satie.{Container, Duration, Note, Voice}
 
   describe "new/1" do
     test "by default a voice has no name and is sequential" do
@@ -146,6 +146,21 @@ defmodule Satie.VoiceTest do
                >>
                """
                |> String.trim()
+    end
+  end
+
+  describe "Collectable" do
+    test "can combine Enum and Collectable to modify a tree 'in place'" do
+      voice = Voice.new([Note.new("c'4"), Note.new("f'4")], simultaneous: true, name: "Voice One")
+
+      voice =
+        Enum.map(voice, fn note ->
+          %{note | written_duration: Duration.new(1, 8)}
+        end)
+        |> Enum.into(Satie.empty(voice))
+
+      assert voice ==
+               Voice.new([Note.new("c'8"), Note.new("f'8")], simultaneous: true, name: "Voice One")
     end
   end
 end

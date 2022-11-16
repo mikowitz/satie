@@ -3,6 +3,7 @@ defmodule Satie.Tree do
     quote do
       use Satie.Tree.Access
       use Satie.Tree.Enumerable
+      use Satie.Tree.Collectable
     end
   end
 end
