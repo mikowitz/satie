@@ -1,7 +1,7 @@
 defmodule Satie.Clef do
   defstruct [:name]
 
-  use Satie.Attachable, location: :before
+  use Satie.Attachable, location: :before, has_direction: false
 
   def new(name) do
     %__MODULE__{name: name}

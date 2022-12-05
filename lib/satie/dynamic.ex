@@ -1,29 +1,24 @@
 defmodule Satie.Dynamic do
-  defstruct [:name, :position]
+  defstruct [:name]
 
   use Satie.Attachable
-  import Satie.Validations
 
   @doc """
 
       iex> Dynamic.new("ff")
-      #Satie.Dynamic<- \\ff>
+      #Satie.Dynamic<\\ff>
 
-      iex> Dynamic.new("ppp", :down)
-      #Satie.Dynamic<_ \\ppp>
+      iex> Dynamic.new("ppp")
+      #Satie.Dynamic<\\ppp>
 
   """
-  def new(name, position \\ :neutral) do
-    with position <- validate_position(position) do
-      %__MODULE__{name: name, position: position}
-    end
+  def new(name) do
+    %__MODULE__{name: name}
   end
 
   defimpl String.Chars do
-    import Satie.StringHelpers
-
-    def to_string(%@for{name: name, position: position}) do
-      position_indicator(position) <> " \\#{name}"
+    def to_string(%@for{name: name}) do
+      "\\#{name}"
     end
   end
 

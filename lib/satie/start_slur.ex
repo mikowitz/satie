@@ -1,29 +1,21 @@
 defmodule Satie.StartSlur do
-  defstruct [:position]
+  defstruct []
 
   use Satie.Attachable
-
-  import Satie.Validations
 
   @doc """
 
       iex> StartSlur.new
-      #Satie.StartSlur<- (>
+      #Satie.StartSlur<(>
 
-      iex> StartSlur.new(:up)
-      #Satie.StartSlur<^ (>
   """
-  def new(position \\ :neutral) do
-    with position <- validate_position(position) do
-      %__MODULE__{position: position}
-    end
+  def new do
+    %__MODULE__{}
   end
 
   defimpl String.Chars do
-    import Satie.StringHelpers
-
-    def to_string(%@for{position: position}) do
-      position_indicator(position) <> " ("
+    def to_string(%@for{}) do
+      "("
     end
   end
 
