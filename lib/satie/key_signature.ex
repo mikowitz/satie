@@ -1,7 +1,7 @@
 defmodule Satie.KeySignature do
   defstruct [:pitch_class, :mode]
 
-  use Satie.Attachable, location: :before, priority: 1
+  use Satie.Attachable, location: :before, priority: 1, has_direction: false
 
   alias Satie.PitchClass
 

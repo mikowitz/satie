@@ -60,12 +60,16 @@ defmodule Satie do
 
   def empty(x), do: {:error, :cannot_empty_non_tree, x}
 
-  def attach(%{attachments: attachments} = target, attachment) do
+  def attach(target, attachment, options \\ [])
+
+  def attach(%{attachments: attachments} = target, attachment, options) do
     case Satie.IsAttachable.attachable?(attachment) do
       true ->
-        case attachment in attachments do
+        new_attachment = Satie.Attachment.new(attachment, options)
+
+        case new_attachment in attachments do
           false ->
-            %{target | attachments: [attachment | attachments]}
+            %{target | attachments: [new_attachment | attachments]}
 
           true ->
             {:error, :duplicate_attachment, attachment}
@@ -76,5 +80,5 @@ defmodule Satie do
     end
   end
 
-  def attach(x, _), do: {:error, :cannot_attach_to, x}
+  def attach(x, _, _), do: {:error, :cannot_attach_to, x}
 end

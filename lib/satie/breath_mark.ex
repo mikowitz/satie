@@ -14,8 +14,6 @@ defmodule Satie.BreathMark do
   end
 
   defimpl String.Chars do
-    import Satie.StringHelpers
-
     def to_string(%@for{}) do
       "\\breathe"
     end
@@ -34,7 +32,7 @@ defmodule Satie.BreathMark do
 
   defimpl Satie.ToLilypond do
     def to_lilypond(%@for{} = breath_mark) do
-      String.Chars.to_string(breath_mark)
+      to_string(breath_mark)
     end
   end
 end

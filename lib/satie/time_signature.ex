@@ -1,7 +1,7 @@
 defmodule Satie.TimeSignature do
   defstruct [:numerator, :denominator]
 
-  use Satie.Attachable, location: :before, priority: 3
+  use Satie.Attachable, location: :before, priority: 3, has_direction: false
 
   @re ~r/^(\\time\s+)?(?<numerator>\d+)\/(?<denominator>\d+)$/
 

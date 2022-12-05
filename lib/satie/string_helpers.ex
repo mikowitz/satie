@@ -1,5 +1,5 @@
 defmodule Satie.StringHelpers do
-  def position_indicator(:neutral), do: "-"
-  def position_indicator(:up), do: "^"
-  def position_indicator(:down), do: "_"
+  def direction_indicator(nil), do: "-"
+  def direction_indicator(:up), do: "^"
+  def direction_indicator(:down), do: "_"
 end

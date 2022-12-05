@@ -1,39 +1,30 @@
 defmodule Satie.StartPhrasingSlur do
-  defstruct [:position]
+  defstruct []
 
   use Satie.Attachable
-
-  import Satie.Validations
 
   @doc """
 
       iex> StartPhrasingSlur.new
-      #Satie.StartPhrasingSlur<- \\(>
+      #Satie.StartPhrasingSlur<>
 
-      iex> StartPhrasingSlur.new(:up)
-      #Satie.StartPhrasingSlur<^ \\(>
   """
-  def new(position \\ :neutral) do
-    with position <- validate_position(position) do
-      %__MODULE__{position: position}
-    end
+  def new() do
+    %__MODULE__{}
   end
 
   defimpl String.Chars do
-    import Satie.StringHelpers
-
-    def to_string(%@for{position: position}) do
-      position_indicator(position) <> " \\("
+    def to_string(%@for{}) do
+      "\\("
     end
   end
 
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%@for{} = start_phrasing_slur, _opts) do
+    def inspect(%@for{}, _opts) do
       concat([
         "#Satie.StartPhrasingSlur<",
-        to_string(start_phrasing_slur),
         ">"
       ])
     end

@@ -1,20 +1,21 @@
 defmodule Satie.Articulation do
-  defstruct [:name, :position]
+  defstruct [:name]
 
   use Satie.Attachable
-  import Satie.Validations
 
-  def new(name, position \\ :neutral) do
-    with position <- validate_position(position) do
-      %__MODULE__{name: name, position: position}
-    end
+  @doc """
+
+      iex> Articulation.new("accent")
+      #Satie.Articulation<\\accent>
+
+  """
+  def new(name) do
+    %__MODULE__{name: name}
   end
 
   defimpl String.Chars do
-    import Satie.StringHelpers
-
-    def to_string(%@for{name: name, position: position}) do
-      position_indicator(position) <> " \\#{name}"
+    def to_string(%@for{name: name}) do
+      "\\#{name}"
     end
   end
 
