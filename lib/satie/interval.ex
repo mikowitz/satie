@@ -1,4 +1,8 @@
 defmodule Satie.Interval do
+  @moduledoc """
+  Models a musical interval
+  """
+
   defstruct ~w(interval_class name size polarity octaves quality semitones staff_spaces)a
 
   alias Satie.IntervalClass

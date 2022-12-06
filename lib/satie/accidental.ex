@@ -1,4 +1,8 @@
 defmodule Satie.Accidental do
+  @moduledoc """
+  Models an accidental
+  """
+
   defstruct [:name, :semitones]
 
   import Satie.Helpers, only: [sign: 1]

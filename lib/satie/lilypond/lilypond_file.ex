@@ -1,4 +1,7 @@
 defmodule Satie.Lilypond.LilypondFile do
+  @moduledoc """
+  Implements constructing a lilypond file from a score-level element input
+  """
   defstruct [:content, :source_path, :output_path]
 
   @satie_temp_directory Application.compile_env!(:satie, :temp_directory)

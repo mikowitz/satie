@@ -1,4 +1,7 @@
 defmodule Satie.TimeSignature do
+  @moduledoc """
+  Models a time signature
+  """
   defstruct [:numerator, :denominator]
 
   use Satie.Attachable, location: :before, priority: 3, has_direction: false

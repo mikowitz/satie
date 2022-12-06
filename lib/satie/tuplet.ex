@@ -1,4 +1,7 @@
 defmodule Satie.Tuplet do
+  @moduledoc """
+  Models a musical tuplet
+  """
   defstruct [:multiplier, :contents]
 
   use Satie.Tree
@@ -8,10 +11,12 @@ defmodule Satie.Tuplet do
   def new(multiplier, contents \\ [])
 
   def new(%Multiplier{} = multiplier, contents) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{multiplier: multiplier, contents: contents}
-    else
-      {:error, invalid_contents} -> {:error, :tuplet_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{multiplier: multiplier, contents: contents}
+
+      {:error, invalid_contents} ->
+        {:error, :tuplet_new, invalid_contents}
     end
   end
 

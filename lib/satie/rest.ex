@@ -1,4 +1,7 @@
 defmodule Satie.Rest do
+  @moduledoc """
+  Models a rest
+  """
   use Satie.Leaf
 
   alias Satie.Duration

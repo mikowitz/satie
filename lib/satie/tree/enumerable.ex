@@ -1,4 +1,7 @@
 defmodule Satie.Tree.Enumerable do
+  @moduledoc """
+  Implements the `Enumerable` protocol for tree-like score elements
+  """
   defmacro __using__(_) do
     quote do
       defimpl Enumerable do

@@ -1,4 +1,5 @@
 defmodule Satie.IntervalHelpers do
+  @moduledoc false
   @semitones [0, 2, 4, 5, 7, 9, 11, 12]
   @interval_sizes 1..8
 

@@ -22,6 +22,7 @@ defmodule Satie.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.18.0"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]

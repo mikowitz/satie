@@ -1,4 +1,8 @@
 defmodule Satie.BreathMark do
+  @moduledoc """
+  Models a breath mark
+  """
+
   defstruct []
 
   use Satie.Attachable

@@ -1,17 +1,23 @@
 defmodule Satie.Voice do
+  @moduledoc """
+  Models a single monophonic voice
+  """
+
   defstruct [:contents, :simultaneous, :name]
 
   use Satie.Tree
 
   def new(contents \\ [], opts \\ []) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{
-        contents: contents,
-        name: Keyword.get(opts, :name, nil),
-        simultaneous: Keyword.get(opts, :simultaneous, false)
-      }
-    else
-      {:error, invalid_contents} -> {:error, :voice_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{
+          contents: contents,
+          name: Keyword.get(opts, :name, nil),
+          simultaneous: Keyword.get(opts, :simultaneous, false)
+        }
+
+      {:error, invalid_contents} ->
+        {:error, :voice_new, invalid_contents}
     end
   end
 

@@ -1,4 +1,8 @@
 defmodule Satie.Transposable do
+  @moduledoc """
+  Implements shared behaviour for objects that can be transposed by or inverted around a pitch
+  """
+
   defmacro __using__(struct_key, _opts \\ []) do
     quote do
       def transpose(%__MODULE__{} = mod, %Satie.Interval{} = interval) do

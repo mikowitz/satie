@@ -1,4 +1,8 @@
 defmodule Satie.Fermata do
+  @moduledoc """
+  Models a fermata
+  """
+
   defstruct [:length]
 
   use Satie.Attachable

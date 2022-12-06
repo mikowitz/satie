@@ -1,4 +1,7 @@
 defmodule Satie.StartSlur do
+  @moduledoc """
+  Models the beginning of a slur
+  """
   defstruct []
 
   use Satie.Attachable

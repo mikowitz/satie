@@ -1,13 +1,18 @@
 defmodule Satie.Container do
+  @moduledoc """
+  Models a simple container for holding other low-level score elements
+  """
   defstruct [:contents]
 
   use Satie.Tree
 
   def new(contents \\ []) when is_list(contents) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{contents: contents}
-    else
-      {:error, invalid_contents} -> {:error, :container_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{contents: contents}
+
+      {:error, invalid_contents} ->
+        {:error, :container_new, invalid_contents}
     end
   end
 

@@ -1,4 +1,8 @@
 defmodule Satie.Attachment do
+  @moduledoc """
+  Models a wrapper for an attachable object as it is attached to a target object
+  """
+
   defstruct [:attachable, :direction, :position]
 
   alias Satie.IsAttachable

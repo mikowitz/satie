@@ -1,4 +1,7 @@
 defmodule Satie.StartBeam do
+  @moduledoc """
+  Models the start of a beam
+  """
   defstruct []
 
   use Satie.Attachable

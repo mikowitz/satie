@@ -1,4 +1,8 @@
 defmodule Satie.StopSlur do
+  @moduledoc """
+    Models the end of a slur
+  """
+
   defstruct []
 
   use Satie.Attachable, priority: -1

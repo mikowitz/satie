@@ -1,4 +1,6 @@
 defmodule Satie.PitchHelpers do
+  @moduledoc false
+
   @diatonic_pitch_classes ~w(c d e f g a b)
   @semitones [0, 2, 4, 5, 7, 9, 11]
   @staff_spaces 0..6

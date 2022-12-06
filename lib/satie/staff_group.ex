@@ -1,17 +1,22 @@
 defmodule Satie.StaffGroup do
+  @moduledoc """
+  Models a set of grouped staves
+  """
   defstruct [:contents, :name, :simultaneous]
 
   use Satie.Tree
 
   def new(contents \\ [], opts \\ []) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{
-        contents: contents,
-        name: Keyword.get(opts, :name, nil),
-        simultaneous: Keyword.get(opts, :simultaneous, true)
-      }
-    else
-      {:error, invalid_contents} -> {:error, :staff_group_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{
+          contents: contents,
+          name: Keyword.get(opts, :name, nil),
+          simultaneous: Keyword.get(opts, :simultaneous, true)
+        }
+
+      {:error, invalid_contents} ->
+        {:error, :staff_group_new, invalid_contents}
     end
   end
 

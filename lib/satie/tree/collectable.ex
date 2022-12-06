@@ -1,4 +1,7 @@
 defmodule Satie.Tree.Collectable do
+  @moduledoc """
+  Implements the `Collectable` protocol for tree elements of a score
+  """
   defmacro __using__(_) do
     quote do
       defimpl Collectable do

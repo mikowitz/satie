@@ -1,4 +1,6 @@
 defmodule Satie.RegressionDataStreamer do
+  @moduledoc false
+
   require Logger
 
   def begin_download(url) do

@@ -1,4 +1,7 @@
 defmodule Satie.Measure do
+  @moduledoc """
+  Models a measure of music with an associated time signature
+  """
   defstruct [:time_signature, :contents]
 
   use Satie.Tree
@@ -15,10 +18,12 @@ defmodule Satie.Measure do
   end
 
   def new(%TimeSignature{} = time_signature, contents) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{time_signature: time_signature, contents: contents}
-    else
-      {:error, invalid_contents} -> {:error, :measure_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{time_signature: time_signature, contents: contents}
+
+      {:error, invalid_contents} ->
+        {:error, :measure_new, invalid_contents}
     end
   end
 

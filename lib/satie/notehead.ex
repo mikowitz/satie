@@ -1,4 +1,7 @@
 defmodule Satie.Notehead do
+  @moduledoc """
+  Models a notehead that belongs to a note or chord
+  """
   defstruct [:written_pitch, :accidental_display]
 
   @accidental_display_options ~w(forced cautionary neutral)a

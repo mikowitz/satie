@@ -1,4 +1,7 @@
 defmodule Satie.MultiMeasureRest do
+  @moduledoc """
+  Models a multi-measure rest
+  """
   defstruct [:time_signature, :measures]
 
   alias Satie.TimeSignature

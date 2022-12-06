@@ -1,4 +1,7 @@
 defmodule Satie.KeySignature do
+  @moduledoc """
+  Models a key signature
+  """
   defstruct [:pitch_class, :mode]
 
   use Satie.Attachable, location: :before, priority: 1, has_direction: false

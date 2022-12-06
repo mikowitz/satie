@@ -1,4 +1,8 @@
 defmodule Satie.Tie do
+  @moduledoc """
+  Models a tie
+  """
+
   defstruct []
 
   use Satie.Attachable
