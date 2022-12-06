@@ -1,4 +1,7 @@
 defmodule Satie.Chord do
+  @moduledoc """
+  Models a musical chord consisting of one or more noteheads
+  """
   use Satie.Leaf, [:noteheads]
 
   @re ~r/^<s*(?<noteheads>([^?!]+[?!]?\s*)+)s*>(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/

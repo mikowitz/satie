@@ -1,4 +1,7 @@
 defmodule Satie.StopPhrasingSlur do
+  @moduledoc """
+    Models the end of a phrasing slur
+  """
   defstruct []
 
   use Satie.Attachable, priority: -1

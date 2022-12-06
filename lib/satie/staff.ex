@@ -1,17 +1,22 @@
 defmodule Satie.Staff do
+  @moduledoc """
+  Models a single staff of music
+  """
   defstruct [:contents, :name, :simultaneous]
 
   use Satie.Tree
 
   def new(contents \\ [], opts \\ []) do
-    with {:ok, contents} <- validate_contents(contents) do
-      %__MODULE__{
-        contents: contents,
-        name: Keyword.get(opts, :name, nil),
-        simultaneous: Keyword.get(opts, :simultaneous, false)
-      }
-    else
-      {:error, invalid_contents} -> {:error, :staff_new, invalid_contents}
+    case validate_contents(contents) do
+      {:ok, contents} ->
+        %__MODULE__{
+          contents: contents,
+          name: Keyword.get(opts, :name, nil),
+          simultaneous: Keyword.get(opts, :simultaneous, false)
+        }
+
+      {:error, invalid_contents} ->
+        {:error, :staff_new, invalid_contents}
     end
   end
 

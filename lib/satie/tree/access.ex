@@ -1,4 +1,7 @@
 defmodule Satie.Tree.Access do
+  @moduledoc """
+  Implements the `Access` behaviour for tree-like score elements
+  """
   defmacro __using__(_) do
     quote do
       @behaviour Access

@@ -1,4 +1,7 @@
 defmodule Satie.Duration do
+  @moduledoc """
+  Models a time duration
+  """
   defstruct [:numerator, :denominator]
 
   @duration_re ~r/^(?<base>\\breve|\\longa|\\maxima|\d+)(?<dots>.*)$/
@@ -9,22 +12,7 @@ defmodule Satie.Duration do
         dots_count = String.length(dots)
         {n, base} = parse_base_duration(base)
 
-        {numerator, denominator} =
-          case n do
-            1 ->
-              {round(:math.pow(2, dots_count + 1) - 1),
-               round(:math.pow(2, :math.log2(base) + dots_count))}
-
-            _ ->
-              case dots_count do
-                0 ->
-                  {n, 1}
-
-                _ ->
-                  {round(:math.pow(2, dots_count + 1) - 1), round(:math.pow(2, dots_count) / n)}
-              end
-          end
-
+        {numerator, denominator} = build_numerator_and_denominator(n, base, dots_count)
         new(numerator, denominator)
 
       nil ->
@@ -110,6 +98,24 @@ defmodule Satie.Duration do
   defp parse_base_duration(dur) do
     {dur, ""} = Integer.parse(dur)
     {1, dur}
+  end
+
+  defp build_numerator_and_denominator(1, base, dots_count) do
+    {
+      round(:math.pow(2, dots_count + 1) - 1),
+      round(:math.pow(2, :math.log2(base) + dots_count))
+    }
+  end
+
+  defp build_numerator_and_denominator(num, _base, 0) do
+    {num, 1}
+  end
+
+  defp build_numerator_and_denominator(num, _base, dots_count) do
+    {
+      round(:math.pow(2, dots_count + 1) - 1),
+      round(:math.pow(2, dots_count) / num)
+    }
   end
 
   defimpl String.Chars do

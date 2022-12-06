@@ -1,4 +1,7 @@
 defmodule Satie.Note do
+  @moduledoc """
+  Models a musical note
+  """
   use Satie.Leaf, [:notehead]
 
   @note_re ~r/^(?<notehead>[^?!\d]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/

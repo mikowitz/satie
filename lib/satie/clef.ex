@@ -1,4 +1,8 @@
 defmodule Satie.Clef do
+  @moduledoc """
+  Models a musical clef
+  """
+
   defstruct [:name]
 
   use Satie.Attachable, location: :before, has_direction: false

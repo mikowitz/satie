@@ -1,4 +1,7 @@
 defmodule Satie.Articulation do
+  @moduledoc """
+  Models an articulation
+  """
   defstruct [:name]
 
   use Satie.Attachable

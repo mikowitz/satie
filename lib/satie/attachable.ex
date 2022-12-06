@@ -1,4 +1,16 @@
 defmodule Satie.Attachable do
+  @moduledoc """
+    Implements shared behaviour for objects that can be attached to score-level elements
+
+    * articulations
+    * clefs
+    * time signatures
+    * key signatures
+    * slurs
+    * beams
+    * dynamics
+    * etc.
+  """
   defmacro __using__(opts) do
     location = Keyword.get(opts, :location, :after)
     priority = Keyword.get(opts, :priority, 0)

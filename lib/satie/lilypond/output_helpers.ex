@@ -1,4 +1,6 @@
 defmodule Satie.Lilypond.OutputHelpers do
+  @moduledoc false
+
   def format_contents(contents) when is_list(contents) do
     contents
     |> Enum.map(fn elem ->
@@ -11,8 +13,7 @@ defmodule Satie.Lilypond.OutputHelpers do
   def indent(s) when is_bitstring(s) do
     s
     |> String.split("\n", trim: true)
-    |> Enum.map(&"  #{&1}")
-    |> Enum.join("\n")
+    |> Enum.map_join("\n", &"  #{&1}")
   end
 
   def indent(l) when is_list(l) do

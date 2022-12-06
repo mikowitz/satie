@@ -1,4 +1,7 @@
 defmodule Satie.RepeatTie do
+  @moduledoc """
+  Models a repeat tie
+  """
   defstruct []
 
   use Satie.Attachable

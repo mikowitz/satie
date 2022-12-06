@@ -1,4 +1,7 @@
 defmodule Satie.PitchClass do
+  @moduledoc """
+  Models a musical pitch class
+  """
   defstruct [:name, :accidental, :semitones, :diatonic_pitch_class]
 
   alias Satie.Accidental

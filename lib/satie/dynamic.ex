@@ -1,4 +1,8 @@
 defmodule Satie.Dynamic do
+  @moduledoc """
+  Models a static dynamic
+  """
+
   defstruct [:name]
 
   use Satie.Attachable

@@ -1,4 +1,7 @@
 defmodule Satie.StopBeam do
+  @moduledoc """
+    Models the end of a beam
+  """
   defstruct []
 
   use Satie.Attachable, priority: -1

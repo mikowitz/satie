@@ -1,4 +1,7 @@
 defmodule Satie.Multiplier do
+  @moduledoc """
+  Models a multiplier as a rational fraction
+  """
   defstruct [:numerator, :denominator]
 
   def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do

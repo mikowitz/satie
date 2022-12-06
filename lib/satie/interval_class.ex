@@ -1,4 +1,8 @@
 defmodule Satie.IntervalClass do
+  @moduledoc """
+  Models an interval class (P1-P8)
+  """
+
   defstruct [:name, :size, :quality, :polarity]
 
   import Satie.Helpers, only: [normalize_size: 1]

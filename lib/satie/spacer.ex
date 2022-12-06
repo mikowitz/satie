@@ -1,4 +1,7 @@
 defmodule Satie.Spacer do
+  @moduledoc """
+  Models an unprinted spacer rest
+  """
   use Satie.Leaf
 
   alias Satie.Duration

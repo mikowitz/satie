@@ -1,4 +1,8 @@
 defmodule Satie.LaissezVibrer do
+  @moduledoc """
+  Models a laissez vibrer tie
+  """
+
   defstruct []
 
   use Satie.Attachable

@@ -1,4 +1,8 @@
 defmodule Satie.StartPhrasingSlur do
+  @moduledoc """
+  Models the beginning of a phrasing slur
+  """
+
   defstruct []
 
   use Satie.Attachable
@@ -9,7 +13,7 @@ defmodule Satie.StartPhrasingSlur do
       #Satie.StartPhrasingSlur<>
 
   """
-  def new() do
+  def new do
     %__MODULE__{}
   end
 
