@@ -1,5 +1,8 @@
 defmodule Satie.Helpers do
-  @moduledoc false
+  @moduledoc """
+    Implements some simple helper functions
+  """
+
   def normalize_size(size) when size > 7, do: normalize_size(size - 7)
   def normalize_size(size), do: size
 

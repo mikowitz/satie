@@ -1,5 +1,7 @@
 defmodule Satie.PitchHelpers do
-  @moduledoc false
+  @moduledoc """
+  Helper functions for constructing and manipulating pitches
+  """
 
   @diatonic_pitch_classes ~w(c d e f g a b)
   @semitones [0, 2, 4, 5, 7, 9, 11]

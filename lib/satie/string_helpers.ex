@@ -1,5 +1,7 @@
 defmodule Satie.StringHelpers do
-  @moduledoc false
+  @moduledoc """
+  Helper functions for implementing `String.Chars`
+  """
 
   def direction_indicator(nil), do: "-"
   def direction_indicator(:up), do: "^"
