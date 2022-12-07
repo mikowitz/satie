@@ -1,5 +1,7 @@
 defmodule Satie.RegressionDataStreamer do
-  @moduledoc false
+  @moduledoc """
+  Helper module to stream regression data
+  """
 
   require Logger
 

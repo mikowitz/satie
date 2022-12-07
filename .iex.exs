@@ -39,4 +39,10 @@ alias Satie.{
   Tie
 }
 
+alias Satie.{
+  Offset,
+  Timespan,
+  TimespanList
+}
+
 import Satie, only: [to_lilypond: 1]

@@ -13,6 +13,14 @@ defmodule Satie.Lilypond.LilypondFile do
     %__MODULE__{content: container}
   end
 
+  def from(%Satie.Timespan{} = timespan) do
+    %__MODULE__{content: timespan}
+  end
+
+  def from(%Satie.TimespanList{} = timespan) do
+    %__MODULE__{content: timespan}
+  end
+
   def from(leaf) do
     Satie.Container.new([leaf])
     |> from()

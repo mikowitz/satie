@@ -1,5 +1,7 @@
 defmodule Satie.Lilypond.OutputHelpers do
-  @moduledoc false
+  @moduledoc """
+    Implements helper functions for constructing Lilypond output
+  """
 
   def format_contents(contents) when is_list(contents) do
     contents
@@ -10,14 +12,16 @@ defmodule Satie.Lilypond.OutputHelpers do
     end)
   end
 
-  def indent(s) when is_bitstring(s) do
+  def indent(indentable, depth \\ 1)
+
+  def indent(s, depth) when is_bitstring(s) do
     s
     |> String.split("\n", trim: true)
-    |> Enum.map_join("\n", &"  #{&1}")
+    |> Enum.map_join("\n", &"#{String.duplicate("  ", depth)}#{&1}")
   end
 
-  def indent(l) when is_list(l) do
-    Enum.map(l, &indent/1)
+  def indent(l, depth) when is_list(l) do
+    Enum.map(l, &indent(&1, depth))
   end
 
   def delimiters_for_simultaneous(true), do: {"<<", ">>"}

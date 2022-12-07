@@ -25,7 +25,7 @@ satie-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
-scratch
+scratch*
 
 .DS_Store
 .elixir_ls/
