@@ -64,7 +64,7 @@ defmodule Satie.Measure do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{time_signature: time_signature, contents: contents}) do
+    def to_lilypond(%@for{time_signature: time_signature, contents: contents}, _opts) do
       %TimeSignature{numerator: n, denominator: d} = time_signature
 
       [

@@ -54,7 +54,7 @@ defmodule Satie.Note do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{} = note) do
+    def to_lilypond(%@for{} = note, _opts) do
       {attachments_before, attachments_after} = attachments_to_lilypond(note)
 
       [

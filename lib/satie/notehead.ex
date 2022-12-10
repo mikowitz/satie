@@ -67,6 +67,6 @@ defmodule Satie.Notehead do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = notehead), do: to_string(notehead)
+    def to_lilypond(%@for{} = notehead, _opts), do: to_string(notehead)
   end
 end

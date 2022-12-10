@@ -10,7 +10,7 @@ defmodule Satie do
   def lilypond_version, do: @lilypond_version
   def lilypond_executable, do: @lilypond_executable
 
-  def to_lilypond(x), do: Satie.ToLilypond.to_lilypond(x)
+  def to_lilypond(x, opts \\ []), do: Satie.ToLilypond.to_lilypond(x, opts)
 
   def lilypondable?(%{__struct__: struct}) do
     {:consolidated, impls} = Satie.ToLilypond.__protocol__(:impls)

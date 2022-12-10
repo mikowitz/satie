@@ -35,7 +35,7 @@ defmodule Satie.StartSlur do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = start_slur) do
+    def to_lilypond(%@for{} = start_slur, _opts) do
       to_string(start_slur)
     end
   end

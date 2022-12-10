@@ -39,5 +39,20 @@ defmodule Satie.TimespanListTest do
 
       assert Satie.to_lilypond(timespan_list) == expected
     end
+
+    test "can bind the output to a given range" do
+      expected = File.read!("test/files/timespan_list_ranged.ly") |> String.trim()
+
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(0, 16),
+          Timespan.new(5, 12),
+          Timespan.new(-2, 8),
+          Timespan.new(15, 20),
+          Timespan.new(24, 30)
+        ])
+
+      assert Satie.to_lilypond(timespan_list, range: -10..50) == expected
+    end
   end
 end

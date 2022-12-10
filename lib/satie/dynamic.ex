@@ -39,7 +39,7 @@ defmodule Satie.Dynamic do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = dynamic) do
+    def to_lilypond(%@for{} = dynamic, _opts) do
       to_string(dynamic)
     end
   end

@@ -3,7 +3,7 @@ defmodule Satie.Timespan do
     Models a closed-open timespan, with start and stop offsets
   """
 
-  alias Satie.Offset
+  alias Satie.{Duration, Offset, TimespanList}
 
   import Satie.Guards
 
@@ -24,12 +24,30 @@ defmodule Satie.Timespan do
       #Satie.Timespan<{17, 16}, {2, 1}>
 
   """
+  def new(%Offset{} = start_offset, %Offset{} = stop_offset) do
+    %__MODULE__{
+      start_offset: start_offset,
+      stop_offset: stop_offset
+    }
+  end
+
   def new(start_offset, stop_offset)
       when is_integer_duple_input(start_offset) and is_integer_duple_input(stop_offset) do
-    %__MODULE__{
-      start_offset: to_offset_duple(start_offset),
-      stop_offset: to_offset_duple(stop_offset)
-    }
+    new(to_offset_duple(start_offset), to_offset_duple(stop_offset))
+  end
+
+  @doc """
+
+      iex> timespan = Timespan.new(0, 10)
+      iex> [start, stop] = Timespan.offsets(timespan)
+      iex> start
+      #Satie.Offset<{0, 1}>
+      iex> stop
+      #Satie.Offset<{10, 1}>
+
+  """
+  def offsets(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do
+    [start_offset, stop_offset]
   end
 
   @doc """
@@ -39,8 +57,10 @@ defmodule Satie.Timespan do
     [{1, 1}, {3, 1}]
 
   """
-  def to_tuple_pair(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do
-    Enum.map([start_offset, stop_offset], &Offset.to_tuple/1)
+  def to_tuple_pair(%__MODULE__{} = timespan) do
+    timespan
+    |> offsets()
+    |> Enum.map(&Offset.to_tuple/1)
   end
 
   @doc """
@@ -50,8 +70,10 @@ defmodule Satie.Timespan do
       [1.0, 1.5625]
 
   """
-  def to_float_pair(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do
-    Enum.map([start_offset, stop_offset], &Offset.to_float/1)
+  def to_float_pair(%__MODULE__{} = timespan) do
+    timespan
+    |> offsets()
+    |> Enum.map(&Offset.to_float/1)
   end
 
   @doc """
@@ -69,6 +91,265 @@ defmodule Satie.Timespan do
     [start2, stop2] = to_float_pair(timespan2)
 
     between?(start1, {start2, stop2}) || between?(start2, {start1, stop1})
+  end
+
+  @doc """
+
+    iex> timespan1 = Timespan.new(1, 3)
+    iex> timespan2 = Timespan.new(3, 5)
+    iex> Timespan.adjoin?(timespan1, timespan2)
+    true
+    iex> Timespan.adjoin?(timespan2, timespan1)
+    true
+
+  """
+  def adjoin?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    [start1, stop1] = to_float_pair(timespan1)
+    [start2, stop2] = to_float_pair(timespan2)
+
+    start1 == stop2 || start2 == stop1
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.union(timespan1, timespan2)
+      #Satie.TimespanList<[
+        Timespan({0, 1}, {8, 1})
+      ]>
+
+  """
+  def union(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    if overlap?(timespan1, timespan2) || adjoin?(timespan1, timespan2) do
+      {min, max} =
+        [timespan1, timespan2]
+        |> Enum.map(&to_tuple_pair/1)
+        |> List.flatten()
+        |> Enum.min_max_by(fn {n, d} -> n / d end)
+
+      TimespanList.new([new(min, max)])
+    else
+      TimespanList.new([timespan1, timespan2])
+    end
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.intersection(timespan1, timespan2)
+      #Satie.TimespanList<[
+        Timespan({4, 1}, {5, 1})
+      ]>
+
+  """
+  def intersection(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    case overlap?(timespan1, timespan2) do
+      false ->
+        TimespanList.new([])
+
+      true ->
+        [_, min, max, _] =
+          [timespan1, timespan2]
+          |> Enum.map(&to_tuple_pair/1)
+          |> List.flatten()
+          |> Enum.sort_by(fn {n, d} -> n / d end)
+
+        TimespanList.new([new(min, max)])
+    end
+  end
+
+  @doc """
+
+      iex> timespan = Timespan.new({1,2}, {7,8})
+      iex> Timespan.duration(timespan)
+      #Satie.Duration<4.>
+
+  """
+  def duration(%__MODULE__{} = timespan) do
+    [{start_n, start_d}, {stop_n, stop_d}] = to_tuple_pair(timespan)
+    start = Duration.new(start_n, start_d)
+    stop = Duration.new(stop_n, stop_d)
+    Duration.subtract(stop, start)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.difference(timespan1, timespan2)
+      #Satie.TimespanList<[
+        Timespan({0, 1}, {4, 1})
+      ]>
+
+  """
+  def difference(%__MODULE__{} = timespan, %__MODULE__{} = timespan) do
+    TimespanList.new([])
+  end
+
+  def difference(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    case overlap?(timespan1, timespan2) do
+      false ->
+        TimespanList.new([timespan1])
+
+      true ->
+        cond do
+          contains?(timespan1, timespan2) ->
+            TimespanList.new([
+              new(timespan1.start_offset, timespan2.start_offset),
+              new(timespan2.stop_offset, timespan1.stop_offset)
+            ])
+
+          contains?(timespan2, timespan1) ->
+            TimespanList.new([])
+
+          starts_within?(timespan2, timespan1) ->
+            TimespanList.new([new(timespan1.start_offset, timespan2.start_offset)])
+
+          stops_within?(timespan2, timespan1) ->
+            TimespanList.new([new(timespan2.stop_offset, timespan1.stop_offset)])
+        end
+    end
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 10)
+      iex> timespan2 = Timespan.new(5, 15)
+      iex> Timespan.xor(timespan1, timespan2)
+      #Satie.TimespanList<[
+        Timespan({0, 1}, {5, 1})
+        Timespan({10, 1}, {15, 1})
+      ]>
+
+  """
+  def xor(%__MODULE__{} = timespan1, %__MODULE__{} = timespan1) do
+    TimespanList.new([])
+  end
+
+  def xor(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    cond do
+      contains?(timespan1, timespan2) ->
+        difference(timespan1, timespan2)
+
+      contains?(timespan2, timespan1) ->
+        difference(timespan2, timespan1)
+
+      !overlap?(timespan1, timespan2) ->
+        TimespanList.new([timespan1, timespan2])
+
+      overlap?(timespan1, timespan2) ->
+        cond do
+          starts_within?(timespan1, timespan2) ->
+            TimespanList.new([
+              new(timespan2.start_offset, timespan1.start_offset),
+              new(timespan1.stop_offset, timespan1.stop_offset)
+            ])
+
+          starts_within?(timespan2, timespan1) ->
+            TimespanList.new([
+              new(timespan1.start_offset, timespan2.start_offset),
+              new(timespan1.stop_offset, timespan2.stop_offset)
+            ])
+        end
+    end
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.starts_before?(timespan1, timespan2)
+      true
+      iex> Timespan.starts_before?(timespan2, timespan1)
+      false
+
+  """
+  def starts_before?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.lt(timespan1.start_offset, timespan2.start_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.starts_with?(timespan1, timespan2)
+      false
+
+  """
+  def starts_with?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.eq(timespan1.start_offset, timespan2.start_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.starts_within?(timespan1, timespan2)
+      false
+      iex> Timespan.starts_within?(timespan2, timespan1)
+      true
+
+  """
+  def starts_within?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.gt(timespan1.start_offset, timespan2.start_offset) &&
+      Offset.lt(timespan1.start_offset, timespan2.stop_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.stops_before?(timespan1, timespan2)
+      true
+      iex> Timespan.stops_before?(timespan2, timespan1)
+      false
+
+  """
+  def stops_before?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.lt(timespan1.stop_offset, timespan2.stop_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.stops_with?(timespan1, timespan2)
+      false
+
+  """
+  def stops_with?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.eq(timespan1.stop_offset, timespan2.stop_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.stops_within?(timespan1, timespan2)
+      true
+      iex> Timespan.stops_within?(timespan2, timespan1)
+      false
+
+  """
+  def stops_within?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    Offset.gt(timespan1.stop_offset, timespan2.start_offset) &&
+      Offset.lt(timespan1.stop_offset, timespan2.stop_offset)
+  end
+
+  @doc """
+
+      iex> timespan1 = Timespan.new(0, 5)
+      iex> timespan2 = Timespan.new(4, 8)
+      iex> Timespan.contains?(timespan1, timespan2)
+      false
+      iex> Timespan.contains?(timespan2, timespan1)
+      false
+
+  """
+  def contains?(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
+    starts_within?(timespan2, timespan1) && stops_within?(timespan2, timespan1)
   end
 
   defp between?(x, {a, b}), do: x >= a && x < b
@@ -99,7 +380,7 @@ defmodule Satie.Timespan do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = timespan) do
+    def to_lilypond(%@for{} = timespan, _opts) do
       timespan
       |> List.wrap()
       |> Satie.TimespanList.new()

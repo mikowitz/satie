@@ -43,7 +43,7 @@ defmodule Satie.Spacer do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{written_duration: duration} = spacer) do
+    def to_lilypond(%@for{written_duration: duration} = spacer, _opts) do
       {attachments_before, attachments_after} = attachments_to_lilypond(spacer)
 
       [

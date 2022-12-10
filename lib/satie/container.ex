@@ -50,7 +50,7 @@ defmodule Satie.Container do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{contents: contents}) do
+    def to_lilypond(%@for{contents: contents}, _opts) do
       [
         "{",
         format_contents(contents),

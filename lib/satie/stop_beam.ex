@@ -32,6 +32,6 @@ defmodule Satie.StopBeam do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = stop_beam), do: to_string(stop_beam)
+    def to_lilypond(%@for{} = stop_beam, _opts), do: to_string(stop_beam)
   end
 end

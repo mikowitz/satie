@@ -35,7 +35,7 @@ defmodule Satie.Articulation do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = articulation) do
+    def to_lilypond(%@for{} = articulation, _opts) do
       to_string(articulation)
     end
   end

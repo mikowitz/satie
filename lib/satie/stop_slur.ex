@@ -33,6 +33,6 @@ defmodule Satie.StopSlur do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = stop_slur), do: to_string(stop_slur)
+    def to_lilypond(%@for{} = stop_slur, _opts), do: to_string(stop_slur)
   end
 end

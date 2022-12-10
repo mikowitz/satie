@@ -7,7 +7,7 @@ defmodule Satie.Lilypond.OutputHelpers do
     contents
     |> Enum.map(fn elem ->
       elem
-      |> Satie.ToLilypond.to_lilypond()
+      |> Satie.to_lilypond()
       |> indent()
     end)
   end

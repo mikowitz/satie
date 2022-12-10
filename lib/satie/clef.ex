@@ -28,7 +28,7 @@ defmodule Satie.Clef do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{name: name}) do
+    def to_lilypond(%@for{name: name}, _opts) do
       ~s(\\clef "#{name}")
     end
   end

@@ -81,15 +81,18 @@ defmodule Satie.TimespanList do
 
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{timespans: timespans} = timespan_list) do
+    def to_lilypond(%@for{timespans: timespans} = timespan_list, opts) do
       sorted_offsets =
         Enum.map(timespans, &Timespan.to_tuple_pair/1)
         |> List.flatten()
         |> Enum.sort_by(fn {n, d} -> n / d end)
         |> Enum.uniq()
 
-      {min_n, min_d} = List.first(sorted_offsets)
-      {max_n, max_d} = List.last(sorted_offsets)
+      {{min_n, min_d}, {max_n, max_d}} =
+        case Keyword.get(opts, :range, nil) do
+          nil -> Enum.min_max(sorted_offsets)
+          a..b -> {{a, 1}, {b, 1}}
+        end
 
       min = min_n / min_d
       max = max_n / max_d
