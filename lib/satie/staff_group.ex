@@ -24,13 +24,13 @@ defmodule Satie.StaffGroup do
     %{staff | simultaneous: simultaneous}
   end
 
-  def set_name(%__MODULE__{} = voice, ""), do: clear_name(voice)
+  def set_name(%__MODULE__{} = staff_group, ""), do: clear_name(staff_group)
 
-  def set_name(%__MODULE__{} = voice, name) when is_bitstring(name) do
-    %{voice | name: name}
+  def set_name(%__MODULE__{} = staff_group, name) when is_bitstring(name) do
+    %{staff_group | name: name}
   end
 
-  def clear_name(%__MODULE__{} = voice), do: %{voice | name: nil}
+  def clear_name(%__MODULE__{} = staff_group), do: %{staff_group | name: nil}
 
   defp validate_contents(contents) do
     case Enum.filter(contents, &(!Satie.lilypondable?(&1))) do
@@ -61,11 +61,11 @@ defmodule Satie.StaffGroup do
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%@for{name: name} = voice, _opts) do
+    def inspect(%@for{name: name} = staff_group, _opts) do
       concat([
         "#Satie.StaffGroup<",
         if(name, do: name <> " ", else: ""),
-        inspect_contents(voice),
+        inspect_contents(staff_group),
         ">"
       ])
     end
@@ -82,8 +82,8 @@ defmodule Satie.StaffGroup do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{contents: contents} = voice) do
-      {opening, closing} = delimiters(voice)
+    def to_lilypond(%@for{contents: contents} = staff_group, _opts) do
+      {opening, closing} = delimiters(staff_group)
 
       [
         opening,

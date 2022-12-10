@@ -35,7 +35,7 @@ defmodule Satie.Tie do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = tie) do
+    def to_lilypond(%@for{} = tie, _opts) do
       to_string(tie)
     end
   end

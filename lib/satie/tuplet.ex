@@ -63,7 +63,7 @@ defmodule Satie.Tuplet do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{multiplier: multiplier, contents: contents}) do
+    def to_lilypond(%@for{multiplier: multiplier, contents: contents}, _opts) do
       %Multiplier{numerator: n, denominator: d} = multiplier
 
       [

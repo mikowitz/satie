@@ -120,7 +120,7 @@ defmodule Satie.Duration do
 
   defimpl String.Chars do
     def to_string(%@for{} = duration) do
-      case Satie.ToLilypond.to_lilypond(duration) do
+      case Satie.to_lilypond(duration) do
         ly when is_bitstring(ly) -> String.replace(ly, "\\", "")
         {:error, :unprintable_duration, {n, d}} -> "(#{n},#{d})"
       end
@@ -142,7 +142,7 @@ defmodule Satie.Duration do
   def to_float(%__MODULE__{numerator: n, denominator: d}), do: n / d
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{numerator: n, denominator: d} = duration) do
+    def to_lilypond(%@for{numerator: n, denominator: d} = duration, _opts) do
       case @for.printable?(duration) do
         false -> {:error, :unprintable_duration, {n, d}}
         true -> base_duration_string(duration) <> dots(duration)

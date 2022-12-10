@@ -35,7 +35,7 @@ defmodule Satie.StartPhrasingSlur do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = start_phrasing_slur) do
+    def to_lilypond(%@for{} = start_phrasing_slur, _opts) do
       to_string(start_phrasing_slur)
     end
   end

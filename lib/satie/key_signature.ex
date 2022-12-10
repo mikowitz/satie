@@ -63,7 +63,7 @@ defmodule Satie.KeySignature do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{pitch_class: pitch_class, mode: mode}) do
+    def to_lilypond(%@for{pitch_class: pitch_class, mode: mode}, _opts) do
       [
         "\\key",
         pitch_class.name,

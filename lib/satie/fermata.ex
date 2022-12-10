@@ -44,7 +44,7 @@ defmodule Satie.Fermata do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = fermata) do
+    def to_lilypond(%@for{} = fermata, _opts) do
       to_string(fermata)
     end
   end

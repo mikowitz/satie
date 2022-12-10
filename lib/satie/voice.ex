@@ -83,7 +83,7 @@ defmodule Satie.Voice do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{contents: contents} = voice) do
+    def to_lilypond(%@for{contents: contents} = voice, _opts) do
       {opening, closing} = delimiters(voice)
 
       [

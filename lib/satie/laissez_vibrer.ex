@@ -35,7 +35,7 @@ defmodule Satie.LaissezVibrer do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = laissez_vibrer) do
+    def to_lilypond(%@for{} = laissez_vibrer, _opts) do
       to_string(laissez_vibrer)
     end
   end

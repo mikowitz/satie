@@ -331,7 +331,7 @@ defmodule Satie.Pitch do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = pitch) do
+    def to_lilypond(%@for{} = pitch, _opts) do
       to_string(pitch)
     end
   end

@@ -35,7 +35,7 @@ defmodule Satie.BreathMark do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = breath_mark) do
+    def to_lilypond(%@for{} = breath_mark, _opts) do
       to_string(breath_mark)
     end
   end

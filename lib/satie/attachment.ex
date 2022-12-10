@@ -47,7 +47,7 @@ defmodule Satie.Attachment do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{attachable: attachable, direction: direction}) do
+    def to_lilypond(%@for{attachable: attachable, direction: direction}, _opts) do
       [
         direction_indicator(attachable, direction),
         Satie.to_lilypond(attachable)

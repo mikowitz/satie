@@ -47,7 +47,7 @@ defmodule Satie.MultiMeasureRest do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{time_signature: %{numerator: n, denominator: d}, measures: m}) do
+    def to_lilypond(%@for{time_signature: %{numerator: n, denominator: d}, measures: m}, _opts) do
       "R1 * #{n}/#{d} * #{m}"
     end
   end

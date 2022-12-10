@@ -46,7 +46,7 @@ defmodule Satie.TimeSignature do
   end
 
   defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{numerator: n, denominator: d}) do
+    def to_lilypond(%@for{numerator: n, denominator: d}, _opts) do
       "\\time #{n}/#{d}"
     end
   end

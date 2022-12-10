@@ -43,7 +43,7 @@ defmodule Satie.Rest do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{written_duration: duration} = rest) do
+    def to_lilypond(%@for{written_duration: duration} = rest, _opts) do
       {attachments_before, attachments_after} = attachments_to_lilypond(rest)
 
       [
