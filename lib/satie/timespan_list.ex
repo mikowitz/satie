@@ -3,7 +3,9 @@ defmodule Satie.TimespanList do
   Models a collection of `Satie.Timespan` structs
   """
 
-  alias Satie.Timespan
+  import Satie.Guards
+
+  alias Satie.{Offset, Timespan}
 
   defstruct [:timespans]
 
@@ -32,8 +34,162 @@ defmodule Satie.TimespanList do
     end
   end
 
+  defp sort_timespans(timespans) do
+    Enum.sort_by(timespans, &Timespan.to_float_pair/1)
+  end
+
   def sorted_into_non_overlapping_sublists(%__MODULE__{timespans: timespans}) do
     Enum.reduce(timespans, [[]], &insert_without_overlapping/2)
+  end
+
+  def well_formed?(%__MODULE__{timespans: timespans}) do
+    Enum.all?(timespans, &Timespan.well_formed?/1)
+  end
+
+  def all_non_overlapping?(%__MODULE__{timespans: timespans}) do
+    Enum.all?(timespans, fn timespan ->
+      Enum.filter(timespans -- [timespan], fn timespan2 ->
+        Timespan.overlap?(timespan, timespan2)
+      end) == []
+    end)
+  end
+
+  def contiguous?(%__MODULE__{timespans: timespans} = timespan_list) do
+    all_non_overlapping?(timespan_list) &&
+      Enum.all?(timespans, fn timespan ->
+        Enum.any?(timespans -- [timespan], fn timespan2 ->
+          Timespan.adjoin?(timespan, timespan2)
+        end)
+      end)
+  end
+
+  def intersection(%__MODULE__{timespans: timespans}, %Timespan{} = operand) do
+    Enum.map(timespans, &Timespan.intersection(&1, operand))
+    |> Enum.map(& &1.timespans)
+    |> List.flatten()
+    |> new()
+  end
+
+  def difference(%__MODULE__{timespans: timespans}, %Timespan{} = operand) do
+    Enum.map(timespans, &Timespan.difference(&1, operand))
+    |> Enum.map(& &1.timespans)
+    |> List.flatten()
+    |> new()
+  end
+
+  def split(%__MODULE__{} = timespan_list, %Offset{} = offset) do
+    {timespans_before, timespans_after} =
+      Enum.reduce(timespan_list.timespans, {[], []}, fn timespan,
+                                                        {timespans_before, timespans_after} ->
+        cond do
+          Offset.lt(timespan.stop_offset, offset) ->
+            {[timespan | timespans_before], timespans_after}
+
+          Offset.lt(offset, timespan.start_offset) ->
+            {timespans_before, [timespan | timespans_after]}
+
+          true ->
+            %__MODULE__{timespans: [ts_before, ts_after]} = Timespan.split(timespan, offset)
+            {[ts_before | timespans_before], [ts_after | timespans_after]}
+        end
+      end)
+
+    [
+      new(sort_timespans(timespans_before)),
+      new(sort_timespans(timespans_after))
+    ]
+  end
+
+  def split(%__MODULE__{} = timespan_list, offset) when is_integer_duple_input(offset) do
+    split(timespan_list, Offset.new(offset))
+  end
+
+  def split(%__MODULE__{} = timespan_list, offsets) when is_list(offsets) do
+    case filter_bad_offsets(offsets) do
+      [] ->
+        offsets
+        |> Enum.map(&Offset.new/1)
+        |> Enum.sort_by(&Offset.to_float/1)
+        |> Enum.reduce([timespan_list], fn offset, acc ->
+          timespan_list = List.last(acc)
+          new_timespan_lists = split(timespan_list, offset)
+
+          acc
+          |> List.replace_at(-1, new_timespan_lists)
+          |> List.flatten()
+        end)
+
+      bad_offsets ->
+        {:error, :timespan_list_split_non_offset_equivalent, bad_offsets}
+    end
+  end
+
+  def split(%__MODULE__{}, offset) do
+    {:error, :timespan_list_split_non_offset_equivalent, offset}
+  end
+
+  def union(%__MODULE__{timespans: []} = timespan_list), do: timespan_list
+
+  def union(%__MODULE__{timespans: [timespan | timespans]}) do
+    Enum.reduce(timespans, [timespan], fn timespan, [timespan2 | acc] ->
+      %__MODULE__{timespans: timespans} = Timespan.union(timespan, timespan2)
+      Enum.uniq(timespans ++ acc)
+    end)
+    |> Enum.sort_by(&Timespan.to_float_pair/1)
+    |> new()
+  end
+
+  def intersection(%__MODULE__{timespans: []} = timespan_list), do: timespan_list
+
+  def intersection(%__MODULE__{timespans: [timespan | timespans]}) do
+    Enum.reduce_while(timespans, timespan, fn timespan, timespan2 ->
+      %__MODULE__{timespans: timespans} = Timespan.intersection(timespan, timespan2)
+
+      case timespans do
+        [timespan | _] -> {:cont, timespan}
+        [] -> {:halt, nil}
+      end
+    end)
+    |> List.wrap()
+    |> new()
+  end
+
+  def xor(%__MODULE__{timespans: []}), do: new([])
+
+  def xor(%__MODULE__{timespans: timespans}) do
+    Enum.map(timespans, fn timespan1 ->
+      calc_fragments(timespan1, timespans)
+    end)
+    |> List.flatten()
+    |> Enum.sort_by(&Timespan.to_float_pair/1)
+    |> new()
+  end
+
+  defp calc_revised_fragments(fragments, timespan) do
+    Enum.map(fragments, fn fragment ->
+      case Timespan.overlap?(timespan, fragment) do
+        true -> Timespan.difference(fragment, timespan).timespans
+        false -> fragment
+      end
+    end)
+    |> List.flatten()
+  end
+
+  defp calc_fragments(timespan1, timespans) do
+    timespan1_fragments = [timespan1]
+
+    Enum.reduce(timespans, timespan1_fragments, fn timespan2, fragments ->
+      case timespan1 == timespan2 do
+        true -> fragments
+        false -> calc_revised_fragments(fragments, timespan2)
+      end
+    end)
+  end
+
+  defp filter_bad_offsets(offsets) when is_list(offsets) do
+    Enum.reject(offsets, fn offset ->
+      is_integer_duple_input(offset) || is_struct(offset, Offset)
+    end)
   end
 
   defp insert_without_overlapping(timespan, sublists) do

@@ -3,6 +3,8 @@ defmodule Satie.Offset do
   Models a temporal offset as a rational fraction
   """
 
+  import Satie.Guards
+
   defstruct [:numerator, :denominator]
 
   @doc """
@@ -13,12 +15,17 @@ defmodule Satie.Offset do
       iex> Offset.new(3, 16)
       #Satie.Offset<{3, 16}>
 
+      iex> Offset.new({5, 18})
+      #Satie.Offset<{5, 18}>
+
     Does not reduce fraction
 
       iex> Offset.new(4, 16)
       #Satie.Offset<{4, 16}>
 
   """
+  def new({a, b} = offset) when is_integer_duple(offset), do: new(a, b)
+
   def new(numerator, denominator \\ 1) when is_integer(numerator) and is_integer(denominator) do
     %__MODULE__{numerator: numerator, denominator: denominator}
   end
