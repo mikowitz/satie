@@ -1,7 +1,7 @@
 defmodule Satie.TimespanTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Duration, Timespan, TimespanList}
+  alias Satie.{Duration, Offset, Timespan, TimespanList}
 
   doctest Timespan
 
@@ -117,71 +117,161 @@ defmodule Satie.TimespanTest do
     end
   end
 
+  describe inspect(&Timespan.split/2) do
+    test "splits a timespan at a given offset" do
+      timespan = Timespan.new(0, 10)
+
+      assert Timespan.split(timespan, 5) ==
+               TimespanList.new([
+                 Timespan.new(0, 5),
+                 Timespan.new(5, 10)
+               ])
+    end
+
+    test "returns the original timespan (wrapped in a TimespanList) if the offset falls outside of it" do
+      timespan = Timespan.new(0, 10)
+      expected = TimespanList.new([timespan])
+
+      assert Timespan.split(timespan, -1) == expected
+      assert Timespan.split(timespan, 15) == expected
+    end
+
+    test "can split at multiple offsets" do
+      timespan = Timespan.new(0, 10)
+
+      assert Timespan.split(timespan, [{1, 2}, 7, 9]) ==
+               TimespanList.new([
+                 Timespan.new(0, {1, 2}),
+                 Timespan.new({1, 2}, 7),
+                 Timespan.new(7, 9),
+                 Timespan.new(9, 10)
+               ])
+
+      # offsets do not have to be pre-sorted
+      assert Timespan.split(timespan, [{1, 2}, 9, 7]) ==
+               TimespanList.new([
+                 Timespan.new(0, {1, 2}),
+                 Timespan.new({1, 2}, 7),
+                 Timespan.new(7, 9),
+                 Timespan.new(9, 10)
+               ])
+    end
+
+    test "returns an error tuple if a non-offset-equivalent element is passed" do
+      timespan = Timespan.new(0, 10)
+
+      assert Timespan.split(timespan, 7.5) == {:error, :timespan_split_non_offset_equivalent, 7.5}
+
+      assert Timespan.split(timespan, ["three", Offset.new(5), :a7, 9]) ==
+               {:error, :timespan_split_non_offset_equivalent, ["three", :a7]}
+    end
+  end
+
   describe inspect(&Timespan.difference/1) do
-    test "returns the first timespan if the timespans do not overlap" do
-      timespan1 = Timespan.new(0, 5)
-      timespan2 = Timespan.new(6, 8)
-
-      assert Timespan.difference(timespan1, timespan2) == TimespanList.new([timespan1])
-      assert Timespan.difference(timespan2, timespan1) == TimespanList.new([timespan2])
-    end
-
-    test "returns an empty timespan list if the timespans are identical" do
-      timespan = Timespan.new(0, 5)
-
-      assert Timespan.difference(timespan, timespan) == TimespanList.new([])
-    end
-
-    test "returns two disjunct timespans if the second timespan is wholly contained by the first" do
+    test "returns the first timespan with the second removed" do
       timespan1 = Timespan.new(0, 10)
-      timespan2 = Timespan.new(6, 8)
+      timespan2 = Timespan.new(5, 12)
+      timespan3 = Timespan.new(-2, 2)
+      timespan4 = Timespan.new(10, 20)
+
+      assert Timespan.difference(timespan1, timespan1) == TimespanList.new()
 
       assert Timespan.difference(timespan1, timespan2) ==
                TimespanList.new([
-                 Timespan.new(0, 6),
-                 Timespan.new(8, 10)
+                 Timespan.new(0, 5)
                ])
 
-      assert Timespan.difference(timespan2, timespan1) == TimespanList.new([])
+      assert Timespan.difference(timespan1, timespan3) == TimespanList.new([Timespan.new(2, 10)])
+
+      assert Timespan.difference(timespan1, timespan4) == TimespanList.new([Timespan.new(0, 10)])
+
+      assert Timespan.difference(timespan2, timespan1) == TimespanList.new([Timespan.new(10, 12)])
+
+      assert Timespan.difference(timespan2, timespan2) == TimespanList.new()
+
+      assert Timespan.difference(timespan2, timespan3) ==
+               TimespanList.new([
+                 Timespan.new(5, 12)
+               ])
+
+      assert Timespan.difference(timespan2, timespan4) ==
+               TimespanList.new([
+                 Timespan.new(5, 10)
+               ])
+
+      assert Timespan.difference(timespan3, timespan1) == TimespanList.new([Timespan.new(-2, 0)])
+
+      assert Timespan.difference(timespan3, timespan2) == TimespanList.new([Timespan.new(-2, 2)])
+
+      assert Timespan.difference(timespan3, timespan3) == TimespanList.new()
+
+      assert Timespan.difference(timespan3, timespan4) == TimespanList.new([Timespan.new(-2, 2)])
+
+      assert Timespan.difference(timespan4, timespan1) == TimespanList.new([Timespan.new(10, 20)])
+
+      assert Timespan.difference(timespan4, timespan2) == TimespanList.new([Timespan.new(12, 20)])
+
+      assert Timespan.difference(timespan4, timespan3) == TimespanList.new([Timespan.new(10, 20)])
+
+      assert Timespan.difference(timespan4, timespan4) == TimespanList.new()
     end
 
-    test "returns a single timespan if the timespans overlap" do
-      timespan1 = Timespan.new(0, 10)
-      timespan2 = Timespan.new(6, 12)
+    test "a fully contained timespan leaves two timespans" do
+      timespan1 = Timespan.new(0, 20)
+      timespan2 = Timespan.new(5, 15)
 
-      assert Timespan.difference(timespan1, timespan2) == TimespanList.new([Timespan.new(0, 6)])
-      assert Timespan.difference(timespan2, timespan1) == TimespanList.new([Timespan.new(10, 12)])
+      assert Timespan.difference(timespan1, timespan2) ==
+               TimespanList.new([
+                 Timespan.new(0, 5),
+                 Timespan.new(15, 20)
+               ])
+
+      assert Timespan.difference(timespan2, timespan1) == TimespanList.new()
     end
   end
 
   describe inspect(&Timespan.xor/1) do
     test "returns both timespans if they do not overlap" do
-      timespan1 = Timespan.new(0, 5)
-      timespan2 = Timespan.new(6, 12)
-
-      assert Timespan.xor(timespan1, timespan2) == TimespanList.new([timespan1, timespan2])
-    end
-
-    test "returns the non-overlapping portions of overlapping timespans" do
-      timespan1 = Timespan.new(0, 5)
-      timespan2 = Timespan.new(3, 12)
-
-      assert Timespan.xor(timespan1, timespan2) ==
-               TimespanList.new([
-                 Timespan.new(0, 3),
-                 Timespan.new(5, 12)
-               ])
-    end
-
-    test "returns the outer boundaries of a containing timespan" do
       timespan1 = Timespan.new(0, 10)
-      timespan2 = Timespan.new(3, 8)
+      timespan2 = Timespan.new(5, 12)
+      timespan3 = Timespan.new(-2, 2)
+      timespan4 = Timespan.new(10, 20)
 
       assert Timespan.xor(timespan1, timespan2) ==
-               TimespanList.new([
-                 Timespan.new(0, 3),
-                 Timespan.new(8, 10)
-               ])
+               TimespanList.new([Timespan.new(0, 5), Timespan.new(10, 12)])
+
+      assert Timespan.xor(timespan2, timespan1) ==
+               TimespanList.new([Timespan.new(0, 5), Timespan.new(10, 12)])
+
+      assert Timespan.xor(timespan1, timespan3) ==
+               TimespanList.new([Timespan.new(-2, 0), Timespan.new(2, 10)])
+
+      assert Timespan.xor(timespan3, timespan1) ==
+               TimespanList.new([Timespan.new(-2, 0), Timespan.new(2, 10)])
+
+      assert Timespan.xor(timespan1, timespan4) ==
+               TimespanList.new([Timespan.new(0, 10), Timespan.new(10, 20)])
+
+      assert Timespan.xor(timespan4, timespan1) ==
+               TimespanList.new([Timespan.new(0, 10), Timespan.new(10, 20)])
+
+      assert Timespan.xor(timespan2, timespan3) ==
+               TimespanList.new([Timespan.new(-2, 2), Timespan.new(5, 12)])
+
+      assert Timespan.xor(timespan3, timespan2) ==
+               TimespanList.new([Timespan.new(-2, 2), Timespan.new(5, 12)])
+
+      assert Timespan.xor(timespan2, timespan4) ==
+               TimespanList.new([Timespan.new(5, 10), Timespan.new(12, 20)])
+
+      assert Timespan.xor(timespan4, timespan2) ==
+               TimespanList.new([Timespan.new(5, 10), Timespan.new(12, 20)])
+
+      assert Timespan.xor(timespan3, timespan4) ==
+               TimespanList.new([Timespan.new(-2, 2), Timespan.new(10, 20)])
+
+      assert Timespan.xor(timespan4, timespan3) ==
+               TimespanList.new([Timespan.new(-2, 2), Timespan.new(10, 20)])
     end
   end
 

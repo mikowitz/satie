@@ -3,7 +3,7 @@ defmodule Satie.Timespan do
     Models a closed-open timespan, with start and stop offsets
   """
 
-  alias Satie.{Duration, Offset, TimespanList}
+  alias Satie.{Duration, Offset, Timespan, TimespanList}
 
   import Satie.Guards
 
@@ -112,6 +112,25 @@ defmodule Satie.Timespan do
 
   @doc """
 
+      iex> timespan = Timespan.new(0, 10)
+      iex> Timespan.well_formed?(timespan)
+      true
+
+      iex> timespan = Timespan.new(10, 0)
+      iex> Timespan.well_formed?(timespan)
+      false
+
+      iex> timespan = Timespan.new(0, 0)
+      iex> Timespan.well_formed?(timespan)
+      false
+
+  """
+  def well_formed?(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do
+    Offset.lt(start_offset, stop_offset)
+  end
+
+  @doc """
+
       iex> timespan1 = Timespan.new(0, 5)
       iex> timespan2 = Timespan.new(4, 8)
       iex> Timespan.union(timespan1, timespan2)
@@ -174,6 +193,48 @@ defmodule Satie.Timespan do
     Duration.subtract(stop, start)
   end
 
+  def split(%__MODULE__{} = timespan, %Offset{} = offset) do
+    if Offset.lt(timespan.start_offset, offset) && Offset.lt(offset, timespan.stop_offset) do
+      TimespanList.new([
+        Timespan.new(timespan.start_offset, offset),
+        Timespan.new(offset, timespan.stop_offset)
+      ])
+    else
+      TimespanList.new([timespan])
+    end
+  end
+
+  def split(%__MODULE__{} = timespan, offset) when is_integer_duple_input(offset) do
+    split(timespan, Offset.new(offset))
+  end
+
+  def split(%__MODULE__{} = timespan, offsets) when is_list(offsets) do
+    case filter_bad_offsets(offsets) do
+      [] ->
+        offsets
+        |> Enum.map(&Offset.new/1)
+        |> Enum.reduce([timespan], fn offset, timespans ->
+          Enum.map(timespans, &split(&1, offset))
+          |> Enum.map(& &1.timespans)
+          |> List.flatten()
+        end)
+        |> TimespanList.new()
+
+      bad_offsets ->
+        {:error, :timespan_split_non_offset_equivalent, bad_offsets}
+    end
+  end
+
+  def split(%__MODULE__{}, offset) do
+    {:error, :timespan_split_non_offset_equivalent, offset}
+  end
+
+  defp filter_bad_offsets(offsets) when is_list(offsets) do
+    Enum.reject(offsets, fn offset ->
+      is_integer_duple_input(offset) || is_struct(offset, Offset)
+    end)
+  end
+
   @doc """
 
       iex> timespan1 = Timespan.new(0, 5)
@@ -189,27 +250,36 @@ defmodule Satie.Timespan do
   end
 
   def difference(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
-    case overlap?(timespan1, timespan2) do
-      false ->
+    cond do
+      !overlap?(timespan1, timespan2) ->
         TimespanList.new([timespan1])
 
-      true ->
-        cond do
-          contains?(timespan1, timespan2) ->
-            TimespanList.new([
-              new(timespan1.start_offset, timespan2.start_offset),
-              new(timespan2.stop_offset, timespan1.stop_offset)
-            ])
+      contains?(timespan1, timespan2) ->
+        TimespanList.new([
+          new(timespan1.start_offset, timespan2.start_offset),
+          new(timespan2.stop_offset, timespan1.stop_offset)
+        ])
 
-          contains?(timespan2, timespan1) ->
-            TimespanList.new([])
+      contains?(timespan2, timespan1) ->
+        TimespanList.new([])
 
-          starts_within?(timespan2, timespan1) ->
-            TimespanList.new([new(timespan1.start_offset, timespan2.start_offset)])
+      starts_within?(timespan2, timespan1) ->
+        TimespanList.new([new(timespan1.start_offset, timespan2.start_offset)])
 
-          stops_within?(timespan2, timespan1) ->
-            TimespanList.new([new(timespan2.stop_offset, timespan1.stop_offset)])
-        end
+      stops_within?(timespan2, timespan1) ->
+        TimespanList.new([new(timespan2.stop_offset, timespan1.stop_offset)])
+
+      starts_with?(timespan1, timespan2) ->
+        [start, stop] =
+          Enum.sort_by([timespan1.stop_offset, timespan2.stop_offset], &Offset.to_float/1)
+
+        TimespanList.new([new(start, stop)])
+
+      stops_with?(timespan1, timespan2) ->
+        [start, stop] =
+          Enum.sort_by([timespan1.start_offset, timespan2.start_offset], &Offset.to_float/1)
+
+        TimespanList.new([new(start, stop)])
     end
   end
 
@@ -224,35 +294,27 @@ defmodule Satie.Timespan do
       ]>
 
   """
-  def xor(%__MODULE__{} = timespan1, %__MODULE__{} = timespan1) do
-    TimespanList.new([])
-  end
-
   def xor(%__MODULE__{} = timespan1, %__MODULE__{} = timespan2) do
-    cond do
-      contains?(timespan1, timespan2) ->
-        difference(timespan1, timespan2)
+    if !overlap?(timespan1, timespan2) || adjoin?(timespan1, timespan2) do
+      [timespan1, timespan2]
+      |> Enum.sort_by(&to_float_pair/1)
+      |> TimespanList.new()
+    else
+      [start_offset1, stop_offset1] = offsets(timespan1)
+      [start_offset2, stop_offset2] = offsets(timespan2)
 
-      contains?(timespan2, timespan1) ->
-        difference(timespan2, timespan1)
+      [start_offset1, start_offset2] =
+        [start_offset1, start_offset2] |> Enum.sort_by(&Offset.to_float/1)
 
-      !overlap?(timespan1, timespan2) ->
-        TimespanList.new([timespan1, timespan2])
+      [stop_offset1, stop_offset2] =
+        [stop_offset1, stop_offset2] |> Enum.sort_by(&Offset.to_float/1)
 
-      overlap?(timespan1, timespan2) ->
-        cond do
-          starts_within?(timespan1, timespan2) ->
-            TimespanList.new([
-              new(timespan2.start_offset, timespan1.start_offset),
-              new(timespan1.stop_offset, timespan1.stop_offset)
-            ])
-
-          starts_within?(timespan2, timespan1) ->
-            TimespanList.new([
-              new(timespan1.start_offset, timespan2.start_offset),
-              new(timespan1.stop_offset, timespan2.stop_offset)
-            ])
-        end
+      [
+        Timespan.new(start_offset1, start_offset2),
+        Timespan.new(stop_offset1, stop_offset2)
+      ]
+      |> Enum.sort_by(&to_float_pair/1)
+      |> TimespanList.new()
     end
   end
 
