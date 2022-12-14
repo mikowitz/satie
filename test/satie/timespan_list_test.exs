@@ -385,6 +385,26 @@ defmodule Satie.TimespanListTest do
                  Timespan.new(8, 10)
                ])
     end
+
+    test "a timespan list where timespans begin or end at the same time only returns one timespan" do
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(0, 10),
+          Timespan.new(0, 5),
+          Timespan.new(0, 3)
+        ])
+
+      assert TimespanList.xor(timespan_list) == TimespanList.new([Timespan.new(5, 10)])
+
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(0, 10),
+          Timespan.new(5, 10),
+          Timespan.new(3, 10)
+        ])
+
+      assert TimespanList.xor(timespan_list) == TimespanList.new([Timespan.new(0, 3)])
+    end
   end
 
   describe inspect(&Satie.ToLilypond.to_lilypond/1) do

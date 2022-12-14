@@ -313,6 +313,7 @@ defmodule Satie.Timespan do
         Timespan.new(start_offset1, start_offset2),
         Timespan.new(stop_offset1, stop_offset2)
       ]
+      |> Enum.filter(&well_formed?/1)
       |> Enum.sort_by(&to_float_pair/1)
       |> TimespanList.new()
     end

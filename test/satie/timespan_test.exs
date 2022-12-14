@@ -231,11 +231,13 @@ defmodule Satie.TimespanTest do
   end
 
   describe inspect(&Timespan.xor/1) do
-    test "returns both timespans if they do not overlap" do
+    test "returns the non-overlapping portions of two timespans" do
       timespan1 = Timespan.new(0, 10)
       timespan2 = Timespan.new(5, 12)
       timespan3 = Timespan.new(-2, 2)
       timespan4 = Timespan.new(10, 20)
+
+      assert Timespan.xor(timespan1, timespan1) == TimespanList.new()
 
       assert Timespan.xor(timespan1, timespan2) ==
                TimespanList.new([Timespan.new(0, 5), Timespan.new(10, 12)])
@@ -272,6 +274,30 @@ defmodule Satie.TimespanTest do
 
       assert Timespan.xor(timespan4, timespan3) ==
                TimespanList.new([Timespan.new(-2, 2), Timespan.new(10, 20)])
+    end
+
+    test "only returns one timespan if the timespans begin or end together" do
+      timespan1 = Timespan.new(0, 10)
+      timespan2 = Timespan.new(0, 5)
+      timespan3 = Timespan.new(4, 10)
+
+      assert Timespan.xor(timespan1, timespan2) == TimespanList.new([Timespan.new(5, 10)])
+      assert Timespan.xor(timespan1, timespan3) == TimespanList.new([Timespan.new(0, 4)])
+
+      assert Timespan.xor(timespan2, timespan1) == TimespanList.new([Timespan.new(5, 10)])
+
+      assert Timespan.xor(timespan3, timespan1) == TimespanList.new([Timespan.new(0, 4)])
+    end
+
+    test "returns two parts if one timespan is entirle contained by the other" do
+      timespan1 = Timespan.new(0, 10)
+      timespan2 = Timespan.new(2, 8)
+
+      assert Timespan.xor(timespan1, timespan2) ==
+               TimespanList.new([Timespan.new(0, 2), Timespan.new(8, 10)])
+
+      assert Timespan.xor(timespan2, timespan1) ==
+               TimespanList.new([Timespan.new(0, 2), Timespan.new(8, 10)])
     end
   end
 
