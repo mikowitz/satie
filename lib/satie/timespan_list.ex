@@ -161,6 +161,8 @@ defmodule Satie.TimespanList do
       calc_fragments(timespan1, timespans)
     end)
     |> List.flatten()
+    |> Enum.uniq()
+    |> Enum.filter(&Timespan.well_formed?/1)
     |> Enum.sort_by(&Timespan.to_float_pair/1)
     |> new()
   end
