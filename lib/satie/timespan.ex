@@ -78,6 +78,18 @@ defmodule Satie.Timespan do
 
   @doc """
 
+      iex> timespan = Timespan.new(1, {25, 16})
+      iex> Timespan.length(timespan)
+      0.5625
+
+  """
+  def length(%__MODULE__{} = timespan) do
+    [a, b] = to_float_pair(timespan)
+    b - a
+  end
+
+  @doc """
+
     iex> timespan1 = Timespan.new(1, 3)
     iex> timespan2 = Timespan.new(2, 4)
     iex> Timespan.overlap?(timespan1, timespan2)
