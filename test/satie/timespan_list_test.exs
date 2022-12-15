@@ -407,6 +407,74 @@ defmodule Satie.TimespanListTest do
     end
   end
 
+  describe inspect(&TimespanList.explode/2) do
+    test "explodes the list into fully non-overlapping lists if no list limit is given" do
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(-2, 8),
+          Timespan.new(-2, 1),
+          Timespan.new(0, 16),
+          Timespan.new(4, 7),
+          Timespan.new(4, 11),
+          Timespan.new(5, 12),
+          Timespan.new(11, 13),
+          Timespan.new(14, 17),
+          Timespan.new(15, 20)
+        ])
+
+      assert TimespanList.explode(timespan_list) == [
+               TimespanList.new([Timespan.new(-2, 8)]),
+               TimespanList.new([
+                 Timespan.new(-2, 1),
+                 Timespan.new(4, 7),
+                 Timespan.new(11, 13)
+               ]),
+               TimespanList.new([
+                 Timespan.new(0, 16)
+               ]),
+               TimespanList.new([
+                 Timespan.new(4, 11),
+                 Timespan.new(14, 17)
+               ]),
+               TimespanList.new([
+                 Timespan.new(5, 12),
+                 Timespan.new(15, 20)
+               ])
+             ]
+    end
+
+    test "explodes the list into the specified number of sets" do
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(-2, 8),
+          Timespan.new(-2, 1),
+          Timespan.new(0, 16),
+          Timespan.new(4, 7),
+          Timespan.new(4, 11),
+          Timespan.new(5, 12),
+          Timespan.new(11, 13),
+          Timespan.new(14, 17),
+          Timespan.new(15, 20)
+        ])
+
+      assert TimespanList.explode(timespan_list, 2) == [
+               TimespanList.new([
+                 Timespan.new(-2, 8),
+                 Timespan.new(4, 7),
+                 Timespan.new(4, 11),
+                 Timespan.new(11, 13),
+                 Timespan.new(14, 17)
+               ]),
+               TimespanList.new([
+                 Timespan.new(-2, 1),
+                 Timespan.new(0, 16),
+                 Timespan.new(5, 12),
+                 Timespan.new(15, 20)
+               ])
+             ]
+    end
+  end
+
   describe inspect(&TimespanList.partition/2) do
     test "partitions timespans into overlapping sections" do
       timespan_list =
