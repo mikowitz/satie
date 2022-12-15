@@ -407,6 +407,45 @@ defmodule Satie.TimespanListTest do
     end
   end
 
+  describe inspect(&TimespanList.partition/2) do
+    test "partitions timespans into overlapping sections" do
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(0, 10),
+          Timespan.new(5, 15),
+          Timespan.new(15, 20),
+          Timespan.new(25, 30)
+        ])
+
+      assert TimespanList.partition(timespan_list) ==
+               [
+                 TimespanList.new([Timespan.new(0, 10), Timespan.new(5, 15)]),
+                 TimespanList.new([Timespan.new(15, 20)]),
+                 TimespanList.new([Timespan.new(25, 30)])
+               ]
+    end
+
+    test "can include adjoining timespans as well" do
+      timespan_list =
+        TimespanList.new([
+          Timespan.new(0, 10),
+          Timespan.new(5, 15),
+          Timespan.new(15, 20),
+          Timespan.new(25, 30)
+        ])
+
+      assert TimespanList.partition(timespan_list, include_adjoining: true) ==
+               [
+                 TimespanList.new([
+                   Timespan.new(0, 10),
+                   Timespan.new(5, 15),
+                   Timespan.new(15, 20)
+                 ]),
+                 TimespanList.new([Timespan.new(25, 30)])
+               ]
+    end
+  end
+
   describe inspect(&Satie.ToLilypond.to_lilypond/1) do
     test "returns the correctly formatted Lilypond markup for the list" do
       expected = File.read!("test/files/timespan_list.ly") |> String.trim()
