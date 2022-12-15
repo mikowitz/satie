@@ -2,32 +2,37 @@ defmodule Satie.Lilypond.LilypondFile do
   @moduledoc """
   Implements constructing a lilypond file from a score-level element input
   """
-  defstruct [:content, :source_path, :output_path]
+  defstruct [:content, :lilypond_options, :source_path, :output_path]
 
   @satie_temp_directory Application.compile_env!(:satie, :temp_directory)
   File.mkdir_p!(@satie_temp_directory)
 
   @runner Application.compile_env!(:satie, :lilypond_runner)
 
-  def from(%{contents: _} = container) do
-    %__MODULE__{content: container}
+  def from(content, lilypond_options \\ [])
+
+  def from(%{contents: _} = container, lilypond_options) do
+    %__MODULE__{content: container, lilypond_options: lilypond_options}
   end
 
-  def from(%Satie.Timespan{} = timespan) do
-    %__MODULE__{content: timespan}
+  def from(%Satie.Timespan{} = timespan, lilypond_options) do
+    %__MODULE__{content: timespan, lilypond_options: lilypond_options}
   end
 
-  def from(%Satie.TimespanList{} = timespan) do
-    %__MODULE__{content: timespan}
+  def from(%Satie.TimespanList{} = timespan, lilypond_options) do
+    %__MODULE__{content: timespan, lilypond_options: lilypond_options}
   end
 
-  def from(leaf) do
+  def from(leaf, lilypond_options) do
     Satie.Container.new([leaf])
-    |> from()
+    |> from(lilypond_options)
   end
 
-  def save(%__MODULE__{content: content} = file, source_path \\ construct_filepath()) do
-    file_contents = build_contents(content)
+  def save(
+        %__MODULE__{content: content, lilypond_options: lilypond_options} = file,
+        source_path \\ construct_filepath()
+      ) do
+    file_contents = build_contents(content, lilypond_options)
 
     File.mkdir_p!(Path.dirname(source_path))
     :ok = File.write(source_path, file_contents)
@@ -50,12 +55,12 @@ defmodule Satie.Lilypond.LilypondFile do
     command |> to_charlist() |> @runner.()
   end
 
-  defp build_contents(content) do
+  defp build_contents(content, lilypond_options) do
     [
       ~s(\\version "#{Satie.lilypond_version()}"),
       ~s(\\language "english"),
       "",
-      Satie.to_lilypond(content)
+      Satie.to_lilypond(content, lilypond_options)
     ]
     |> List.flatten()
     |> Enum.join("\n")
