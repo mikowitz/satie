@@ -34,10 +34,6 @@ defmodule Satie.TimespanList do
     end
   end
 
-  defp sort_timespans(timespans) do
-    Enum.sort_by(timespans, &Timespan.to_float_pair/1)
-  end
-
   def sorted_into_non_overlapping_sublists(%__MODULE__{timespans: timespans}) do
     Enum.reduce(timespans, [[]], &insert_without_overlapping/2)
   end
@@ -61,6 +57,49 @@ defmodule Satie.TimespanList do
           Timespan.adjoin?(timespan, timespan2)
         end)
       end)
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(0, 3),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(6, 10),
+    ...> ])
+    iex> TimespanList.timespan(timespan_list)
+    #Satie.Timespan<{0, 1}, {10, 1}>
+
+  """
+  def timespan(%__MODULE__{timespans: []}), do: Timespan.new(0, 0)
+
+  def timespan(%__MODULE__{timespans: timespans}) do
+    [starts, stops] =
+      timespans
+      |> Enum.map(&Timespan.offsets/1)
+      |> Enum.zip()
+      |> Enum.map(&Tuple.to_list/1)
+
+    Timespan.new(
+      Enum.min_by(starts, &Offset.to_float/1),
+      Enum.max_by(stops, &Offset.to_float/1)
+    )
+  end
+
+  def partition(timespan_list, options \\ [])
+  def partition(%__MODULE__{timespans: []}, _options), do: []
+
+  def partition(%__MODULE__{timespans: timespans}, options) do
+    [timespan | timespans] =
+      timespans
+      |> sort_timespans()
+
+    func =
+      case Keyword.get(options, :include_adjoining, false) do
+        false -> &Timespan.overlap?(&1, &2)
+        true -> fn ts1, ts2 -> Timespan.overlap?(ts1, ts2) || Timespan.adjoin?(ts1, ts2) end
+      end
+
+    do_partition(timespans, [[timespan]], func)
   end
 
   def intersection(%__MODULE__{timespans: timespans}, %Timespan{} = operand) do
@@ -210,6 +249,30 @@ defmodule Satie.TimespanList do
       [] -> {:ok, timespans}
       invalid_timespans -> {:error, invalid_timespans}
     end
+  end
+
+  defp sort_timespans(timespans) do
+    Enum.sort_by(timespans, &Timespan.to_float_pair/1)
+  end
+
+  defp do_partition([], acc, _func) do
+    acc
+    |> Enum.reverse()
+    |> Enum.map(fn timespans ->
+      timespans
+      |> sort_timespans()
+      |> new()
+    end)
+  end
+
+  defp do_partition([timespan | rest], [current | acc], func) do
+    new_acc =
+      case Enum.any?(current, &func.(timespan, &1)) do
+        true -> [[timespan | current] | acc]
+        false -> [[timespan], current | acc]
+      end
+
+    do_partition(rest, new_acc, func)
   end
 
   defimpl Inspect do
