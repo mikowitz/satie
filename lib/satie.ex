@@ -27,11 +27,11 @@ defmodule Satie do
     struct.invert(transposable, axis)
   end
 
-  def show(content) do
+  def show(content, lilypond_options \\ []) do
     case lilypondable?(content) do
       true ->
         content
-        |> LilypondFile.from()
+        |> LilypondFile.from(lilypond_options)
         |> LilypondFile.show()
 
       false ->
