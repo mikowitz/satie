@@ -4,6 +4,11 @@ defmodule Satie.Duration do
   """
   defstruct [:numerator, :denominator]
 
+  import Satie.Guards
+
+  alias Satie.Fractional
+  alias Satie.Multiplier
+
   @duration_re ~r/^(?<base>\\breve|\\longa|\\maxima|\d+)(?<dots>.*)$/
 
   def new(duration) when is_bitstring(duration) do
@@ -23,9 +28,7 @@ defmodule Satie.Duration do
   def new(numerator, denominator)
       when is_integer(numerator) and is_integer(denominator) and denominator != 0 do
     {numerator, denominator}
-    |> reduce()
-    |> correct_polarity()
-    |> then(fn {n, d} -> %__MODULE__{numerator: n, denominator: d} end)
+    |> Fractional.__init__(__MODULE__)
   end
 
   def new(n, d), do: {:error, :duration_new, {n, d}}
@@ -35,37 +38,38 @@ defmodule Satie.Duration do
     |> Enum.all?(& &1.(duration))
   end
 
-  def add(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{numerator: n2, denominator: d2}) do
+  def add(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
     new(n1 * d2 + n2 * d1, d1 * d2)
   end
 
-  def subtract(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
-        numerator: n2,
-        denominator: d2
-      }) do
+  def subtract(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
     new(n1 * d2 - n2 * d1, d1 * d2)
   end
 
-  def multiply(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
-        numerator: n2,
-        denominator: d2
-      }) do
+  def multiply(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
     new(n1 * n2, d1 * d2)
   end
 
-  def multiply(%__MODULE__{numerator: n, denominator: d}, i) when is_integer(i) do
-    new(n * i, d)
+  def multiply(%__MODULE__{} = duration, rhs) when is_integer(rhs) do
+    {n, d} = Fractional.to_tuple(duration)
+    new(n * rhs, d)
   end
 
-  def divide(%__MODULE__{numerator: n1, denominator: d1}, %__MODULE__{
-        numerator: n2,
-        denominator: d2
-      }) do
-    new(n1 * d2, n2 * d1)
+  def divide(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
+    Multiplier.new(n1 * d2, n2 * d1)
   end
 
-  def divide(%__MODULE__{numerator: n, denominator: d}, i) when is_integer(i) and i != 0 do
-    new(n, d * i)
+  def divide(%__MODULE__{} = duration, rhs) when is_integer(rhs) and rhs != 0 do
+    {n, d} = Fractional.to_tuple(duration)
+    new(n, d * rhs)
   end
 
   defp proper_length?(%__MODULE__{numerator: n, denominator: d}) do

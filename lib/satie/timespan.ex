@@ -4,6 +4,7 @@ defmodule Satie.Timespan do
   """
 
   alias Satie.{Duration, Offset, Timespan, TimespanList}
+  alias Satie.Fractional
 
   import Satie.Guards
 
@@ -60,7 +61,7 @@ defmodule Satie.Timespan do
   def to_tuple_pair(%__MODULE__{} = timespan) do
     timespan
     |> offsets()
-    |> Enum.map(&Offset.to_tuple/1)
+    |> Enum.map(&Fractional.to_tuple/1)
   end
 
   @doc """

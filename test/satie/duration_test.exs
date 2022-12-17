@@ -2,7 +2,7 @@ defmodule Satie.DurationTest do
   use ExUnit.Case, async: true
 
   import Satie.RegressionDataStreamer
-  alias Satie.Duration
+  alias Satie.{Duration, Multiplier, Offset}
 
   describe inspect(&Duration.new/1) do
     test "can parse a duration from a lilypond string" do
@@ -234,12 +234,12 @@ defmodule Satie.DurationTest do
       half = Duration.new(1, 2)
       neg_quarter = Duration.new(-1, 4)
 
-      assert Duration.divide(quarter, third) == Duration.new(3, 4)
-      assert Duration.divide(quarter, half) == Duration.new(1, 2)
-      assert Duration.divide(quarter, neg_quarter) == Duration.new(-1, 1)
-      assert Duration.divide(third, half) == Duration.new(2, 3)
-      assert Duration.divide(third, neg_quarter) == Duration.new(-4, 3)
-      assert Duration.divide(half, neg_quarter) == Duration.new(-2, 1)
+      assert Duration.divide(quarter, third) == Multiplier.new(3, 4)
+      assert Duration.divide(quarter, half) == Multiplier.new(1, 2)
+      assert Duration.divide(quarter, neg_quarter) == Multiplier.new(-1, 1)
+      assert Duration.divide(third, half) == Multiplier.new(2, 3)
+      assert Duration.divide(third, neg_quarter) == Multiplier.new(-4, 3)
+      assert Duration.divide(half, neg_quarter) == Multiplier.new(-2, 1)
     end
 
     test "returns the product of a duration and an integer" do
@@ -256,12 +256,12 @@ defmodule Satie.DurationTest do
       {d3, ""} = Integer.parse(d3)
       duration = Duration.new(n1, d1)
       duration2 = Duration.new(n2, d2)
-      quotient = Duration.new(n3, d3)
+      quotient = Multiplier.new(n3, d3)
 
       assert Duration.divide(duration, duration2) == quotient
     end)
 
-    regression_test(:duration, :multiply_by_int, fn [n1, d1, i, n2, d2] ->
+    regression_test(:duration, :divide_by_int, fn [n1, d1, i, n2, d2] ->
       {n1, ""} = Integer.parse(n1)
       {d1, ""} = Integer.parse(d1)
       {i, ""} = Integer.parse(i)
@@ -270,8 +270,47 @@ defmodule Satie.DurationTest do
       duration = Duration.new(n1, d1)
       quotient = Duration.new(n2, d2)
 
-      assert Duration.multiply(duration, i) == quotient
+      assert Duration.divide(duration, i) == quotient
     end)
+  end
+
+  describe "arithmetic" do
+    test "against another duration" do
+      d1 = Duration.new(3, 8)
+      d2 = Duration.new(1, 4)
+
+      assert is_struct(Duration.add(d1, d2), Duration)
+      assert is_struct(Duration.subtract(d1, d2), Duration)
+      assert is_struct(Duration.multiply(d1, d2), Duration)
+      assert is_struct(Duration.divide(d1, d2), Multiplier)
+    end
+
+    test "against an integer" do
+      d = Duration.new(3, 8)
+
+      assert is_struct(Duration.multiply(d, 1), Duration)
+      assert is_struct(Duration.divide(d, 1), Duration)
+    end
+
+    test "against a multiplier" do
+      d = Duration.new(3, 8)
+      m = Multiplier.new(1, 4)
+
+      assert is_struct(Duration.add(d, m), Duration)
+      assert is_struct(Duration.subtract(d, m), Duration)
+      assert is_struct(Duration.multiply(d, m), Duration)
+      assert is_struct(Duration.divide(d, m), Multiplier)
+    end
+
+    test "against an offset" do
+      d = Duration.new(3, 8)
+      o = Offset.new(1, 4)
+
+      assert is_struct(Duration.add(d, o), Duration)
+      assert is_struct(Duration.subtract(d, o), Duration)
+      assert is_struct(Duration.multiply(d, o), Duration)
+      assert is_struct(Duration.divide(d, o), Multiplier)
+    end
   end
 
   describe inspect(&String.Chars.to_string/1) do

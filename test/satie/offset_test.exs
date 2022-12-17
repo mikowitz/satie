@@ -1,7 +1,7 @@
 defmodule Satie.OffsetTest do
   use ExUnit.Case, async: true
 
-  alias Satie.Offset
+  alias Satie.{Duration, Multiplier, Offset}
 
   doctest Offset
 
@@ -87,6 +87,45 @@ defmodule Satie.OffsetTest do
       refute Offset.eq(context.offset1, context.offset2)
       refute Offset.eq(context.offset1, context.offset3)
       refute Offset.eq(context.offset2, context.offset3)
+    end
+  end
+
+  describe "arithmetic" do
+    test "against a duration" do
+      o = Offset.new(1, 3)
+      d = Duration.new(1, 8)
+
+      assert is_struct(Offset.add(o, d), Offset)
+      assert is_struct(Offset.subtract(o, d), Offset)
+      assert is_struct(Offset.multiply(o, d), Offset)
+      assert is_struct(Offset.divide(o, d), Offset)
+    end
+
+    test "against an integer" do
+      o = Offset.new(1, 3)
+
+      assert is_struct(Offset.multiply(o, 2), Offset)
+      assert is_struct(Offset.divide(o, 2), Offset)
+    end
+
+    test "against a multiplier" do
+      o = Offset.new(1, 3)
+      m = Multiplier.new(1, 8)
+
+      assert is_struct(Offset.add(o, m), Offset)
+      assert is_struct(Offset.subtract(o, m), Offset)
+      assert is_struct(Offset.multiply(o, m), Offset)
+      assert is_struct(Offset.divide(o, m), Offset)
+    end
+
+    test "against another offset" do
+      o1 = Offset.new(1, 3)
+      o2 = Offset.new(1, 8)
+
+      assert is_struct(Offset.add(o1, o2), Offset)
+      assert is_struct(Offset.subtract(o1, o2), Duration)
+      assert is_struct(Offset.multiply(o1, o2), Offset)
+      assert is_struct(Offset.divide(o1, o2), Multiplier)
     end
   end
 

@@ -3,6 +3,8 @@ defmodule Satie.Offset do
   Models a temporal offset as a rational fraction
   """
 
+  alias Satie.Fractional
+  alias Satie.{Duration, Multiplier}
   import Satie.Guards
 
   defstruct [:numerator, :denominator]
@@ -18,27 +20,17 @@ defmodule Satie.Offset do
       iex> Offset.new({5, 18})
       #Satie.Offset<{5, 18}>
 
-    Does not reduce fraction
+    Reduces fraction
 
       iex> Offset.new(4, 16)
-      #Satie.Offset<{4, 16}>
+      #Satie.Offset<{1, 4}>
 
   """
   def new({a, b} = offset) when is_integer_duple(offset), do: new(a, b)
 
   def new(numerator, denominator \\ 1) when is_integer(numerator) and is_integer(denominator) do
-    %__MODULE__{numerator: numerator, denominator: denominator}
-  end
-
-  @doc """
-
-    iex> offset = Offset.new(5, 16)
-    iex> Offset.to_tuple(offset)
-    {5, 16}
-
-  """
-  def to_tuple(%__MODULE__{numerator: n, denominator: d}) do
-    {n, d}
+    {numerator, denominator}
+    |> Fractional.__init__(__MODULE__)
   end
 
   @doc """
@@ -49,6 +41,48 @@ defmodule Satie.Offset do
 
   """
   def to_float(%__MODULE__{numerator: n, denominator: d}), do: n / d
+
+  def add(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
+    new(n1 * d2 + n2 * d1, d1 * d2)
+  end
+
+  def subtract(%__MODULE__{} = duration, %rhs_struct{} = rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
+
+    case rhs_struct do
+      __MODULE__ -> Duration.new(n1 * d2 - n2 * d1, d1 * d2)
+      _ -> new(n1 * d2 - n2 * d1, d1 * d2)
+    end
+  end
+
+  def multiply(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
+    new(n1 * n2, d1 * d2)
+  end
+
+  def multiply(%__MODULE__{} = duration, rhs) when is_integer(rhs) do
+    {n, d} = Fractional.to_tuple(duration)
+    new(n * rhs, d)
+  end
+
+  def divide(%__MODULE__{} = duration, %rhs_struct{} = rhs) when is_fractional(rhs) do
+    {n1, d1} = Fractional.to_tuple(duration)
+    {n2, d2} = Fractional.to_tuple(rhs)
+
+    case rhs_struct do
+      __MODULE__ -> Multiplier.new(n1 * d2, n2 * d1)
+      _ -> new(n1 * d2, n2 * d1)
+    end
+  end
+
+  def divide(%__MODULE__{} = duration, rhs) when is_integer(rhs) and rhs != 0 do
+    {n, d} = Fractional.to_tuple(duration)
+    new(n, d * rhs)
+  end
 
   def eq(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
     to_float(offset1) == to_float(offset2)
@@ -78,11 +112,12 @@ defmodule Satie.Offset do
 
   defimpl Inspect do
     import Inspect.Algebra
+    alias Satie.Fractional
 
     def inspect(%@for{} = offset, _opts) do
       concat([
         "#Satie.Offset<",
-        inspect(@for.to_tuple(offset)),
+        inspect(Fractional.to_tuple(offset)),
         ">"
       ])
     end
