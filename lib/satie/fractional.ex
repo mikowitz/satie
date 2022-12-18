@@ -9,6 +9,8 @@ defmodule Satie.Fractional do
 
   """
 
+  alias Satie.Offset
+
   def to_tuple(%{numerator: n, denominator: d}), do: {n, d}
 
   def __init__({n, d}, mod) do
@@ -23,6 +25,8 @@ defmodule Satie.Fractional do
       |> correct_polarity()
     end
   end
+
+  def to_offset(%{numerator: n, denominator: d}), do: Offset.new(n, d)
 
   defp correct_polarity({a, b}) when b < 0, do: {a * -1, b * -1}
   defp correct_polarity({a, b}), do: {a, b}
