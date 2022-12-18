@@ -5,6 +5,7 @@ defmodule Satie.TimespanList do
 
   import Satie.Guards
 
+  alias Satie.Fractional
   alias Satie.{Offset, Timespan}
 
   defstruct [:timespans]
@@ -83,6 +84,234 @@ defmodule Satie.TimespanList do
       Enum.min_by(starts, &Offset.to_float/1),
       Enum.max_by(stops, &Offset.to_float/1)
     )
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 15),
+    ...> ])
+    iex> [start, stop] = TimespanList.offsets(timespan_list)
+    iex> start
+    #Satie.Offset<{-2, 1}>
+    iex> stop
+    #Satie.Offset<{15, 1}>
+
+  """
+  def offsets(%__MODULE__{} = timespan_list) do
+    timespan_list
+    |> timespan()
+    |> Timespan.offsets()
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 15),
+    ...> ])
+    iex> TimespanList.start_offset(timespan_list)
+    #Satie.Offset<{-2, 1}>
+
+  """
+  def start_offset(%__MODULE__{} = timespan_list) do
+    timespan_list
+    |> timespan()
+    |> Timespan.start_offset()
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 15),
+    ...> ])
+    iex> TimespanList.stop_offset(timespan_list)
+    #Satie.Offset<{15, 1}>
+
+  """
+  def stop_offset(%__MODULE__{} = timespan_list) do
+    timespan_list
+    |> timespan()
+    |> Timespan.stop_offset()
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 16),
+    ...> ])
+    iex> TimespanList.axis(timespan_list)
+    #Satie.Offset<{7, 1}>
+
+  """
+  def axis(%__MODULE__{} = timespan_list) do
+    timespan_list
+    |> timespan()
+    |> Timespan.axis()
+  end
+
+  @doc """
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 16),
+    ...> ])
+    iex> TimespanList.reflect(timespan_list)
+    #Satie.TimespanList<[
+      Timespan({-2, 1}, {4, 1})
+      Timespan({8, 1}, {11, 1})
+      Timespan({9, 1}, {16, 1})
+    ]>
+
+    iex> timespan_list = TimespanList.new([
+    ...>   Timespan.new(-2, 5),
+    ...>   Timespan.new(3, 6),
+    ...>   Timespan.new(10, 16),
+    ...> ])
+    iex> TimespanList.reflect(timespan_list, Offset.new(0))
+    #Satie.TimespanList<[
+      Timespan({-16, 1}, {-10, 1})
+      Timespan({-6, 1}, {-3, 1})
+      Timespan({-5, 1}, {2, 1})
+    ]>
+
+  """
+  def reflect(%__MODULE__{timespans: timespans} = timespan_list, axis \\ nil) do
+    axis = axis || axis(timespan_list)
+
+    timespans
+    |> Enum.map(&Timespan.reflect(&1, axis))
+    |> sort_timespans()
+    |> new()
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.scale(timespan_list, 2)
+      #Satie.TimespanList<[
+        Timespan({-2, 1}, {12, 1})
+        Timespan({3, 1}, {9, 1})
+        Timespan({10, 1}, {20, 1})
+      ]>
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.scale(timespan_list, 2, anchor: :right)
+      #Satie.TimespanList<[
+        Timespan({-9, 1}, {5, 1})
+        Timespan({0, 1}, {6, 1})
+        Timespan({5, 1}, {15, 1})
+      ]>
+
+  """
+  def scale(%__MODULE__{timespans: timespans}, factor, options \\ []) do
+    timespans
+    |> Enum.map(&Timespan.scale(&1, factor, options))
+    |> sort_timespans()
+    |> new()
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.stretch(timespan_list, 2)
+      #Satie.TimespanList<[
+        Timespan({-2, 1}, {12, 1})
+        Timespan({8, 1}, {14, 1})
+        Timespan({22, 1}, {32, 1})
+      ]>
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.stretch(timespan_list, 2, Offset.new(1))
+      #Satie.TimespanList<[
+        Timespan({-5, 1}, {9, 1})
+        Timespan({5, 1}, {11, 1})
+        Timespan({19, 1}, {29, 1})
+      ]>
+
+  """
+  def stretch(%__MODULE__{timespans: timespans} = timespan_list, factor, anchor \\ nil) do
+    anchor = anchor || start_offset(timespan_list)
+
+    timespans
+    |> Enum.map(&Timespan.stretch(&1, factor, anchor))
+    |> sort_timespans()
+    |> new()
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(0, 10),
+      ...>   Timespan.new(13, 15)
+      ...> ])
+      iex> TimespanList.translate(timespan_list, Offset.new(2))
+      #Satie.TimespanList<[
+        Timespan({0, 1}, {7, 1})
+        Timespan({2, 1}, {12, 1})
+        Timespan({15, 1}, {17, 1})
+      ]>
+      iex> TimespanList.translate(timespan_list, [Offset.new(-3), Offset.new(2)])
+      #Satie.TimespanList<[
+        Timespan({-5, 1}, {7, 1})
+        Timespan({-3, 1}, {12, 1})
+        Timespan({10, 1}, {17, 1})
+      ]>
+
+  """
+  def translate(%__MODULE__{timespans: timespans}, %Offset{} = translation_offset) do
+    timespans
+    |> Enum.map(&Timespan.translate(&1, translation_offset))
+    |> sort_timespans()
+    |> new()
+  end
+
+  def translate(%__MODULE__{timespans: timespans}, offsets) when is_list(offsets) do
+    timespans
+    |> Enum.map(&Timespan.translate(&1, offsets))
+    |> sort_timespans()
+    |> new()
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.duration(timespan_list)
+      #Satie.Duration<(17,1)>
+  """
+  def duration(%__MODULE__{} = timespan_list) do
+    timespan_list
+    |> timespan()
+    |> Timespan.duration()
   end
 
   def partition(timespan_list, options \\ [])
@@ -239,6 +468,99 @@ defmodule Satie.TimespanList do
 
   def split(%__MODULE__{}, offset) do
     {:error, :timespan_list_split_non_offset_equivalent, offset}
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.repeat(timespan_list, 2)
+      #Satie.TimespanList<[
+        Timespan({-2, 1}, {5, 1})
+        Timespan({3, 1}, {6, 1})
+        Timespan({10, 1}, {15, 1})
+        Timespan({15, 1}, {22, 1})
+        Timespan({20, 1}, {23, 1})
+        Timespan({27, 1}, {32, 1})
+      ]>
+
+  """
+  def repeat(%__MODULE__{timespans: timespans} = timespan_list, count, spacer \\ Offset.new(0)) do
+    duration = duration(timespan_list) |> Fractional.to_offset()
+    translation_distance = Offset.add(duration, spacer)
+
+    Enum.map(1..count, fn factor ->
+      translate_timespans(timespans, Offset.multiply(translation_distance, factor - 1))
+    end)
+    |> List.flatten()
+    |> sort_timespans()
+    |> new()
+  end
+
+  defp translate_timespans(timespans, translation_distance) do
+    Enum.map(timespans, &Timespan.translate(&1, translation_distance))
+  end
+
+  @doc """
+
+      iex> timespan_list = TimespanList.new([
+      ...>   Timespan.new(-2, 5),
+      ...>   Timespan.new(3, 6),
+      ...>   Timespan.new(10, 15),
+      ...> ])
+      iex> TimespanList.repeat_until(timespan_list, Offset.new(50))
+      #Satie.TimespanList<[
+        Timespan({-2, 1}, {5, 1})
+        Timespan({3, 1}, {6, 1})
+        Timespan({10, 1}, {15, 1})
+        Timespan({15, 1}, {22, 1})
+        Timespan({20, 1}, {23, 1})
+        Timespan({27, 1}, {32, 1})
+        Timespan({32, 1}, {39, 1})
+        Timespan({37, 1}, {40, 1})
+        Timespan({44, 1}, {49, 1})
+        Timespan({49, 1}, {50, 1})
+      ]>
+
+  """
+  def repeat_until(
+        %__MODULE__{timespans: timespans} = timespan_list,
+        limit,
+        spacer \\ Offset.new(0)
+      ) do
+    duration = duration(timespan_list) |> Fractional.to_offset()
+    translation_distance = Offset.add(duration, spacer)
+
+    do_repeat_until([timespans], limit, translation_distance)
+    |> List.flatten()
+    |> Enum.filter(&Timespan.well_formed?/1)
+    |> sort_timespans()
+    |> new()
+  end
+
+  defp do_repeat_until([last_timespans | _] = acc, limit, translation_distance) do
+    new_timespans = Enum.map(last_timespans, &Timespan.translate(&1, translation_distance))
+
+    limit_hit = Enum.any?(new_timespans, &Offset.gt(&1.stop_offset, limit))
+
+    case limit_hit do
+      true ->
+        new_timespans = Enum.map(new_timespans, &stop_timespan_at_limit(&1, limit))
+        [new_timespans | acc]
+
+      false ->
+        do_repeat_until([new_timespans | acc], limit, translation_distance)
+    end
+  end
+
+  defp stop_timespan_at_limit(timespan, limit) do
+    case Offset.gt(timespan.stop_offset, limit) do
+      true -> Timespan.stop_offset(timespan, limit)
+      false -> timespan
+    end
   end
 
   def union(%__MODULE__{timespans: []} = timespan_list), do: timespan_list

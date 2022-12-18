@@ -1,7 +1,7 @@
 defmodule Satie.TimespanListTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Timespan, TimespanList}
+  alias Satie.{Offset, Timespan, TimespanList}
 
   doctest TimespanList
 

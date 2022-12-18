@@ -86,15 +86,6 @@ defmodule Satie.Duration do
     !Regex.match?(~r/01/, binary)
   end
 
-  defp reduce({a, b}) do
-    with g <- Integer.gcd(a, b) do
-      {round(a / g), round(b / g)}
-    end
-  end
-
-  defp correct_polarity({a, b}) when b < 0, do: {a * -1, b * -1}
-  defp correct_polarity({a, b}), do: {a, b}
-
   defp parse_base_duration("\\breve"), do: {2, 1}
   defp parse_base_duration("\\longa"), do: {4, 1}
   defp parse_base_duration("\\maxima"), do: {8, 1}
