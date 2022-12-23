@@ -9,7 +9,19 @@ defmodule Satie.Fractional do
 
   """
 
-  alias Satie.Offset
+  defmacro __using__(_) do
+    quote do
+      alias unquote(__MODULE__)
+
+      def __init__({n, d}) do
+        {n, d}
+        |> Satie.Fractional.reduce()
+        |> then(fn {n, d} -> struct(__MODULE__, %{numerator: n, denominator: d}) end)
+      end
+
+      def to_tuple(%{numerator: n, denominator: d}), do: {n, d}
+    end
+  end
 
   def to_tuple(%{numerator: n, denominator: d}), do: {n, d}
 
@@ -25,8 +37,6 @@ defmodule Satie.Fractional do
       |> correct_polarity()
     end
   end
-
-  def to_offset(%{numerator: n, denominator: d}), do: Offset.new(n, d)
 
   defp correct_polarity({a, b}) when b < 0, do: {a * -1, b * -1}
   defp correct_polarity({a, b}), do: {a, b}

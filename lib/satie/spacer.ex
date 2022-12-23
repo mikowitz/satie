@@ -4,23 +4,7 @@ defmodule Satie.Spacer do
   """
   use Satie.Leaf
 
-  alias Satie.Duration
-
-  def new(%Duration{numerator: n, denominator: d} = duration) do
-    case Duration.printable?(duration) do
-      true -> %__MODULE__{written_duration: duration}
-      false -> {:error, :spacer_new, {:unassignable_duration, n, d}}
-    end
-  end
-
-  @re ~r/^s(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
-
-  def new(spacer) when is_bitstring(spacer) do
-    case Regex.named_captures(@re, spacer) do
-      %{"duration" => duration} -> new(Duration.new(duration))
-      nil -> {:error, :spacer_new, spacer}
-    end
-  end
+  def new(spacer), do: Satie.ToSpacer.from(spacer)
 
   defimpl String.Chars do
     def to_string(%@for{} = spacer) do

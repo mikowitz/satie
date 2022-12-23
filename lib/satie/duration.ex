@@ -6,32 +6,26 @@ defmodule Satie.Duration do
 
   import Satie.Guards
 
-  alias Satie.Fractional
+  use Satie.Fractional
   alias Satie.Multiplier
 
-  @duration_re ~r/^(?<base>\\breve|\\longa|\\maxima|\d+)(?<dots>.*)$/
+  @doc """
 
-  def new(duration) when is_bitstring(duration) do
-    case Regex.named_captures(@duration_re, duration) do
-      %{"base" => base, "dots" => dots} ->
-        dots_count = String.length(dots)
-        {n, base} = parse_base_duration(base)
+      iex> Duration.new(2)
+      #Satie.Duration<breve>
 
-        {numerator, denominator} = build_numerator_and_denominator(n, base, dots_count)
-        new(numerator, denominator)
+      iex> duration = Duration.new(1, 4)
+      iex> Duration.new(duration)
+      #Satie.Duration<4>
 
-      nil ->
-        {:error, :duration_new, duration}
-    end
+  """
+  def new(duration) do
+    Satie.ToDuration.from(duration)
   end
 
-  def new(numerator, denominator)
-      when is_integer(numerator) and is_integer(denominator) and denominator != 0 do
-    {numerator, denominator}
-    |> Fractional.__init__(__MODULE__)
+  def new(numerator, denominator) do
+    new({numerator, denominator})
   end
-
-  def new(n, d), do: {:error, :duration_new, {n, d}}
 
   def printable?(%__MODULE__{} = duration) do
     [&proper_length?/1, &printable_subdivision?/1, &not_tied?/1]
@@ -84,33 +78,6 @@ defmodule Satie.Duration do
   defp not_tied?(%__MODULE__{numerator: n}) do
     binary = Integer.to_string(n, 2)
     !Regex.match?(~r/01/, binary)
-  end
-
-  defp parse_base_duration("\\breve"), do: {2, 1}
-  defp parse_base_duration("\\longa"), do: {4, 1}
-  defp parse_base_duration("\\maxima"), do: {8, 1}
-
-  defp parse_base_duration(dur) do
-    {dur, ""} = Integer.parse(dur)
-    {1, dur}
-  end
-
-  defp build_numerator_and_denominator(1, base, dots_count) do
-    {
-      round(:math.pow(2, dots_count + 1) - 1),
-      round(:math.pow(2, :math.log2(base) + dots_count))
-    }
-  end
-
-  defp build_numerator_and_denominator(num, _base, 0) do
-    {num, 1}
-  end
-
-  defp build_numerator_and_denominator(num, _base, dots_count) do
-    {
-      round(:math.pow(2, dots_count + 1) - 1),
-      round(:math.pow(2, dots_count) / num)
-    }
   end
 
   defimpl String.Chars do

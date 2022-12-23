@@ -4,7 +4,7 @@ defmodule Satie.Pitch do
   """
   defstruct [:name, :pitch_class, :semitones, :octave]
 
-  alias Satie.{Accidental, Interval, PitchClass}
+  alias Satie.{Accidental, Interval}
 
   import Satie.Helpers,
     only: [
@@ -14,26 +14,9 @@ defmodule Satie.Pitch do
 
   import Satie.PitchHelpers
 
-  @re ~r/^
-    (?<pitch_class>[abcdefg](t?q[sf]|s+(qs)?|f+(qf)?|\+|~)?)
-    (?<octave>,*|'*)
-  $/x
+  def new(pitch), do: Satie.ToPitch.from(pitch)
 
-  def new(pitch) when is_bitstring(pitch) do
-    case Regex.named_captures(@re, pitch) do
-      nil ->
-        {:error, :pitch_new, pitch}
-
-      captures ->
-        captures
-        |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
-        |> build_pitch_class()
-        |> build_name()
-        |> parse_octave()
-        |> calculate_semitones()
-        |> then(&struct(__MODULE__, &1))
-    end
-  end
+  def new(pitch_class, octave), do: new({pitch_class, octave})
 
   def add(%__MODULE__{} = pitch, %__MODULE__{} = rhs) do
     transpose(pitch, to_interval(rhs))
@@ -155,33 +138,6 @@ defmodule Satie.Pitch do
       true -> pitch_number + up
       false -> pitch_number - down
     end
-  end
-
-  defp build_pitch_class(%{pitch_class: pc} = map) do
-    %{map | pitch_class: PitchClass.new(pc)}
-  end
-
-  defp build_name(%{pitch_class: %{name: name}, octave: octave} = map) do
-    Map.put_new(map, :name, name <> octave)
-  end
-
-  defp parse_octave(%{octave: ""} = map), do: %{map | octave: 3}
-
-  defp parse_octave(%{octave: "'" <> _ = octave} = map),
-    do: %{map | octave: 3 + String.length(octave)}
-
-  defp parse_octave(%{octave: "," <> _ = octave} = map),
-    do: %{map | octave: 3 - String.length(octave)}
-
-  defp calculate_semitones(
-         %{octave: octave, pitch_class: %{diatonic_pitch_class: dpc} = pitch_class} = map
-       ) do
-    semitones =
-      dpc_to_semitones(dpc) +
-        PitchClass.alteration(pitch_class) +
-        (octave - 4) * 12
-
-    Map.put_new(map, :semitones, semitones)
   end
 
   defp should_reverse_polarity?(pitch, rhs) do

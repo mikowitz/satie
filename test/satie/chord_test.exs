@@ -39,8 +39,58 @@ defmodule Satie.ChordTest do
              }
     end
 
+    test "noteheads can be anything that can be parsed as a notehead" do
+      assert Chord.new(
+               [
+                 "c'",
+                 {"ef'", :forced},
+                 Satie.Pitch.new("g'")
+               ],
+               Duration.new(1, 4)
+             ) == %Chord{
+               noteheads: [
+                 Notehead.new("c'"),
+                 Notehead.new("ef'!"),
+                 Notehead.new("g'")
+               ],
+               written_duration: Duration.new(1, 4)
+             }
+    end
+
+    test "durations can be anything that can be parsed as a duration" do
+      for duration <- ["4", {1, 4}, Satie.Offset.new(1, 4)] do
+        assert Chord.new(
+                 [
+                   Notehead.new("c'"),
+                   Notehead.new("e'"),
+                   Notehead.new("g'")
+                 ],
+                 duration
+               ) == %Chord{
+                 noteheads: [
+                   Notehead.new("c'"),
+                   Notehead.new("e'"),
+                   Notehead.new("g'")
+                 ],
+                 written_duration: Duration.new(1, 4)
+               }
+      end
+    end
+
     test "returns an error if the noteheads list is empty" do
       assert Chord.new([], Duration.new(1, 4)) == {:error, :chord_new, {[], Duration.new(1, 4)}}
+    end
+
+    test "returns a chord from any leaf type" do
+      chord = Chord.new("<c'>8")
+      note = Satie.Note.new("c'8")
+      rest = Satie.Rest.new("r8")
+      spacer = Satie.Spacer.new("s8")
+
+      assert Chord.new(chord) == chord
+      assert Chord.new(note) == chord
+      assert Chord.new(rest) == chord
+      assert Chord.new(spacer) == chord
     end
 
     test "returns an error when the duration is not assignable" do

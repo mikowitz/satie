@@ -4,40 +4,9 @@ defmodule Satie.Chord do
   """
   use Satie.Leaf, [:noteheads]
 
-  @re ~r/^<s*(?<noteheads>([^?!]+[?!]?\s*)+)s*>(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
+  def new(chord), do: Satie.ToChord.from(chord)
 
-  alias Satie.{Duration, Notehead}
-
-  def new(chord) when is_bitstring(chord) do
-    case Regex.named_captures(@re, chord) do
-      %{"noteheads" => noteheads, "duration" => duration} ->
-        noteheads = noteheads |> String.split(" ", trim: true) |> Enum.map(&Notehead.new/1)
-        duration = Duration.new(duration)
-        new(noteheads, duration)
-
-      nil ->
-        {:error, :chord_new, chord}
-    end
-  end
-
-  def new(noteheads, %Duration{} = duration) do
-    with :ok <- validate_noteheads(noteheads),
-         true <- Duration.printable?(duration) do
-      %__MODULE__{
-        noteheads: noteheads,
-        written_duration: duration
-      }
-    else
-      _ -> {:error, :chord_new, {noteheads, duration}}
-    end
-  end
-
-  defp validate_noteheads([]), do: :error
-  defp validate_noteheads(noteheads), do: do_validate_noteheads(noteheads)
-
-  defp do_validate_noteheads([]), do: :ok
-  defp do_validate_noteheads([%Notehead{} | rest]), do: do_validate_noteheads(rest)
-  defp do_validate_noteheads([_ | _]), do: :error
+  def new(noteheads, duration), do: new({noteheads, duration})
 
   use Satie.Transposable, :noteheads
 

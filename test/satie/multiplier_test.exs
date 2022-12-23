@@ -27,6 +27,18 @@ defmodule Satie.MultiplierTest do
     end
   end
 
+  describe inspect(&Multiplier.new/1) do
+    test "denominator defaults to 1" do
+      assert Multiplier.new(3) == %Multiplier{numerator: 3, denominator: 1}
+    end
+
+    test "can be created from another fractional type" do
+      assert Multiplier.new(Duration.new(1, 4)) == %Multiplier{numerator: 1, denominator: 4}
+      assert Multiplier.new(Multiplier.new(2, 4)) == %Multiplier{numerator: 1, denominator: 2}
+      assert Multiplier.new(Offset.new(1, 3)) == %Multiplier{numerator: 1, denominator: 3}
+    end
+  end
+
   describe "arithmetic" do
     test "against a duration" do
       m = Multiplier.new(1, 5)

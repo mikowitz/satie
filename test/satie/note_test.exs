@@ -14,6 +14,24 @@ defmodule Satie.NoteTest do
              }
     end
 
+    test "returns a note from a note" do
+      note = Note.new("fqf?4")
+
+      assert Note.new(note) == %Note{
+               written_duration: Duration.new(1, 4),
+               notehead: %Notehead{
+                 written_pitch: Pitch.new("fqf"),
+                 accidental_display: :cautionary
+               }
+             }
+    end
+
+    # test "returns a note from a rest" do
+    #   rest = Satie.Rest.new("4")
+    #
+    #   assert Note.new(rest) == Note.new("c'4")
+    # end
+
     test "returns an error when it's unparseable as a note" do
       assert Note.new("sss??4-") == {:error, :note_new, "sss??4-"}
     end
@@ -30,11 +48,22 @@ defmodule Satie.NoteTest do
              }
     end
 
+    test "returns a note from notehead and duration strings" do
+      notehead = Notehead.new(Pitch.new("c"))
+      duration = Duration.new(1, 4)
+
+      assert Note.new("c", "4") == %Note{
+               written_duration: duration,
+               notehead: notehead
+             }
+    end
+
     test "returns an error tuple if the duration is not assignable" do
       notehead = Notehead.new(Pitch.new("c"))
       duration = Duration.new(5, 4)
 
-      assert Note.new(notehead, duration) == {:error, :note_new, {:unassignable_duration, 5, 4}}
+      assert Note.new(notehead, duration) ==
+               {:error, :note_new, {:unassignable_duration, duration}}
     end
   end
 

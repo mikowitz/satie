@@ -6,7 +6,8 @@ defmodule Satie.Guards do
   defguard is_integer_duple(value)
            when is_tuple(value) and
                   tuple_size(value) == 2 and
-                  is_integer(elem(value, 0)) and is_integer(elem(value, 1))
+                  is_integer(elem(value, 0)) and is_integer(elem(value, 1)) and
+                  elem(value, 1) != 0
 
   defguard is_integer_duple_input(value) when is_integer(value) or is_integer_duple(value)
 

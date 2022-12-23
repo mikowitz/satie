@@ -39,6 +39,44 @@ defmodule Satie.PitchTest do
     end)
   end
 
+  describe inspect(&Pitch.new/2) do
+    test "returns a pitch from a pitch class string and octave number" do
+      assert Pitch.new("d", 2) == %Pitch{
+               name: "d,",
+               pitch_class: PitchClass.new("d"),
+               semitones: -22,
+               octave: 2
+             }
+    end
+
+    test "returns a pitch from a pitch class string and octave string" do
+      assert Pitch.new("d", "'") == %Pitch{
+               name: "d'",
+               pitch_class: PitchClass.new("d"),
+               semitones: 2,
+               octave: 4
+             }
+    end
+
+    test "returns a pitch from a pitch class and octave number" do
+      assert Pitch.new(PitchClass.new("d"), 3) == %Pitch{
+               name: "d",
+               pitch_class: PitchClass.new("d"),
+               semitones: -10,
+               octave: 3
+             }
+    end
+
+    test "returns a pitch from a pitch class and octave string" do
+      assert Pitch.new(PitchClass.new("d"), ",") == %Pitch{
+               name: "d,",
+               pitch_class: PitchClass.new("d"),
+               semitones: -22,
+               octave: 2
+             }
+    end
+  end
+
   describe inspect(&Pitch.to_interval/1) do
     test "converts a pitch to an interval" do
       assert Pitch.new("c") |> Pitch.to_interval() == Interval.new("-P8")

@@ -5,16 +5,13 @@ defmodule Satie.Multiplier do
   defstruct [:numerator, :denominator]
 
   alias Satie.Duration
-  alias Satie.Fractional
+  use Satie.Fractional
   import Satie.Guards
 
-  def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
-    {numerator, denominator}
-    |> Fractional.__init__(__MODULE__)
-  end
+  def new(multiplier), do: Satie.ToMultiplier.from(multiplier)
 
   def new(numerator, denominator) do
-    {:error, :multiplier_new, {numerator, denominator}}
+    new({numerator, denominator})
   end
 
   def add(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do

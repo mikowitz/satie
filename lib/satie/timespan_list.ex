@@ -5,7 +5,6 @@ defmodule Satie.TimespanList do
 
   import Satie.Guards
 
-  alias Satie.Fractional
   alias Satie.{Offset, Timespan}
 
   defstruct [:timespans]
@@ -489,7 +488,7 @@ defmodule Satie.TimespanList do
 
   """
   def repeat(%__MODULE__{timespans: timespans} = timespan_list, count, spacer \\ Offset.new(0)) do
-    duration = duration(timespan_list) |> Fractional.to_offset()
+    duration = duration(timespan_list) |> Offset.new()
     translation_distance = Offset.add(duration, spacer)
 
     Enum.map(1..count, fn factor ->
@@ -531,7 +530,7 @@ defmodule Satie.TimespanList do
         limit,
         spacer \\ Offset.new(0)
       ) do
-    duration = duration(timespan_list) |> Fractional.to_offset()
+    duration = duration(timespan_list) |> Offset.new()
     translation_distance = Offset.add(duration, spacer)
 
     do_repeat_until([timespans], limit, translation_distance)
