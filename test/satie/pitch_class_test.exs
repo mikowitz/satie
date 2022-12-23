@@ -17,6 +17,19 @@ defmodule Satie.PitchClassTest do
                semitones: 10.5,
                diatonic_pitch_class: "b"
              }
+
+      assert PitchClass.new("d") == %PitchClass{
+               name: "d",
+               accidental: Accidental.new(""),
+               semitones: 2.0,
+               diatonic_pitch_class: "d"
+             }
+    end
+
+    test "returns a PitchClass from a PitchClass" do
+      pitch_class = PitchClass.new("c")
+
+      assert PitchClass.new(pitch_class) == pitch_class
     end
 
     regression_test(:pitch_class, :new, fn [input, name, semitones, accidental, pc_name] ->
@@ -29,6 +42,24 @@ defmodule Satie.PitchClassTest do
                diatonic_pitch_class: pc_name
              }
     end)
+  end
+
+  describe inspect(&PitchClass.new/2) do
+    test "returns a pitch class from a diatonic pitch class and accidental-equivalent" do
+      assert PitchClass.new("b", "qf") == %PitchClass{
+               name: "bqf",
+               accidental: Accidental.new("~"),
+               semitones: 10.5,
+               diatonic_pitch_class: "b"
+             }
+
+      assert PitchClass.new("c", Accidental.new("+")) == %PitchClass{
+               name: "cqs",
+               accidental: Accidental.new("+"),
+               semitones: 0.5,
+               diatonic_pitch_class: "c"
+             }
+    end
   end
 
   describe inspect(&PitchClass.alteration/1) do

@@ -13,6 +13,12 @@ defmodule Satie.NoteheadTest do
              }
     end
 
+    test "can initiate from a notehead" do
+      notehead = Notehead.new("c+'?")
+
+      assert Notehead.new(notehead) == notehead
+    end
+
     test "can initialize from a string" do
       assert Notehead.new("ftqs") == %Notehead{
                written_pitch: Pitch.new("ftqs"),
@@ -46,12 +52,28 @@ defmodule Satie.NoteheadTest do
              }
     end
 
+    test "can initialize from a pitch and an accidental display string" do
+      pitch = Pitch.new("c+'")
+
+      assert Notehead.new(pitch, "?") == %Notehead{
+               written_pitch: pitch,
+               accidental_display: :cautionary
+             }
+    end
+
     test "sets `:default` if any other value is passed for the accidental display" do
       pitch = Pitch.new("c+'")
 
       assert Notehead.new(pitch, accidental_display: "anything else") == %Notehead{
                written_pitch: pitch,
                accidental_display: :neutral
+             }
+    end
+
+    test "can initialize from a pitch string and accidental display string" do
+      assert Notehead.new("c+'", "!") == %Notehead{
+               written_pitch: Pitch.new("c+'"),
+               accidental_display: :forced
              }
     end
   end

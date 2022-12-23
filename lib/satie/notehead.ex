@@ -4,45 +4,11 @@ defmodule Satie.Notehead do
   """
   defstruct [:written_pitch, :accidental_display]
 
-  @accidental_display_options ~w(forced cautionary neutral)a
-
-  @pitch_re ~r/^(?<pitch>[^?!]+)(?<accidental_display>[?!]?)$/
-
-  alias Satie.Pitch
-
-  def new(pitch, opts \\ [])
-
-  def new(%Pitch{} = pitch, opts) do
-    %__MODULE__{
-      written_pitch: pitch,
-      accidental_display: accidental_display_from_opts(opts)
-    }
-  end
-
-  def new(pitch, _opts) when is_bitstring(pitch) do
-    {pitch, accidental_display} = parse_pitch_and_accidental_display(pitch)
-
-    pitch
-    |> Pitch.new()
-    |> new(accidental_display: accidental_display)
-  end
+  def new(notehead, opts \\ nil)
+  def new(notehead, nil), do: Satie.ToNotehead.from(notehead)
+  def new(notehead, opts), do: Satie.ToNotehead.from({notehead, opts})
 
   use Satie.Transposable, :written_pitch
-
-  defp parse_pitch_and_accidental_display(pitch) do
-    %{"pitch" => pitch, "accidental_display" => accidental_display} =
-      Regex.named_captures(@pitch_re, pitch)
-
-    {pitch, translate_accidental_display(accidental_display)}
-  end
-
-  defp translate_accidental_display("?"), do: :cautionary
-  defp translate_accidental_display("!"), do: :forced
-  defp translate_accidental_display(""), do: :neutral
-
-  defp accidental_display_from_opts(opts) do
-    Enum.find(@accidental_display_options, :neutral, &(&1 == opts[:accidental_display]))
-  end
 
   defimpl String.Chars do
     def to_string(%@for{written_pitch: pitch, accidental_display: accidental_display}) do

@@ -5,6 +5,14 @@ defmodule Satie.OffsetTest do
 
   doctest Offset
 
+  describe inspect(&Offset.new/1) do
+    test "can be created from another fractional type" do
+      assert Offset.new(Duration.new(1, 4)) == %Offset{numerator: 1, denominator: 4}
+      assert Offset.new(Multiplier.new(2, 4)) == %Offset{numerator: 1, denominator: 2}
+      assert Offset.new(Offset.new(1, 3)) == %Offset{numerator: 1, denominator: 3}
+    end
+  end
+
   describe "to_float/1" do
     test "converts an offset to a float representation of its place on the timeline" do
       offset = Offset.new(1)

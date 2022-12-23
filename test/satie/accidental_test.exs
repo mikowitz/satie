@@ -12,6 +12,12 @@ defmodule Satie.AccidentalTest do
       assert Accidental.new("s+") == {:error, :accidental_new, "s+"}
     end
 
+    test "returns an accidental from an accidental" do
+      accidental = Accidental.new("+")
+
+      assert Accidental.new(accidental) == accidental
+    end
+
     test "returns an accidental from a string" do
       assert Accidental.new("") == %Accidental{
                name: "natural",

@@ -4,32 +4,9 @@ defmodule Satie.Note do
   """
   use Satie.Leaf, [:notehead]
 
-  @note_re ~r/^(?<notehead>[^?!\d]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
+  def new(note), do: Satie.ToNote.from(note)
 
-  alias Satie.{Duration, Notehead}
-
-  def new(note) when is_bitstring(note) do
-    case Regex.named_captures(@note_re, note) do
-      %{"notehead" => notehead, "duration" => duration} ->
-        new(Notehead.new(notehead), Duration.new(duration))
-
-      nil ->
-        {:error, :note_new, note}
-    end
-  end
-
-  def new(%Notehead{} = notehead, %Duration{numerator: n, denominator: d} = duration) do
-    case Duration.printable?(duration) do
-      true ->
-        %__MODULE__{
-          written_duration: duration,
-          notehead: notehead
-        }
-
-      false ->
-        {:error, :note_new, {:unassignable_duration, n, d}}
-    end
-  end
+  def new(notehead, duration), do: new({notehead, duration})
 
   use Satie.Transposable, :notehead
 

@@ -3,7 +3,8 @@ defmodule Satie.Offset do
   Models a temporal offset as a rational fraction
   """
 
-  alias Satie.Fractional
+  # alias Satie.Fractional
+  use Satie.Fractional
   alias Satie.{Duration, Multiplier}
   import Satie.Guards
 
@@ -25,12 +26,18 @@ defmodule Satie.Offset do
       iex> Offset.new(4, 16)
       #Satie.Offset<{1, 4}>
 
-  """
-  def new({a, b} = offset) when is_integer_duple(offset), do: new(a, b)
 
-  def new(numerator, denominator \\ 1) when is_integer(numerator) and is_integer(denominator) do
-    {numerator, denominator}
-    |> Fractional.__init__(__MODULE__)
+    Can initialize from another Offset
+
+      iex> offset = Offset.new(1, 3)
+      iex> Offset.new(offset)
+      #Satie.Offset<{1, 3}>
+
+  """
+  def new(offset), do: Satie.ToOffset.from(offset)
+
+  def new(numerator, denominator) do
+    new({numerator, denominator})
   end
 
   @doc """

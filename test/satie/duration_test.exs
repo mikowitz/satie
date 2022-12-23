@@ -4,6 +4,8 @@ defmodule Satie.DurationTest do
   import Satie.RegressionDataStreamer
   alias Satie.{Duration, Multiplier, Offset}
 
+  doctest Duration
+
   describe inspect(&Duration.new/1) do
     test "can parse a duration from a lilypond string" do
       assert Duration.new("4") == %Duration{
@@ -34,6 +36,12 @@ defmodule Satie.DurationTest do
 
     test "returns an error if the duration string cannot be parsed into a valid duration" do
       assert Duration.new("q+") == {:error, :duration_new, "q+"}
+    end
+
+    test "can be created from another fractional type" do
+      assert Duration.new(Duration.new(1, 4)) == %Duration{numerator: 1, denominator: 4}
+      assert Duration.new(Multiplier.new(2, 4)) == %Duration{numerator: 1, denominator: 2}
+      assert Duration.new(Offset.new(1, 3)) == %Duration{numerator: 1, denominator: 3}
     end
   end
 

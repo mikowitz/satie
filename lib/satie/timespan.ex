@@ -291,7 +291,7 @@ defmodule Satie.Timespan do
           [start_offset, Offset.add(start_offset, scaled_length)]
 
         :right ->
-          [Offset.subtract(stop_offset, scaled_length) |> Fractional.to_offset(), stop_offset]
+          [Offset.subtract(stop_offset, scaled_length) |> Offset.new(), stop_offset]
       end
 
     new(new_start, new_stop)
@@ -317,7 +317,7 @@ defmodule Satie.Timespan do
       |> Enum.map(fn offset ->
         Offset.subtract(offset, anchor)
         |> Duration.multiply(factor)
-        |> Fractional.to_offset()
+        |> Offset.new()
         |> Offset.add(anchor)
       end)
 
@@ -391,7 +391,7 @@ defmodule Satie.Timespan do
 
   """
   def repeat(%__MODULE__{} = timespan, count, spacer \\ Offset.new(0)) do
-    duration = duration(timespan) |> Fractional.to_offset()
+    duration = duration(timespan) |> Offset.new()
     translation_distance = Offset.add(duration, spacer)
 
     Enum.map(1..count, fn factor ->
@@ -441,7 +441,7 @@ defmodule Satie.Timespan do
       ]>
   """
   def repeat_until(%__MODULE__{} = timespan, limit, spacer \\ Offset.new(0)) do
-    duration = duration(timespan) |> Fractional.to_offset()
+    duration = duration(timespan) |> Offset.new()
     translation_distance = Offset.add(duration, spacer)
 
     do_repeat_until([timespan], limit, translation_distance)
@@ -517,7 +517,7 @@ defmodule Satie.Timespan do
 
         :stop ->
           [
-            Offset.subtract(timespan.stop_offset, new_duration) |> Fractional.to_offset(),
+            Offset.subtract(timespan.stop_offset, new_duration) |> Offset.new(),
             timespan.stop_offset
           ]
       end
@@ -587,7 +587,7 @@ defmodule Satie.Timespan do
 
     Enum.map(ratio, &Duration.multiply(smallest_duration, &1))
     |> Enum.scan(&Duration.add/2)
-    |> Enum.map(&Fractional.to_offset/1)
+    |> Enum.map(&Offset.new/1)
     |> List.insert_at(0, timespan.start_offset)
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.map(fn [n, d] -> new(n, d) end)
