@@ -35,6 +35,10 @@ defmodule Satie.NoteheadTest do
                accidental_display: :forced
              }
     end
+
+    test "returns an error if it's unparsesable as a notehead" do
+      assert Notehead.new("gg~") == {:error, :notehead_new, "gg~"}
+    end
   end
 
   describe inspect(&Notehead.new/2) do

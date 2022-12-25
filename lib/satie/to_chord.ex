@@ -20,16 +20,14 @@ for leaf <- [Satie.Note, Satie.Rest, Satie.Spacer] do
 end
 
 defimpl Satie.ToChord, for: BitString do
-  @re ~r/^<s*(?<noteheads>([^?!]+[?!]?\s*)+)s*>(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
-
   def from(chord) do
-    case Regex.named_captures(@re, chord) do
-      %{"noteheads" => noteheads, "duration" => duration} ->
-        noteheads = noteheads |> String.split(" ", trim: true) |> Enum.map(&Satie.Notehead.new/1)
+    case Satie.Lilypond.Parser.chord().(chord) do
+      {:ok, [noteheads, duration], ""} ->
+        noteheads = Enum.map(noteheads, &Satie.Notehead.new/1)
         duration = Satie.Duration.new(duration)
         @protocol.from({noteheads, duration})
 
-      nil ->
+      _ ->
         {:error, :chord_new, chord}
     end
   end

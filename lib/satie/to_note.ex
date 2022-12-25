@@ -12,14 +12,12 @@ defimpl Satie.ToNote, for: Satie.Note do
 end
 
 defimpl Satie.ToNote, for: BitString do
-  @note_re ~r/^(?<notehead>[^?!\d]+[?!]?)(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
-
   def from(note) when is_bitstring(note) do
-    case Regex.named_captures(@note_re, note) do
-      %{"notehead" => notehead, "duration" => duration} ->
+    case Satie.Lilypond.Parser.note().(note) do
+      {:ok, [notehead, duration], ""} ->
         @protocol.from({notehead, duration})
 
-      nil ->
+      _ ->
         {:error, :note_new, note}
     end
   end

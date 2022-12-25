@@ -12,15 +12,10 @@ defimpl Satie.ToPitch, for: Satie.Pitch do
 end
 
 defimpl Satie.ToPitch, for: BitString do
-  @re ~r/^
-    (?<pitch_class>[abcdefg](t?q[sf]|s+(qs)?|f+(qf)?|\+|~)?)
-    (?<octave>,*|'*)
-  $/x
-
   def from(pitch) do
-    case Regex.named_captures(@re, pitch) do
-      nil -> {:error, :pitch_new, pitch}
-      %{"pitch_class" => pitch_class, "octave" => octave} -> @protocol.from({pitch_class, octave})
+    case Satie.Lilypond.Parser.pitch().(pitch) do
+      {:ok, [pitch_class, octave], ""} -> @protocol.from({pitch_class, octave})
+      _ -> {:error, :pitch_new, pitch}
     end
   end
 end
