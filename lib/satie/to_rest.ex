@@ -34,12 +34,10 @@ defimpl Satie.ToRest, for: Satie.Duration do
 end
 
 defimpl Satie.ToRest, for: BitString do
-  @rest_re ~r/^r?(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
-
   def from(rest) do
-    case Regex.named_captures(@rest_re, rest) do
-      %{"duration" => duration} -> @protocol.from(Satie.Duration.new(duration))
-      nil -> {:error, :rest_new, rest}
+    case Satie.Lilypond.Parser.rest().(rest) do
+      {:ok, duration, ""} -> @protocol.from(Satie.Duration.new(duration))
+      _ -> {:error, :rest_new, rest}
     end
   end
 end

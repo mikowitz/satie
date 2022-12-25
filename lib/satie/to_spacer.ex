@@ -34,12 +34,10 @@ defimpl Satie.ToSpacer, for: Satie.Duration do
 end
 
 defimpl Satie.ToSpacer, for: BitString do
-  @re ~r/^s?(?<duration>(\\breve|\\longa|\\maxima|\d+)\.*)$/
-
-  def from(rest) do
-    case Regex.named_captures(@re, rest) do
-      %{"duration" => duration} -> @protocol.from(Satie.Duration.new(duration))
-      nil -> {:error, :spacer_new, rest}
+  def from(spacer) do
+    case Satie.Lilypond.Parser.spacer().(spacer) do
+      {:ok, duration, ""} -> @protocol.from(Satie.Duration.new(duration))
+      _ -> {:error, :spacer_new, spacer}
     end
   end
 end

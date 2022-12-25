@@ -12,20 +12,18 @@ defimpl Satie.ToAccidental, for: Satie.Accidental do
 end
 
 defimpl Satie.ToAccidental, for: BitString do
-  @re ~r/^(t?q[sf]|s+(qs)?|f+(qf)?|\+|~)?$/
-
   import Satie.AccidentalHelpers, only: [correct_name: 1, calculate_semitones: 1]
 
   def from(accidental) do
-    case Regex.match?(@re, accidental) do
-      false ->
-        {:error, :accidental_new, accidental}
-
-      true ->
-        %{name: accidental}
+    case Satie.Lilypond.Parser.accidental().(accidental) do
+      {:ok, name, ""} ->
+        %{name: name}
         |> correct_name()
         |> calculate_semitones()
         |> then(&struct(Satie.Accidental, &1))
+
+      _ ->
+        {:error, :accidental_new, accidental}
     end
   end
 end

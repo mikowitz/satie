@@ -16,29 +16,21 @@ defimpl Satie.ToNotehead, for: Satie.Pitch do
 end
 
 defimpl Satie.ToNotehead, for: BitString do
-  @pitch_re ~r/^(?<pitch>[^?!]+)(?<accidental_display>[?!]?)$/
-
   def from(notehead) do
-    parse_pitch_and_accidental_display(notehead)
-    |> @protocol.from()
+    case Satie.Lilypond.Parser.notehead().(notehead) do
+      {:ok, [pitch, accidental_display], ""} ->
+        @protocol.from({pitch, accidental_display})
+
+      _ ->
+        {:error, :notehead_new, notehead}
+    end
   end
-
-  defp parse_pitch_and_accidental_display(pitch) do
-    %{"pitch" => pitch, "accidental_display" => accidental_display} =
-      Regex.named_captures(@pitch_re, pitch)
-
-    {pitch, translate_accidental_display(accidental_display)}
-  end
-
-  defp translate_accidental_display("?"), do: :cautionary
-  defp translate_accidental_display("!"), do: :forced
-  defp translate_accidental_display(""), do: :neutral
 end
 
 defimpl Satie.ToNotehead, for: Tuple do
   def from({pitch, opts}) do
     pitch = Satie.Pitch.new(pitch)
-    accidental_display = fetch_accidental_display_from(opts)
+    accidental_display = map_to_accidental_display(opts)
 
     %Satie.Notehead{
       written_pitch: pitch,
@@ -46,14 +38,14 @@ defimpl Satie.ToNotehead, for: Tuple do
     }
   end
 
-  defp fetch_accidental_display_from(opts) when is_list(opts) do
+  defp map_to_accidental_display(opts) when is_list(opts) do
     Keyword.get(opts, :accidental_display, :neutral)
-    |> fetch_accidental_display_from()
+    |> map_to_accidental_display()
   end
 
-  defp fetch_accidental_display_from(:cautionary), do: :cautionary
-  defp fetch_accidental_display_from(:forced), do: :forced
-  defp fetch_accidental_display_from("?"), do: :cautionary
-  defp fetch_accidental_display_from("!"), do: :forced
-  defp fetch_accidental_display_from(_), do: :neutral
+  defp map_to_accidental_display(:cautionary), do: :cautionary
+  defp map_to_accidental_display(:forced), do: :forced
+  defp map_to_accidental_display("?"), do: :cautionary
+  defp map_to_accidental_display("!"), do: :forced
+  defp map_to_accidental_display(_), do: :neutral
 end

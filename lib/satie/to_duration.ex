@@ -32,18 +32,16 @@ defimpl Satie.ToDuration, for: Tuple do
 end
 
 defimpl Satie.ToDuration, for: BitString do
-  @duration_re ~r/^(?<base>\\breve|\\longa|\\maxima|\d+)(?<dots>.*)$/
-
   def from(duration) do
-    case Regex.named_captures(@duration_re, duration) do
-      %{"base" => base, "dots" => dots} ->
+    case Satie.Lilypond.Parser.duration().(duration) do
+      {:ok, [base, dots], ""} ->
         dots_count = String.length(dots)
         {n, base} = parse_base_duration(base)
 
         build_numerator_and_denominator(n, base, dots_count)
         |> Satie.Duration.__init__()
 
-      nil ->
+      _ ->
         {:error, :duration_new, duration}
     end
   end
