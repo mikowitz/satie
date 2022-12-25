@@ -1,7 +1,7 @@
 defmodule Satie.AttachmentTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Articulation, Attachment, Clef, TimeSignature}
+  alias Satie.{Articulation, Attachment, Clef, Note, TimeSignature}
 
   doctest Attachment
 
@@ -41,6 +41,38 @@ defmodule Satie.AttachmentTest do
       attachment = Attachment.new(time_signature)
 
       assert Satie.to_lilypond(attachment) == "\\time 3/4"
+    end
+
+    test "with no priority, similar attachemnts are printed in the order they are added" do
+      note = Note.new("c'4")
+
+      note =
+        Satie.attach(note, Articulation.new("accent"))
+        |> Satie.attach(Articulation.new("marcato"))
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\accent
+                 - \\marcato
+               """
+               |> String.trim()
+    end
+
+    test "priority can be specified at attachment time" do
+      note = Note.new("c'4")
+
+      note =
+        Satie.attach(note, Articulation.new("accent"), priority: -1)
+        |> Satie.attach(Articulation.new("marcato"), priority: -2)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\marcato
+                 - \\accent
+               """
+               |> String.trim()
     end
   end
 end
