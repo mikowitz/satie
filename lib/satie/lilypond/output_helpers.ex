@@ -39,8 +39,9 @@ defmodule Satie.Lilypond.OutputHelpers do
 
   def ordered_attachments(attachments, position) do
     attachments
+    |> Enum.reverse()
     |> Enum.filter(&(&1.position == position))
-    |> Enum.sort_by(&Satie.IsAttachable.priority(&1.attachable))
+    |> Enum.sort_by(& &1.priority)
   end
 
   def attachments_to_lilypond(%{attachments: attachments}) do

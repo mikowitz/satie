@@ -9,7 +9,7 @@ defmodule Satie.Articulation do
   @doc """
 
       iex> Articulation.new("accent")
-      #Satie.Articulation<\\accent>
+      #Satie.Articulation<accent>
 
   """
   def new(name) do
@@ -25,10 +25,10 @@ defmodule Satie.Articulation do
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%@for{} = articulation, _opts) do
+    def inspect(%@for{name: name}, _opts) do
       concat([
         "#Satie.Articulation<",
-        to_string(articulation),
+        name,
         ">"
       ])
     end

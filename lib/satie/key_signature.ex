@@ -24,13 +24,7 @@ defmodule Satie.KeySignature do
     with {:ok, pitch_class} <- validate_pitch_class(pitch_class),
          {:ok, mode} <- validate_mode(mode) do
       %__MODULE__{pitch_class: pitch_class, mode: mode}
-    else
-      error -> error
     end
-  end
-
-  defp validate_pitch_class(%PitchClass{} = pitch_class) do
-    {:ok, pitch_class}
   end
 
   defp validate_pitch_class(pitch_class) do

@@ -3,7 +3,7 @@ defmodule Satie.Attachment do
   Models a wrapper for an attachable object as it is attached to a target object
   """
 
-  defstruct [:attachable, :direction, :position]
+  defstruct [:attachable, :direction, :position, :priority]
 
   alias Satie.IsAttachable
 
@@ -26,11 +26,13 @@ defmodule Satie.Attachment do
     direction = Keyword.get(options, :direction, nil)
 
     position = Keyword.get(options, :position, IsAttachable.location(attachable))
+    priority = Keyword.get(options, :priority, IsAttachable.priority(attachable))
 
     %__MODULE__{
       attachable: attachable,
       direction: direction,
-      position: position
+      position: position,
+      priority: priority
     }
   end
 

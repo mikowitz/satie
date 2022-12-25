@@ -23,6 +23,7 @@ defmodule Satie.MixProject do
   defp deps do
     [
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:describe_function, "~> 0.1.1", only: [:test]},
       {:hackney, "~> 1.18.0"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
