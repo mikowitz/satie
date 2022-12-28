@@ -2,19 +2,32 @@ defmodule Satie.StopHairpinTest do
   use ExUnit.Case, async: true
   import DescribeFunction
 
-  alias Satie.StopHairpin
+  alias Satie.{Note, StopHairpin}
 
   doctest StopHairpin
 
-  describe_function &String.Chars.to_string/1 do
-    test "returns a string represenation of a hairpin stop" do
-      assert StopHairpin.new() |> to_string() == "\\!"
+  describe_function &StopHairpin.new/0 do
+    test "returns the correct component" do
+      assert StopHairpin.new() == %StopHairpin{
+               components: [
+                 after: ["\\!"]
+               ]
+             }
     end
   end
 
-  describe_function &Satie.ToLilypond.to_lilypond/2 do
-    test "returns the correct lilypond represenation of a hairpin stop" do
-      assert StopHairpin.new() |> Satie.to_lilypond() == "\\!"
+  describe "attaching a stop hairpin event to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(StopHairpin.new())
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 \\!
+               """
+               |> String.trim()
     end
   end
 end

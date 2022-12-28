@@ -2,7 +2,6 @@ defmodule Satie.RepeatTie do
   @moduledoc """
   Models a repeat tie
   """
-  defstruct []
 
   use Satie.Attachable
 
@@ -13,29 +12,16 @@ defmodule Satie.RepeatTie do
 
   """
   def new do
-    %__MODULE__{}
-  end
-
-  defimpl String.Chars do
-    def to_string(%@for{}) do
-      "\\repeatTie"
-    end
+    %__MODULE__{
+      components: [
+        after: ["\\repeatTie"]
+      ]
+    }
   end
 
   defimpl Inspect do
-    import Inspect.Algebra
-
     def inspect(%@for{}, _opts) do
-      concat([
-        "#Satie.RepeatTie<",
-        ">"
-      ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = repeat_tie, _opts) do
-      to_string(repeat_tie)
+      "#Satie.RepeatTie<>"
     end
   end
 end

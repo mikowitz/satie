@@ -7,23 +7,12 @@ defmodule Satie.Attachment do
 
   alias Satie.IsAttachable
 
-  @doc """
-
-      iex> accent = Articulation.new("accent")
-      iex> Attachment.new(accent)
-      #Satie.Attachment<- \\accent>
-
-      iex> accent = Articulation.new("accent")
-      iex> Attachment.new(accent, direction: :up)
-      #Satie.Attachment<^ \\accent>
-
-      iex> clef = Clef.new("treble")
-      iex> Attachment.new(clef)
-      #Satie.Attachment<\\clef "treble">
-
-  """
   def new(attachable, options \\ []) do
-    direction = Keyword.get(options, :direction, nil)
+    direction =
+      case Satie.HasDirection.has_direction?(attachable) do
+        true -> Keyword.get(options, :direction, :neutral)
+        false -> nil
+      end
 
     position = Keyword.get(options, :position, IsAttachable.location(attachable))
     priority = Keyword.get(options, :priority, IsAttachable.priority(attachable))
@@ -36,33 +25,23 @@ defmodule Satie.Attachment do
     }
   end
 
-  defimpl Inspect do
-    import Inspect.Algebra
-
-    def inspect(%@for{} = attachment, _opts) do
-      concat([
-        "#Satie.Attachment<",
-        Satie.to_lilypond(attachment),
-        ">"
-      ])
-    end
+  def prepared_components(%__MODULE__{
+        attachable: %{components: components},
+        priority: priority,
+        direction: direction,
+        position: position
+      }) do
+    components
+    |> Enum.map(fn {_k, v} ->
+      Enum.map(v, fn v -> {with_direction(v, direction), position, priority} end)
+    end)
+    |> List.flatten()
+    |> Enum.group_by(&elem(&1, 1))
+    |> Enum.into([])
   end
 
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{attachable: attachable, direction: direction}, _opts) do
-      [
-        direction_indicator(attachable, direction),
-        Satie.to_lilypond(attachable)
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> Enum.join(" ")
-    end
-
-    defp direction_indicator(attachable, direction) do
-      case Satie.HasDirection.has_direction?(attachable) do
-        true -> Satie.StringHelpers.direction_indicator(direction)
-        false -> nil
-      end
-    end
-  end
+  defp with_direction(str, nil), do: str
+  defp with_direction(str, :neutral), do: "- #{str}"
+  defp with_direction(str, :up), do: "^ #{str}"
+  defp with_direction(str, :down), do: "_ #{str}"
 end

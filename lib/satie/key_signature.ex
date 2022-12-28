@@ -2,9 +2,12 @@ defmodule Satie.KeySignature do
   @moduledoc """
   Models a key signature
   """
-  defstruct [:pitch_class, :mode]
 
-  use Satie.Attachable, location: :before, priority: 1, has_direction: false
+  use Satie.Attachable,
+    fields: [:pitch_class, :mode],
+    location: :before,
+    priority: 1,
+    has_direction: false
 
   alias Satie.PitchClass
 
@@ -21,9 +24,17 @@ defmodule Satie.KeySignature do
 
   """
   def new(pitch_class, mode \\ :major) do
-    with {:ok, pitch_class} <- validate_pitch_class(pitch_class),
+    with {:ok, pc} <- validate_pitch_class(pitch_class),
          {:ok, mode} <- validate_mode(mode) do
-      %__MODULE__{pitch_class: pitch_class, mode: mode}
+      %__MODULE__{
+        pitch_class: pc,
+        mode: mode,
+        components: [
+          before: [
+            "\\key #{pc.name} \\#{mode}"
+          ]
+        ]
+      }
     end
   end
 
@@ -38,32 +49,15 @@ defmodule Satie.KeySignature do
   defp validate_mode(mode) when mode in @valid_modes, do: {:ok, mode}
   defp validate_mode(mode), do: {:error, :invalid_mode, mode}
 
-  defimpl String.Chars do
-    def to_string(%@for{pitch_class: pitch_class, mode: mode}) do
-      pitch_class.name <> " " <> Kernel.to_string(mode)
-    end
-  end
-
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%@for{} = key_signature, _opts) do
+    def inspect(%@for{pitch_class: pc, mode: mode}, _opts) do
       concat([
         "#Satie.KeySignature<",
-        to_string(key_signature),
+        "#{pc.name} #{mode}",
         ">"
       ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{pitch_class: pitch_class, mode: mode}, _opts) do
-      [
-        "\\key",
-        pitch_class.name,
-        "\\#{mode}"
-      ]
-      |> Enum.join(" ")
     end
   end
 end

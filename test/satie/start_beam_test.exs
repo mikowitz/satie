@@ -1,19 +1,35 @@
 defmodule Satie.StartBeamTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.StartBeam
+  alias Satie.{Note, StartBeam}
 
   doctest StartBeam
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of a beam start" do
-      assert StartBeam.new() |> to_string() == "["
+  describe_function &StartBeam.new/0 do
+    test "returns the correct components" do
+      assert StartBeam.new() == %StartBeam{
+               components: [
+                 after: [
+                   "["
+                 ]
+               ]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a beam start" do
-      assert StartBeam.new() |> Satie.to_lilypond() == "["
+  describe "attaching a start beam to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(StartBeam.new(), direction: :down)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 _ [
+               """
+               |> String.trim()
     end
   end
 end

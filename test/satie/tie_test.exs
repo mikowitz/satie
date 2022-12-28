@@ -1,19 +1,31 @@
 defmodule Satie.TieTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.Tie
+  alias Satie.{Note, Tie}
 
   doctest Tie
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of a tie" do
-      assert Tie.new() |> to_string() == "~"
+  describe_function &Tie.new/0 do
+    test "returns the correct components" do
+      assert Tie.new() == %Tie{
+               components: [after: ["~"]]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a tie" do
-      assert Tie.new() |> Satie.to_lilypond() == "~"
+  describe "attaching a tie to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(Tie.new(), direction: :up)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 ^ ~
+               """
+               |> String.trim()
     end
   end
 end

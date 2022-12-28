@@ -2,31 +2,47 @@ defmodule Satie.StopPedalTest do
   use ExUnit.Case, async: true
   import DescribeFunction
 
-  alias Satie.StopPedal
+  alias Satie.{Note, StopPedal}
 
   doctest StopPedal
 
   describe_function &StopPedal.new/1 do
     test "can take atom or string values for the proper pedal names" do
-      assert StopPedal.new() == %StopPedal{pedal: :sustain}
-      assert StopPedal.new(:sustain) == %StopPedal{pedal: :sustain}
-      assert StopPedal.new(:sostenuto) == %StopPedal{pedal: :sostenuto}
-      assert StopPedal.new(:corda) == %StopPedal{pedal: :corda}
-      assert StopPedal.new("sustain") == %StopPedal{pedal: :sustain}
-      assert StopPedal.new("sostenuto") == %StopPedal{pedal: :sostenuto}
-      assert StopPedal.new("corda") == %StopPedal{pedal: :corda}
+      assert StopPedal.new() == %StopPedal{pedal: :sustain, components: [after: ["\\sustainOff"]]}
+
+      assert StopPedal.new(:sustain) == %StopPedal{
+               pedal: :sustain,
+               components: [after: ["\\sustainOff"]]
+             }
+
+      assert StopPedal.new(:sostenuto) == %StopPedal{
+               pedal: :sostenuto,
+               components: [after: ["\\sostenutoOff"]]
+             }
+
+      assert StopPedal.new(:corda) == %StopPedal{
+               pedal: :corda,
+               components: [after: ["\\treCorde"]]
+             }
+
+      assert StopPedal.new("sustain") == %StopPedal{
+               pedal: :sustain,
+               components: [after: ["\\sustainOff"]]
+             }
+
+      assert StopPedal.new("sostenuto") == %StopPedal{
+               pedal: :sostenuto,
+               components: [after: ["\\sostenutoOff"]]
+             }
+
+      assert StopPedal.new("corda") == %StopPedal{
+               pedal: :corda,
+               components: [after: ["\\treCorde"]]
+             }
     end
 
     test "returns an error tuple for invalid input" do
       assert StopPedal.new("whatever") == {:error, :stop_pedal_new, "whatever"}
-    end
-  end
-
-  describe_function &String.Chars.to_string/1 do
-    test "returns a string representation of a pedal start event" do
-      assert StopPedal.new() |> to_string() == "\\sustainOff"
-      assert StopPedal.new(:sostenuto) |> to_string() == "\\sostenutoOff"
-      assert StopPedal.new("corda") |> to_string() == "\\treCorde"
     end
   end
 
@@ -38,11 +54,20 @@ defmodule Satie.StopPedalTest do
     end
   end
 
-  describe_function &Satie.ToLilypond.to_lilypond/2 do
-    test "returns a correct lilypond representation of a pedal start event" do
-      assert StopPedal.new() |> Satie.to_lilypond() == "\\sustainOff"
-      assert StopPedal.new(:sostenuto) |> Satie.to_lilypond() == "\\sostenutoOff"
-      assert StopPedal.new("corda") |> Satie.to_lilypond() == "\\treCorde"
+  describe "attaching a stop pedal event to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(StopPedal.new())
+        |> Satie.attach(StopPedal.new(:corda))
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 \\sustainOff
+                 \\treCorde
+               """
+               |> String.trim()
     end
   end
 end

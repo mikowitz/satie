@@ -28,12 +28,12 @@ defmodule Satie.Spacer do
     import Satie.Lilypond.OutputHelpers
 
     def to_lilypond(%@for{written_duration: duration} = spacer, _opts) do
-      {attachments_before, attachments_after} = attachments_to_lilypond(spacer)
+      %{before: attachments_before, after: attachments_after} = attachments_to_lilypond(spacer)
 
       [
         attachments_before,
         "s" <> Satie.to_lilypond(duration),
-        attachments_after
+        Enum.map(attachments_after, &indent/1)
       ]
       |> List.flatten()
       |> Enum.reject(&is_nil/1)

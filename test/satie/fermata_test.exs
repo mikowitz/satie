@@ -1,25 +1,36 @@
 defmodule Satie.FermataTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.Fermata
+  alias Satie.{Fermata, Rest}
 
   doctest Fermata
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of a fermata" do
-      assert Fermata.new() |> to_string() == "\\fermata"
-
-      assert Fermata.new(:verylong) |> to_string() == "\\verylongfermata"
-
-      assert Fermata.new(:veryshort) |> to_string() == "\\veryshortfermata"
+  describe_function &Fermata.new/1 do
+    test "returns the correct components" do
+      assert Fermata.new(:verylong) == %Fermata{
+               length: :verylong,
+               components: [
+                 after: [
+                   "\\verylongfermata"
+                 ]
+               ]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a fermata" do
-      assert Fermata.new() |> Satie.to_lilypond() == "\\fermata"
+  describe "attaching a fermata to a rest" do
+    test "returns the correct lilypond" do
+      rest =
+        Rest.new("4")
+        |> Satie.attach(Fermata.new(:short), direction: :down)
 
-      assert Fermata.new(:long) |> Satie.to_lilypond() == "\\longfermata"
+      assert Satie.to_lilypond(rest) ==
+               """
+               r4
+                 _ \\shortfermata
+               """
+               |> String.trim()
     end
   end
 end

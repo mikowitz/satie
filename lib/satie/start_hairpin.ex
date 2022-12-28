@@ -3,13 +3,17 @@ defmodule Satie.StartHairpin do
   Models the beginning of a hairpin
   """
 
-  defstruct [:direction]
+  use Satie.Attachable, fields: [:direction, :output]
 
-  use Satie.Attachable
+  def new(direction, opts \\ []) do
+    output = Keyword.get(opts, :output, :symbol)
 
-  def new(direction) do
     with {:ok, direction} <- validate_direction(direction) do
-      %__MODULE__{direction: direction}
+      %__MODULE__{
+        direction: direction,
+        output: output,
+        components: [after: [build_component(direction, output)]]
+      }
     end
   end
 
@@ -20,10 +24,10 @@ defmodule Satie.StartHairpin do
   defp validate_direction(decresc) when decresc in @valid_decrescendos, do: {:ok, :decrescendo}
   defp validate_direction(x), do: {:error, :start_hairpin_new, x}
 
-  defimpl String.Chars do
-    def to_string(%@for{direction: :crescendo}), do: "\\<"
-    def to_string(%@for{direction: :decrescendo}), do: "\\>"
-  end
+  defp build_component(:crescendo, :symbol), do: "\\<"
+  defp build_component(:crescendo, :text), do: "\\cresc"
+  defp build_component(:decrescendo, :symbol), do: "\\>"
+  defp build_component(:decrescendo, :text), do: "\\decresc"
 
   defimpl Inspect do
     import Inspect.Algebra
@@ -35,10 +39,5 @@ defmodule Satie.StartHairpin do
         ">"
       ])
     end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{direction: :crescendo}, _), do: "\\<"
-    def to_lilypond(%@for{direction: :decrescendo}, _), do: "\\>"
   end
 end

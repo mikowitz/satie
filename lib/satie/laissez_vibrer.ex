@@ -3,8 +3,6 @@ defmodule Satie.LaissezVibrer do
   Models a laissez vibrer tie
   """
 
-  defstruct []
-
   use Satie.Attachable
 
   @doc """
@@ -14,13 +12,13 @@ defmodule Satie.LaissezVibrer do
 
   """
   def new do
-    %__MODULE__{}
-  end
-
-  defimpl String.Chars do
-    def to_string(%@for{}) do
-      "\\laissezVibrer"
-    end
+    %__MODULE__{
+      components: [
+        after: [
+          "\\laissezVibrer"
+        ]
+      ]
+    }
   end
 
   defimpl Inspect do
@@ -31,12 +29,6 @@ defmodule Satie.LaissezVibrer do
         "#Satie.LaissezVibrer<",
         ">"
       ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = laissez_vibrer, _opts) do
-      to_string(laissez_vibrer)
     end
   end
 end

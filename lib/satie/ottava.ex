@@ -3,21 +3,20 @@ defmodule Satie.Ottava do
     Models an ottava setting
   """
 
-  defstruct [:degree]
-
-  use Satie.Attachable, has_direction: false
+  use Satie.Attachable, fields: [:degree], location: :before, has_direction: false
 
   def new(degree) when is_integer(degree) do
-    %__MODULE__{degree: degree}
+    %__MODULE__{
+      degree: degree,
+      components: [
+        before: [
+          "\\ottava ##{degree}"
+        ]
+      ]
+    }
   end
 
   def new(degree), do: {:error, :ottava_new, degree}
-
-  defimpl String.Chars do
-    def to_string(%@for{degree: degree}) do
-      "\\ottava ##{degree}"
-    end
-  end
 
   defimpl Inspect do
     import Inspect.Algebra
@@ -28,12 +27,6 @@ defmodule Satie.Ottava do
         inspect(degree),
         ">"
       ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{degree: degree}, _) do
-      "\\ottava ##{degree}"
     end
   end
 end

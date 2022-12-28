@@ -1,19 +1,31 @@
 defmodule Satie.StopBeamTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.StopBeam
+  alias Satie.{Note, StopBeam}
 
   doctest StopBeam
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of a slur stop" do
-      assert StopBeam.new() |> to_string() == "]"
+  describe_function &StopBeam.new/0 do
+    test "returns the correct component" do
+      assert StopBeam.new() == %StopBeam{
+               components: [after: ["]"]]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a slur start" do
-      assert StopBeam.new() |> Satie.to_lilypond() == "]"
+  describe "attaching a stop beam event to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'8")
+        |> Satie.attach(StopBeam.new())
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'8
+                 ]
+               """
+               |> String.trim()
     end
   end
 end
