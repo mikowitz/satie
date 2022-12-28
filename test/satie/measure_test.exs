@@ -13,7 +13,10 @@ defmodule Satie.MeasureTest do
 
       assert measure.time_signature == %TimeSignature{
                numerator: 3,
-               denominator: 4
+               denominator: 4,
+               components: [
+                 before: ["\\time 3/4"]
+               ]
              }
 
       assert length(measure.contents) == 1
@@ -26,7 +29,13 @@ defmodule Satie.MeasureTest do
 
     test "can be initialized with a time signature tuple" do
       assert Measure.new({4, 4}) == %Measure{
-               time_signature: %TimeSignature{numerator: 4, denominator: 4},
+               time_signature: %TimeSignature{
+                 numerator: 4,
+                 denominator: 4,
+                 components: [
+                   before: ["\\time 4/4"]
+                 ]
+               },
                contents: []
              }
     end

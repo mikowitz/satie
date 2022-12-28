@@ -1,19 +1,31 @@
 defmodule Satie.StartPhrasingSlurTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.StartPhrasingSlur
+  alias Satie.{Note, StartPhrasingSlur}
 
   doctest StartPhrasingSlur
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of a phrasing slur start" do
-      assert StartPhrasingSlur.new() |> to_string() == "\\("
+  describe_function &StartPhrasingSlur.new/0 do
+    test "returns the correct component" do
+      assert StartPhrasingSlur.new() == %StartPhrasingSlur{
+               components: [after: ["\\("]]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a phrasing slur start" do
-      assert StartPhrasingSlur.new() |> Satie.to_lilypond() == "\\("
+  describe "attaching a phrasing slur to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(StartPhrasingSlur.new(), direction: :up)
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 ^ \\(
+               """
+               |> String.trim()
     end
   end
 end

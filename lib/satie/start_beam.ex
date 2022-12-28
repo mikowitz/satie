@@ -2,7 +2,6 @@ defmodule Satie.StartBeam do
   @moduledoc """
   Models the start of a beam
   """
-  defstruct []
 
   use Satie.Attachable
 
@@ -13,29 +12,16 @@ defmodule Satie.StartBeam do
 
   """
   def new do
-    %__MODULE__{}
-  end
-
-  defimpl String.Chars do
-    def to_string(%@for{}) do
-      "["
-    end
+    %__MODULE__{
+      components: [
+        after: ["["]
+      ]
+    }
   end
 
   defimpl Inspect do
-    import Inspect.Algebra
-
     def inspect(%@for{}, _opts) do
-      concat([
-        "#Satie.StartBeam<",
-        ">"
-      ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = start_beam, _opts) do
-      to_string(start_beam)
+      "#Satie.StartBeam<>"
     end
   end
 end

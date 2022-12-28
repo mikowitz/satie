@@ -3,9 +3,7 @@ defmodule Satie.BreathMark do
   Models a breath mark
   """
 
-  defstruct []
-
-  use Satie.Attachable
+  use Satie.Attachable, has_direction: false
 
   @doc """
 
@@ -14,13 +12,11 @@ defmodule Satie.BreathMark do
 
   """
   def new do
-    %__MODULE__{}
-  end
-
-  defimpl String.Chars do
-    def to_string(%@for{}) do
-      "\\breathe"
-    end
+    %__MODULE__{
+      components: [
+        after: ["\\breathe"]
+      ]
+    }
   end
 
   defimpl Inspect do
@@ -31,12 +27,6 @@ defmodule Satie.BreathMark do
         "#Satie.BreathMark<",
         ">"
       ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = breath_mark, _opts) do
-      to_string(breath_mark)
     end
   end
 end

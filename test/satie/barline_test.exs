@@ -3,33 +3,43 @@ defmodule Satie.BarlineTest do
 
   import DescribeFunction
 
-  alias Satie.Barline
+  alias Satie.{Articulation, Barline, Note}
 
   doctest Barline
 
   describe_function &Barline.new/1 do
     test "creates a barline with the given symbol input" do
       assert Barline.new("|.") == %Barline{
-               symbol: "|."
+               symbol: "|.",
+               components: [
+                 after: [
+                   "\\bar \"|.\""
+                 ]
+               ]
              }
-    end
-  end
-
-  describe_function &String.Chars.to_string/1 do
-    test "returns reasonable string output for the barline" do
-      assert Barline.new("||") |> to_string() == ~s(\\bar "||")
     end
   end
 
   describe_function &Inspect.inspect/2 do
     test "returns a barline formatted for IEx" do
-      assert Barline.new("|.|") |> inspect() == "#Satie.Barline<|.|>"
+      assert Barline.new("|.|") |> inspect() == "#Satie.Barline<\"|.|\">"
     end
   end
 
-  describe_function &Satie.ToLilypond.to_lilypond/2 do
-    test "returns the correct lilypond representation of a barline" do
-      assert Barline.new("||") |> Satie.to_lilypond() == ~s(\\bar "||")
+  describe "attaching a barline to a note" do
+    test "correctly prioritizes the barline at the end of attachments" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(Barline.new("||"))
+        |> Satie.attach(Articulation.new("accent"))
+
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\accent
+                 \\bar "||"
+               """
+               |> String.trim()
     end
   end
 end

@@ -37,19 +37,20 @@ defmodule Satie.Lilypond.OutputHelpers do
     ~s(\\context #{context_name} = "#{to_string(name)}")
   end
 
-  def ordered_attachments(attachments, position) do
+  def attachments_to_lilypond(%{attachments: attachments}) do
     attachments
     |> Enum.reverse()
-    |> Enum.filter(&(&1.position == position))
-    |> Enum.sort_by(& &1.priority)
-  end
-
-  def attachments_to_lilypond(%{attachments: attachments}) do
-    [:before, :after]
-    |> Enum.map(&ordered_attachments(attachments, &1))
-    |> Enum.map(fn attachments ->
-      Enum.map(attachments, &Satie.to_lilypond/1)
+    |> Enum.map(&Satie.Attachment.prepared_components/1)
+    |> Enum.reduce([before: [], after: []], fn components, acc ->
+      Keyword.merge(acc, components, fn _k, v1, v2 -> v1 ++ v2 end)
     end)
-    |> List.to_tuple()
+    |> Enum.map(fn {k, v} ->
+      {
+        k,
+        Enum.sort_by(v, &elem(&1, 2))
+        |> Enum.map(&elem(&1, 0))
+      }
+    end)
+    |> Enum.into(%{})
   end
 end

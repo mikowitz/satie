@@ -8,6 +8,7 @@ defmodule Satie.MultiMeasureRest do
 
   @re ~r/^(R1\s*\*\s*)?(?<time_signature>\d+\/\d+)\s*\*\s*(?<measures>\d+)$/
 
+  # TODO: use a multiplier instead of a time signature?
   def new(multi_measure_rest) when is_bitstring(multi_measure_rest) do
     case Regex.named_captures(@re, multi_measure_rest) do
       %{"time_signature" => time_sig, "measures" => measures} ->

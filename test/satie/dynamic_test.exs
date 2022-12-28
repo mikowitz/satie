@@ -1,27 +1,36 @@
 defmodule Satie.DynamicTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.Dynamic
+  alias Satie.{Dynamic, Note}
 
   doctest Dynamic
 
-  describe inspect(&String.Chars.to_string/1) do
-    test "returns a string representation of dynamic" do
-      assert Dynamic.new("mp") |> to_string() == "\\mp"
-
-      assert Dynamic.new("f") |> to_string() == "\\f"
-
-      assert Dynamic.new("sfz") |> to_string() == "\\sfz"
+  describe_function &Dynamic.new/1 do
+    test "returns the correct components" do
+      assert Dynamic.new("mp") == %Dynamic{
+               dynamic: "mp",
+               components: [
+                 after: [
+                   "\\mp"
+                 ]
+               ]
+             }
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
-    test "returns the correct lilypond representation of a dynamic" do
-      assert Dynamic.new("mp") |> Satie.to_lilypond() == "\\mp"
+  describe "attaching a dynamic to a note" do
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(Dynamic.new("fff"))
 
-      assert Dynamic.new("f") |> Satie.to_lilypond() == "\\f"
-
-      assert Dynamic.new("sfz") |> Satie.to_lilypond() == "\\sfz"
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\fff
+               """
+               |> String.trim()
     end
   end
 end

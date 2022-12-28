@@ -32,7 +32,7 @@ defmodule Satie.Note do
     import Satie.Lilypond.OutputHelpers
 
     def to_lilypond(%@for{} = note, _opts) do
-      {attachments_before, attachments_after} = attachments_to_lilypond(note)
+      %{before: attachments_before, after: attachments_after} = attachments_to_lilypond(note)
 
       [
         attachments_before,

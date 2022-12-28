@@ -8,7 +8,10 @@ defmodule Satie.MultiMeasureRestTest do
       assert MultiMeasureRest.new("R1*1/8*17") == %MultiMeasureRest{
                time_signature: %TimeSignature{
                  numerator: 1,
-                 denominator: 8
+                 denominator: 8,
+                 components: [
+                   before: ["\\time 1/8"]
+                 ]
                },
                measures: 17
              }
@@ -18,7 +21,10 @@ defmodule Satie.MultiMeasureRestTest do
       assert MultiMeasureRest.new("3/4*10") == %MultiMeasureRest{
                time_signature: %TimeSignature{
                  numerator: 3,
-                 denominator: 4
+                 denominator: 4,
+                 components: [
+                   before: ["\\time 3/4"]
+                 ]
                },
                measures: 10
              }
@@ -34,7 +40,10 @@ defmodule Satie.MultiMeasureRestTest do
       assert MultiMeasureRest.new(TimeSignature.new(3, 4), 4) == %MultiMeasureRest{
                time_signature: %TimeSignature{
                  numerator: 3,
-                 denominator: 4
+                 denominator: 4,
+                 components: [
+                   before: ["\\time 3/4"]
+                 ]
                },
                measures: 4
              }

@@ -38,7 +38,7 @@ defmodule Satie.Chord do
     import Satie.Lilypond.OutputHelpers
 
     def to_lilypond(%@for{noteheads: noteheads, written_duration: duration} = chord, _opts) do
-      {attachments_before, attachments_after} = attachments_to_lilypond(chord)
+      %{before: attachments_before, after: attachments_after} = attachments_to_lilypond(chord)
 
       [
         attachments_before,

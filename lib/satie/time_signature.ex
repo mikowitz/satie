@@ -2,9 +2,13 @@ defmodule Satie.TimeSignature do
   @moduledoc """
   Models a time signature
   """
-  defstruct [:numerator, :denominator]
 
-  use Satie.Attachable, location: :before, priority: 3, has_direction: false
+  # TODO: have this use a Fraction
+  use Satie.Attachable,
+    fields: [:numerator, :denominator],
+    location: :before,
+    priority: 3,
+    has_direction: false
 
   @re ~r/^(\\time\s+)?(?<numerator>\d+)\/(?<denominator>\d+)$/
 
@@ -23,15 +27,16 @@ defmodule Satie.TimeSignature do
   def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
     %__MODULE__{
       numerator: numerator,
-      denominator: denominator
+      denominator: denominator,
+      components: [
+        before: [
+          "\\time #{numerator}/#{denominator}"
+        ]
+      ]
     }
   end
 
   def new(numerator, denominator), do: {:error, :time_signature_new, {numerator, denominator}}
-
-  defimpl String.Chars do
-    def to_string(%@for{} = time_signature), do: Satie.to_lilypond(time_signature)
-  end
 
   defimpl Inspect do
     import Inspect.Algebra
@@ -42,12 +47,6 @@ defmodule Satie.TimeSignature do
         "#{n}/#{d}",
         ">"
       ])
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{numerator: n, denominator: d}, _opts) do
-      "\\time #{n}/#{d}"
     end
   end
 end

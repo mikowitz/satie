@@ -3,16 +3,19 @@ defmodule Satie.StopPedal do
   Models a pedal up event
   """
 
-  defstruct [:pedal]
-
-  use Satie.Attachable
+  use Satie.Attachable, fields: [:pedal], has_direction: false
 
   @valid_pedals ~w(sustain sostenuto corda)a
 
   def new(pedal \\ :sustain)
 
   def new(pedal) when pedal in @valid_pedals do
-    %__MODULE__{pedal: pedal}
+    %__MODULE__{
+      pedal: pedal,
+      components: [
+        after: [_component(pedal)]
+      ]
+    }
   end
 
   def new(pedal) when is_bitstring(pedal) do
@@ -24,11 +27,9 @@ defmodule Satie.StopPedal do
 
   def new(pedal), do: {:error, :stop_pedal_new, pedal}
 
-  defimpl String.Chars do
-    def to_string(%@for{pedal: :sustain}), do: "\\sustainOff"
-    def to_string(%@for{pedal: :sostenuto}), do: "\\sostenutoOff"
-    def to_string(%@for{pedal: :corda}), do: "\\treCorde"
-  end
+  def _component(:sustain), do: "\\sustainOff"
+  def _component(:sostenuto), do: "\\sostenutoOff"
+  def _component(:corda), do: "\\treCorde"
 
   defimpl Inspect do
     import Inspect.Algebra
@@ -40,11 +41,5 @@ defmodule Satie.StopPedal do
         ">"
       ])
     end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{pedal: :sustain}, _), do: "\\sustainOff"
-    def to_lilypond(%@for{pedal: :sostenuto}, _), do: "\\sostenutoOff"
-    def to_lilypond(%@for{pedal: :corda}, _), do: "\\treCorde"
   end
 end
