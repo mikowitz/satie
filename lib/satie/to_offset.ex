@@ -11,9 +11,21 @@ defimpl Satie.ToOffset, for: Satie.Offset do
   def from(offset), do: offset
 end
 
-for fractional <- [Satie.Duration, Satie.Multiplier] do
+for fractional <- [Satie.Duration, Satie.Fraction, Satie.Multiplier] do
   defimpl Satie.ToOffset, for: fractional do
     def from(%@for{numerator: n, denominator: d}), do: Satie.Offset.__init__({n, d})
+  end
+end
+
+defimpl Satie.ToOffset, for: BitString do
+  def from(offset) do
+    case Satie.Lilypond.Parser.fraction().(offset) do
+      {:ok, [n, d], ""} ->
+        @protocol.from({n, d})
+
+      _ ->
+        {:error, :offset_new, offset}
+    end
   end
 end
 

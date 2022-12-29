@@ -11,7 +11,7 @@ defimpl Satie.ToDuration, for: Satie.Duration do
   def from(duration), do: duration
 end
 
-for fractional <- [Satie.Offset, Satie.Multiplier] do
+for fractional <- [Satie.Fraction, Satie.Offset, Satie.Multiplier] do
   defimpl Satie.ToDuration, for: fractional do
     def from(%@for{numerator: n, denominator: d}), do: Satie.Duration.__init__({n, d})
   end

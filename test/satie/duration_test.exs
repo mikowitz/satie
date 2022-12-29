@@ -2,7 +2,7 @@ defmodule Satie.DurationTest do
   use ExUnit.Case, async: true
 
   import Satie.RegressionDataStreamer
-  alias Satie.{Duration, Multiplier, Offset}
+  alias Satie.{Duration, Fraction, Multiplier, Offset}
 
   doctest Duration
 
@@ -40,6 +40,7 @@ defmodule Satie.DurationTest do
 
     test "can be created from another fractional type" do
       assert Duration.new(Duration.new(1, 4)) == %Duration{numerator: 1, denominator: 4}
+      assert Duration.new(Fraction.new(2, 4)) == %Duration{numerator: 1, denominator: 2}
       assert Duration.new(Multiplier.new(2, 4)) == %Duration{numerator: 1, denominator: 2}
       assert Duration.new(Offset.new(1, 3)) == %Duration{numerator: 1, denominator: 3}
     end
@@ -291,6 +292,16 @@ defmodule Satie.DurationTest do
       assert is_struct(Duration.subtract(d1, d2), Duration)
       assert is_struct(Duration.multiply(d1, d2), Duration)
       assert is_struct(Duration.divide(d1, d2), Multiplier)
+    end
+
+    test "against a fraction" do
+      d = Duration.new(3, 8)
+      f = Fraction.new(1, 4)
+
+      assert is_struct(Duration.add(d, f), Fraction)
+      assert is_struct(Duration.subtract(d, f), Fraction)
+      assert is_struct(Duration.multiply(d, f), Fraction)
+      assert is_struct(Duration.divide(d, f), Fraction)
     end
 
     test "against an integer" do

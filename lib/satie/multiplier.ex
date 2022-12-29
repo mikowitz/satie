@@ -4,7 +4,7 @@ defmodule Satie.Multiplier do
   """
   defstruct [:numerator, :denominator]
 
-  alias Satie.Duration
+  alias Satie.{Duration, Fraction}
   use Satie.Fractional
   import Satie.Guards
 
@@ -14,43 +14,24 @@ defmodule Satie.Multiplier do
     new({numerator, denominator})
   end
 
-  def add(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-    new(n1 * d2 + n2 * d1, d1 * d2)
-  end
+  use Satie.Fractional.Math,
+    add: [{Fraction, Fraction}],
+    subtract: [{Fraction, Fraction}],
+    multiply: [
+      {Duration, Duration},
+      {Fraction, Fraction}
+    ],
+    divide: [{Fraction, Fraction}]
 
-  def subtract(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
+  defimpl Inspect do
+    import Inspect.Algebra
 
-    new(n1 * d2 - n2 * d1, d1 * d2)
-  end
-
-  def multiply(%__MODULE__{} = duration, %rhs_struct{} = rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-
-    case rhs_struct do
-      Duration -> Duration.new(n1 * n2, d1 * d2)
-      _ -> new(n1 * n2, d1 * d2)
+    def inspect(%@for{numerator: n, denominator: d}, _) do
+      concat([
+        "#Satie.Multiplier<",
+        "#{n}/#{d}",
+        ">"
+      ])
     end
-  end
-
-  def multiply(%__MODULE__{} = duration, rhs) when is_integer(rhs) do
-    {n, d} = Fractional.to_tuple(duration)
-    new(n * rhs, d)
-  end
-
-  def divide(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-
-    new(n1 * d2, n2 * d1)
-  end
-
-  def divide(%__MODULE__{} = duration, rhs) when is_integer(rhs) and rhs != 0 do
-    {n, d} = Fractional.to_tuple(duration)
-    new(n, d * rhs)
   end
 end

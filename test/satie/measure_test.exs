@@ -1,7 +1,7 @@
 defmodule Satie.MeasureTest do
   use ExUnit.Case, async: true
 
-  alias Satie.{Measure, Note, TimeSignature}
+  alias Satie.{Fraction, Measure, Note, TimeSignature}
 
   describe inspect(&Measure.new/2) do
     test "sets a time signature and contents" do
@@ -12,8 +12,7 @@ defmodule Satie.MeasureTest do
         )
 
       assert measure.time_signature == %TimeSignature{
-               numerator: 3,
-               denominator: 4,
+               fraction: Fraction.new(3, 4),
                components: [
                  before: ["\\time 3/4"]
                ]
@@ -30,8 +29,7 @@ defmodule Satie.MeasureTest do
     test "can be initialized with a time signature tuple" do
       assert Measure.new({4, 4}) == %Measure{
                time_signature: %TimeSignature{
-                 numerator: 4,
-                 denominator: 4,
+                 fraction: Fraction.new(4, 4),
                  components: [
                    before: ["\\time 4/4"]
                  ]

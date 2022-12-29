@@ -6,8 +6,20 @@ defmodule Satie.Duration do
 
   import Satie.Guards
 
+  alias Satie.{Fraction, Multiplier, Offset}
+
   use Satie.Fractional
-  alias Satie.Multiplier
+
+  use Satie.Fractional.Math,
+    add: [{Fraction, Fraction}],
+    subtract: [{Fraction, Fraction}],
+    multiply: [{Fraction, Fraction}],
+    divide: [
+      {__MODULE__, Multiplier},
+      {Fraction, Fraction},
+      {Multiplier, Multiplier},
+      {Offset, Multiplier}
+    ]
 
   @doc """
 
@@ -30,40 +42,6 @@ defmodule Satie.Duration do
   def printable?(%__MODULE__{} = duration) do
     [&proper_length?/1, &printable_subdivision?/1, &not_tied?/1]
     |> Enum.all?(& &1.(duration))
-  end
-
-  def add(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-    new(n1 * d2 + n2 * d1, d1 * d2)
-  end
-
-  def subtract(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-    new(n1 * d2 - n2 * d1, d1 * d2)
-  end
-
-  def multiply(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-    new(n1 * n2, d1 * d2)
-  end
-
-  def multiply(%__MODULE__{} = duration, rhs) when is_integer(rhs) do
-    {n, d} = Fractional.to_tuple(duration)
-    new(n * rhs, d)
-  end
-
-  def divide(%__MODULE__{} = duration, rhs) when is_fractional(rhs) do
-    {n1, d1} = Fractional.to_tuple(duration)
-    {n2, d2} = Fractional.to_tuple(rhs)
-    Multiplier.new(n1 * d2, n2 * d1)
-  end
-
-  def divide(%__MODULE__{} = duration, rhs) when is_integer(rhs) and rhs != 0 do
-    {n, d} = Fractional.to_tuple(duration)
-    new(n, d * rhs)
   end
 
   defp proper_length?(%__MODULE__{numerator: n, denominator: d}) do

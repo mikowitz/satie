@@ -47,6 +47,19 @@ defmodule Satie.Lilypond.Parser do
     |> map(fn [base, dots] -> [to_string(base), to_string(dots)] end)
   end
 
+  def fraction do
+    sequence([
+      some(digit()),
+      char(?/),
+      some(digit())
+    ])
+    |> map(fn [n, _, d] ->
+      with {n, ""} <- Integer.parse(to_string(n)),
+           {d, ""} <- Integer.parse(to_string(d)),
+           do: [n, d]
+    end)
+  end
+
   def note do
     sequence([
       notehead(),
