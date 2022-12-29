@@ -9,14 +9,21 @@ defmodule Satie.Fractional do
 
   """
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
+    reduction_func =
+      if Keyword.get(opts, :reduce, true),
+        do: &Satie.Fractional.reduce/1,
+        else: &Function.identity/1
+
     quote do
       alias unquote(__MODULE__)
 
       def __init__({n, d}) do
         {n, d}
-        |> Satie.Fractional.reduce()
-        |> then(fn {n, d} -> struct(__MODULE__, %{numerator: n, denominator: d}) end)
+        |> unquote(reduction_func).()
+        |> then(fn {n, d} ->
+          struct(__MODULE__, %{numerator: n, denominator: d})
+        end)
       end
 
       def to_tuple(%{numerator: n, denominator: d}), do: {n, d}
@@ -24,12 +31,6 @@ defmodule Satie.Fractional do
   end
 
   def to_tuple(%{numerator: n, denominator: d}), do: {n, d}
-
-  def __init__({n, d}, mod) do
-    {n, d}
-    |> reduce()
-    |> then(fn {n, d} -> struct(mod, %{numerator: n, denominator: d}) end)
-  end
 
   def reduce({a, b}) do
     with g <- Integer.gcd(a, b) do

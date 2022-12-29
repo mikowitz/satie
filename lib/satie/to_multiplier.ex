@@ -11,9 +11,21 @@ defimpl Satie.ToMultiplier, for: Satie.Multiplier do
   def from(multiplier), do: multiplier
 end
 
-for fractional <- [Satie.Duration, Satie.Offset] do
+for fractional <- [Satie.Duration, Satie.Fraction, Satie.Offset] do
   defimpl Satie.ToMultiplier, for: fractional do
     def from(%@for{numerator: n, denominator: d}), do: Satie.Multiplier.__init__({n, d})
+  end
+end
+
+defimpl Satie.ToMultiplier, for: BitString do
+  def from(multiplier) do
+    case Satie.Lilypond.Parser.fraction().(multiplier) do
+      {:ok, [n, d], ""} ->
+        @protocol.from({n, d})
+
+      _ ->
+        {:error, :multiplier_new, multiplier}
+    end
   end
 end
 

@@ -3,9 +3,10 @@ defmodule Satie.TimeSignature do
   Models a time signature
   """
 
-  # TODO: have this use a Fraction
+  alias Satie.Fraction
+
   use Satie.Attachable,
-    fields: [:numerator, :denominator],
+    fields: [:fraction],
     location: :before,
     priority: 3,
     has_direction: false
@@ -26,8 +27,7 @@ defmodule Satie.TimeSignature do
 
   def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
     %__MODULE__{
-      numerator: numerator,
-      denominator: denominator,
+      fraction: Fraction.new(numerator, denominator),
       components: [
         before: [
           "\\time #{numerator}/#{denominator}"
@@ -41,7 +41,9 @@ defmodule Satie.TimeSignature do
   defimpl Inspect do
     import Inspect.Algebra
 
-    def inspect(%@for{numerator: n, denominator: d}, _opts) do
+    def inspect(%@for{fraction: fraction}, _opts) do
+      {n, d} = Fraction.to_tuple(fraction)
+
       concat([
         "#Satie.TimeSignature<",
         "#{n}/#{d}",

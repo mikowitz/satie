@@ -2,13 +2,12 @@ defmodule Satie.TimeSignatureTest do
   use ExUnit.Case, async: true
   import DescribeFunction
 
-  alias Satie.{Rest, TimeSignature}
+  alias Satie.{Fraction, Rest, TimeSignature}
 
   describe_function &TimeSignature.new/1 do
     test "parses a valid string into a time signature" do
       assert TimeSignature.new("\\time 3/16") == %TimeSignature{
-               numerator: 3,
-               denominator: 16,
+               fraction: Fraction.new(3, 16),
                components: [
                  before: ["\\time 3/16"]
                ]
@@ -17,8 +16,7 @@ defmodule Satie.TimeSignatureTest do
 
     test "doesn't require the `\\time` at the beginning" do
       assert TimeSignature.new("7/16") == %TimeSignature{
-               numerator: 7,
-               denominator: 16,
+               fraction: Fraction.new(7, 16),
                components: [
                  before: ["\\time 7/16"]
                ]
@@ -35,8 +33,7 @@ defmodule Satie.TimeSignatureTest do
   describe_function &TimeSignature.new/2 do
     test "creates a new time signature from two integers" do
       assert TimeSignature.new(3, 4) == %TimeSignature{
-               numerator: 3,
-               denominator: 4,
+               fraction: Fraction.new(3, 4),
                components: [
                  before: ["\\time 3/4"]
                ]
@@ -45,8 +42,7 @@ defmodule Satie.TimeSignatureTest do
 
     test "doesn't reduce a fraction" do
       assert TimeSignature.new(4, 8) == %TimeSignature{
-               numerator: 4,
-               denominator: 8,
+               fraction: Fraction.new(4, 8),
                components: [
                  before: ["\\time 4/8"]
                ]

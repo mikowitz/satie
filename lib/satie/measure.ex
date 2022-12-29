@@ -35,8 +35,8 @@ defmodule Satie.Measure do
   end
 
   defimpl String.Chars do
-    def to_string(%@for{time_signature: time_signature, contents: contents}) do
-      %TimeSignature{numerator: n, denominator: d} = time_signature
+    def to_string(%@for{time_signature: %{fraction: fraction}, contents: contents}) do
+      {n, d} = Satie.Fraction.to_tuple(fraction)
 
       [
         "{",
@@ -64,8 +64,8 @@ defmodule Satie.Measure do
   defimpl Satie.ToLilypond do
     import Satie.Lilypond.OutputHelpers
 
-    def to_lilypond(%@for{time_signature: time_signature, contents: contents}, _opts) do
-      %TimeSignature{numerator: n, denominator: d} = time_signature
+    def to_lilypond(%@for{time_signature: %{fraction: fraction}, contents: contents}, _opts) do
+      {n, d} = Satie.Fraction.to_tuple(fraction)
 
       [
         "{",

@@ -42,9 +42,9 @@ defmodule Satie.Timespan do
       iex> timespan = Timespan.new(0, 10)
       iex> [start, stop] = Timespan.offsets(timespan)
       iex> start
-      #Satie.Offset<{0, 1}>
+      #Satie.Offset<0/1>
       iex> stop
-      #Satie.Offset<{10, 1}>
+      #Satie.Offset<10/1>
 
   """
   def offsets(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do
@@ -55,7 +55,7 @@ defmodule Satie.Timespan do
 
       iex> timespan = Timespan.new(0, 10)
       iex> Timespan.start_offset(timespan)
-      #Satie.Offset<{0, 1}>
+      #Satie.Offset<0/1>
 
       iex> timespan = Timespan.new(0, 10)
       iex> Timespan.start_offset(timespan, Offset.new(3))
@@ -73,7 +73,7 @@ defmodule Satie.Timespan do
 
       iex> timespan = Timespan.new(0, 10)
       iex> Timespan.stop_offset(timespan)
-      #Satie.Offset<{10, 1}>
+      #Satie.Offset<10/1>
 
       iex> timespan = Timespan.new(0, 10)
       iex> Timespan.stop_offset(timespan, Offset.new(3))
@@ -198,7 +198,7 @@ defmodule Satie.Timespan do
 
       iex> timespan = Timespan.new(0, 10)
       iex> Timespan.axis(timespan)
-      #Satie.Offset<{5, 1}>
+      #Satie.Offset<5/1>
 
   """
   def axis(%__MODULE__{start_offset: start_offset, stop_offset: stop_offset}) do

@@ -1,15 +1,21 @@
 defmodule Satie.OffsetTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
-  alias Satie.{Duration, Multiplier, Offset}
+  alias Satie.{Duration, Fraction, Multiplier, Offset}
 
   doctest Offset
 
-  describe inspect(&Offset.new/1) do
+  describe_function &Offset.new/1 do
     test "can be created from another fractional type" do
       assert Offset.new(Duration.new(1, 4)) == %Offset{numerator: 1, denominator: 4}
+      assert Offset.new(Fraction.new(1, 4)) == %Offset{numerator: 1, denominator: 4}
       assert Offset.new(Multiplier.new(2, 4)) == %Offset{numerator: 1, denominator: 2}
       assert Offset.new(Offset.new(1, 3)) == %Offset{numerator: 1, denominator: 3}
+    end
+
+    test "can be created from a fraction string" do
+      assert Offset.new("1/4") == %Offset{numerator: 1, denominator: 4}
     end
   end
 
@@ -107,6 +113,16 @@ defmodule Satie.OffsetTest do
       assert is_struct(Offset.subtract(o, d), Offset)
       assert is_struct(Offset.multiply(o, d), Offset)
       assert is_struct(Offset.divide(o, d), Offset)
+    end
+
+    test "against a fraction" do
+      o = Offset.new(1, 3)
+      f = Fraction.new(1, 8)
+
+      assert is_struct(Offset.add(o, f), Fraction)
+      assert is_struct(Offset.subtract(o, f), Duration)
+      assert is_struct(Offset.multiply(o, f), Fraction)
+      assert is_struct(Offset.divide(o, f), Fraction)
     end
 
     test "against an integer" do
