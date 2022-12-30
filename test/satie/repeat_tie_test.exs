@@ -17,15 +17,17 @@ defmodule Satie.RepeatTieTest do
   end
 
   describe "attaching a repeat tie to a note" do
-    note =
-      Note.new("c'4")
-      |> Satie.attach(RepeatTie.new())
+    test "returns the correct lilypond" do
+      note =
+        Note.new("c'4")
+        |> Satie.attach(RepeatTie.new())
 
-    assert Satie.to_lilypond(note) ==
-             """
-             c'4
-               - \\repeatTie
-             """
-             |> String.trim()
+      assert Satie.to_lilypond(note) ==
+               """
+               c'4
+                 - \\repeatTie
+               """
+               |> String.trim()
+    end
   end
 end

@@ -14,7 +14,7 @@ defmodule Satie.Attachment do
         false -> nil
       end
 
-    position = Keyword.get(options, :position, IsAttachable.location(attachable))
+    position = Keyword.get(options, :position)
     priority = Keyword.get(options, :priority, IsAttachable.priority(attachable))
 
     %__MODULE__{
@@ -32,8 +32,8 @@ defmodule Satie.Attachment do
         position: position
       }) do
     components
-    |> Enum.map(fn {_k, v} ->
-      Enum.map(v, fn v -> {with_direction(v, direction), position, priority} end)
+    |> Enum.map(fn {k, v} ->
+      Enum.map(v, fn v -> {with_direction(v, direction), position || k, priority} end)
     end)
     |> List.flatten()
     |> Enum.group_by(&elem(&1, 1))
