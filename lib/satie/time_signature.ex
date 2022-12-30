@@ -4,6 +4,7 @@ defmodule Satie.TimeSignature do
   """
 
   alias Satie.Fraction
+  alias Satie.Lilypond.Parser
 
   use Satie.Attachable,
     fields: [:fraction],
@@ -11,16 +12,14 @@ defmodule Satie.TimeSignature do
     priority: 3,
     has_direction: false
 
-  @re ~r/^(\\time\s+)?(?<numerator>\d+)\/(?<denominator>\d+)$/
-
   def new(time_signature) when is_bitstring(time_signature) do
-    case Regex.named_captures(@re, time_signature) do
-      %{"numerator" => numerator, "denominator" => denominator} ->
+    case Parser.time_signature().(time_signature) do
+      {:ok, [numerator, denominator], ""} ->
         {n, ""} = Integer.parse(numerator)
         {d, ""} = Integer.parse(denominator)
         new(n, d)
 
-      nil ->
+      _ ->
         {:error, :time_signature_new, time_signature}
     end
   end

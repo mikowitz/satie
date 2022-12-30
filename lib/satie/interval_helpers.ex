@@ -24,15 +24,6 @@ defmodule Satie.IntervalHelpers do
 
   alias Satie.Helpers
 
-  def interval_regex do
-    ~r/^
-      (?<polarity>[-+]?)
-      (?<quality>m|M|P|d+|A+)
-      (?<quartertone>[~+]?)
-      (?<size>\d+)
-    $/x
-  end
-
   def is_perfect_unison?(%{quality: "P", size: 1, quartertone: ""}), do: true
   def is_perfect_unison?(_), do: false
 
