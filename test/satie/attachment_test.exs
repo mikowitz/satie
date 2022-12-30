@@ -6,10 +6,10 @@ defmodule Satie.AttachmentTest do
   doctest Attachment
 
   describe inspect(&Attachment.new/1) do
-    test "sets a default position based on the attached item" do
+    test "sets a nil position based on the attached item" do
       attachment = Attachment.new(Articulation.new("accent"))
 
-      assert attachment.position == :after
+      assert attachment.position == nil
     end
   end
 
