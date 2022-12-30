@@ -8,14 +8,12 @@ defmodule Satie.IntervalClass do
   import Satie.Helpers, only: [normalize_size: 1]
   import Satie.IntervalHelpers
 
-  def new(interval_class) when is_bitstring(interval_class) do
-    case Regex.named_captures(interval_regex(), interval_class) do
-      nil ->
-        {:error, :interval_class_new, interval_class}
+  alias Satie.Lilypond.Parser
 
-      captures ->
+  def new(interval_class) when is_bitstring(interval_class) do
+    case Parser.interval().(interval_class) do
+      {:ok, captures, ""} ->
         captures
-        |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
         |> parse_polarity()
         |> parse_size()
         |> validate_quality(:interval_class)
@@ -30,6 +28,9 @@ defmodule Satie.IntervalClass do
             |> build_name()
             |> then(&struct(__MODULE__, &1))
         end)
+
+      _ ->
+        {:error, :interval_class_new, interval_class}
     end
   end
 

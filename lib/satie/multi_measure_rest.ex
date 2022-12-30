@@ -4,17 +4,16 @@ defmodule Satie.MultiMeasureRest do
   """
   defstruct [:multiplier, :measures]
 
+  alias Satie.Lilypond.Parser
   alias Satie.Multiplier
 
-  @re ~r/^(R1\s*\*\s*)?(?<multiplier>\d+\/\d+)\s*\*\s*(?<measures>\d+)$/
-
   def new(multi_measure_rest) when is_bitstring(multi_measure_rest) do
-    case Regex.named_captures(@re, multi_measure_rest) do
-      %{"multiplier" => multiplier, "measures" => measures} ->
+    case Parser.multi_measure_rest().(multi_measure_rest) do
+      {:ok, [multiplier, measures], ""} ->
         {measures, ""} = Integer.parse(measures)
-        new(Multiplier.new(multiplier), measures)
+        new(multiplier, measures)
 
-      nil ->
+      _ ->
         {:error, :multi_measure_rest_new, multi_measure_rest}
     end
   end

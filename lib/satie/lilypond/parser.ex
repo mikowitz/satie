@@ -60,6 +60,62 @@ defmodule Satie.Lilypond.Parser do
     end)
   end
 
+  def interval do
+    sequence([
+      maybe(
+        one_of([
+          char(?+),
+          char(?-)
+        ])
+      ),
+      one_of([
+        char(?m),
+        char(?M),
+        char(?P),
+        some(char(?d)),
+        some(char(?A))
+      ]),
+      maybe(
+        one_of([
+          char(?~),
+          char(?+)
+        ])
+      ),
+      some(digit())
+    ])
+    |> map(fn [polarity, quality, quartertone, size] ->
+      %{
+        polarity: to_string([polarity]),
+        quality: to_string([quality]),
+        quartertone: to_string([quartertone]),
+        size: to_string([size])
+      }
+    end)
+  end
+
+  def multi_measure_rest do
+    sequence([
+      maybe(
+        sequence([
+          token("R1"),
+          whitespace(),
+          char(?*),
+          whitespace()
+        ])
+      ),
+      some(digit()),
+      char(?/),
+      some(digit()),
+      whitespace(),
+      char(?*),
+      whitespace(),
+      some(digit())
+    ])
+    |> map(fn [_, num, ?/, denom, _, ?*, _, measures] ->
+      ["#{to_string([num])}/#{to_string([denom])}", to_string([measures])]
+    end)
+  end
+
   def note do
     sequence([
       notehead(),
@@ -105,6 +161,23 @@ defmodule Satie.Lilypond.Parser do
 
   def spacer do
     rest_parser(?s)
+  end
+
+  def time_signature do
+    sequence([
+      maybe(
+        sequence([
+          token("\\time"),
+          whitespace()
+        ])
+      ),
+      some(digit()),
+      char(?/),
+      some(digit())
+    ])
+    |> map(fn [_, num, ?/, denom] ->
+      [to_string([num]), to_string([denom])]
+    end)
   end
 
   ## LILYPOND HELPERS
