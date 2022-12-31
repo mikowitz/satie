@@ -33,15 +33,6 @@
   7.56 1.0 moveto
   60.06 1.0 lineto
   stroke
-  86.31 0.5 moveto
-  86.31 1.5 lineto
-  stroke
-  106.0 0.5 moveto
-  106.0 1.5 lineto
-  stroke
-  86.31 1.0 moveto
-  106.0 1.0 lineto
-  stroke
 
   23.97 -2.5 moveto
   23.97 -1.5 lineto
@@ -71,6 +62,15 @@
   1.0 -5.0 moveto
   33.81 -5.0 lineto
   stroke
+  86.31 -5.5 moveto
+  86.31 -4.5 lineto
+  stroke
+  106.0 -5.5 moveto
+  106.0 -4.5 lineto
+  stroke
+  86.31 -5.0 moveto
+  106.0 -5.0 lineto
+  stroke
 
   0.1 setlinewidth
   [ 0.4 0.4 ] 0 setdash
@@ -93,6 +93,12 @@
   stroke
   33.81 2.0 moveto
   33.81 -4.0 lineto
+  stroke
+  86.31 2.0 moveto
+  86.31 -4.0 lineto
+  stroke
+  106.0 2.0 moveto
+  106.0 -4.0 lineto
   stroke
   "
 }
