@@ -3,8 +3,6 @@ defmodule Satie.TimespanList do
   Models a collection of `Satie.Timespan` structs
   """
 
-  import Satie.Guards
-
   alias Satie.{Offset, Timespan}
 
   defstruct [:timespans]
@@ -32,10 +30,6 @@ defmodule Satie.TimespanList do
       {:error, invalid_timespans} ->
         {:error, :timespan_list_new, invalid_timespans}
     end
-  end
-
-  def sorted_into_non_overlapping_sublists(%__MODULE__{timespans: timespans}) do
-    Enum.reduce(timespans, [[]], &insert_without_overlapping/2)
   end
 
   def well_formed?(%__MODULE__{timespans: timespans}) do
@@ -330,79 +324,8 @@ defmodule Satie.TimespanList do
     do_partition(timespans, [[timespan]], func)
   end
 
-  def explode(%__MODULE__{timespans: timespans} = timespan_list, list_count \\ nil)
-      when is_nil(list_count) or is_integer(list_count) do
-    global_timespan = timespan(timespan_list)
-
-    timespans
-    |> Enum.reduce([], fn timespan, results ->
-      [non_overlapping_sets, overlapping_sets] =
-        partition_by_overlapping(results, timespan, global_timespan)
-
-      insert_timespan(timespan, non_overlapping_sets, overlapping_sets, results, list_count)
-    end)
-    |> Enum.map(&Enum.reverse/1)
-    |> Enum.map(&new/1)
-  end
-
-  defp insert_timespan(timespan, non_overlapping_sets, _overlapping_sets, results, nil) do
-    case non_overlapping_sets do
-      [] -> append_new_result(results, timespan)
-      _ -> insert_into_lowest_overlap(non_overlapping_sets, results, timespan)
-    end
-  end
-
-  defp insert_timespan(timespan, non_overlapping_sets, overlapping_sets, results, list_count) do
-    case non_overlapping_sets do
-      [] ->
-        case length(results) < list_count do
-          true -> append_new_result(results, timespan)
-          false -> insert_into_lowest_overlap(overlapping_sets, results, timespan)
-        end
-
-      _ ->
-        insert_into_lowest_overlap(non_overlapping_sets, results, timespan)
-    end
-  end
-
-  defp insert_into_lowest_overlap(sets, results, timespan) do
-    [{index, _, _, _} | _] = sets
-    List.update_at(results, index, &[timespan | &1])
-  end
-
-  defp append_new_result(results, timespan), do: results ++ [[timespan]]
-
-  defp partition_by_overlapping([], _timespan, _global_timespan), do: [[], []]
-
-  defp partition_by_overlapping(timespan_sets, %Timespan{} = timespan, global_timespan) do
-    grouped_sets =
-      timespan_sets
-      |> Enum.with_index()
-      |> Enum.map(fn {set, index} ->
-        {index, set, calculate_overlap_length(timespan, set),
-         calculate_overlap_length(global_timespan, set)}
-      end)
-      |> Enum.group_by(fn {_, _, local_overlap, _} -> local_overlap > 0 end)
-
-    [false, true]
-    |> Enum.map(&Map.get(grouped_sets, &1, []))
-    |> Enum.map(fn set ->
-      Enum.sort_by(set, fn {_, _, local_overlap, global_overlap} ->
-        [local_overlap, global_overlap]
-      end)
-    end)
-  end
-
-  defp calculate_overlap_length(%Timespan{} = timespan1, timespans) when is_list(timespans) do
-    Enum.map(timespans, &calculate_overlap_length(&1, timespan1))
-    |> Enum.sum()
-  end
-
-  defp calculate_overlap_length(%Timespan{} = timespan1, %Timespan{} = timespan2) do
-    Timespan.intersection(timespan1, timespan2).timespans
-    |> Enum.map(&Timespan.length/1)
-    |> Enum.sum()
-  end
+  defdelegate explode(timespan_list), to: Satie.TimespanList.Explode
+  defdelegate explode(timespan_list, list_count), to: Satie.TimespanList.Explode
 
   def intersection(%__MODULE__{timespans: timespans}, %Timespan{} = operand) do
     Enum.map(timespans, &Timespan.intersection(&1, operand))
@@ -418,55 +341,53 @@ defmodule Satie.TimespanList do
     |> new()
   end
 
-  def split(%__MODULE__{} = timespan_list, %Offset{} = offset) do
-    {timespans_before, timespans_after} =
-      Enum.reduce(timespan_list.timespans, {[], []}, fn timespan,
-                                                        {timespans_before, timespans_after} ->
-        cond do
-          Offset.lt(timespan.stop_offset, offset) ->
-            {[timespan | timespans_before], timespans_after}
+  def split(%__MODULE__{} = timespan_list, offsets) when is_list(offsets) do
+    with {:ok, offsets} <- validate_offsets(offsets) do
+      offsets
+      |> Enum.map(&Offset.new/1)
+      |> Enum.sort_by(&Offset.to_float/1)
+      |> Enum.reduce([timespan_list], fn offset, acc ->
+        timespan_list = List.last(acc)
+        new_timespan_lists = split(timespan_list, offset)
 
-          Offset.lt(offset, timespan.start_offset) ->
-            {timespans_before, [timespan | timespans_after]}
-
-          true ->
-            %__MODULE__{timespans: [ts_before, ts_after]} = Timespan.split(timespan, offset)
-            {[ts_before | timespans_before], [ts_after | timespans_after]}
-        end
+        acc
+        |> List.replace_at(-1, new_timespan_lists)
+        |> List.flatten()
       end)
+    end
+  end
+
+  def split(%__MODULE__{} = timespan_list, offset) do
+    case Offset.new(offset) do
+      %Offset{} = offset -> do_split(timespan_list, offset)
+      _ -> {:error, :timespan_list_split_non_offset_equivalent, offset}
+    end
+  end
+
+  defp do_split(%__MODULE__{} = timespan_list, offset) do
+    {timespans_before, timespans_after} =
+      Enum.reduce(
+        timespan_list.timespans,
+        {[], []},
+        fn timespan, {timespans_before, timespans_after} ->
+          cond do
+            Offset.lt(timespan.stop_offset, offset) ->
+              {[timespan | timespans_before], timespans_after}
+
+            Offset.lt(offset, timespan.start_offset) ->
+              {timespans_before, [timespan | timespans_after]}
+
+            true ->
+              %__MODULE__{timespans: [ts_before, ts_after]} = Timespan.split(timespan, offset)
+              {[ts_before | timespans_before], [ts_after | timespans_after]}
+          end
+        end
+      )
 
     [
       new(sort_timespans(timespans_before)),
       new(sort_timespans(timespans_after))
     ]
-  end
-
-  def split(%__MODULE__{} = timespan_list, offset) when is_integer_duple_input(offset) do
-    split(timespan_list, Offset.new(offset))
-  end
-
-  def split(%__MODULE__{} = timespan_list, offsets) when is_list(offsets) do
-    case filter_bad_offsets(offsets) do
-      [] ->
-        offsets
-        |> Enum.map(&Offset.new/1)
-        |> Enum.sort_by(&Offset.to_float/1)
-        |> Enum.reduce([timespan_list], fn offset, acc ->
-          timespan_list = List.last(acc)
-          new_timespan_lists = split(timespan_list, offset)
-
-          acc
-          |> List.replace_at(-1, new_timespan_lists)
-          |> List.flatten()
-        end)
-
-      bad_offsets ->
-        {:error, :timespan_list_split_non_offset_equivalent, bad_offsets}
-    end
-  end
-
-  def split(%__MODULE__{}, offset) do
-    {:error, :timespan_list_split_non_offset_equivalent, offset}
   end
 
   @doc """
@@ -497,10 +418,6 @@ defmodule Satie.TimespanList do
     |> List.flatten()
     |> sort_timespans()
     |> new()
-  end
-
-  defp translate_timespans(timespans, translation_distance) do
-    Enum.map(timespans, &Timespan.translate(&1, translation_distance))
   end
 
   @doc """
@@ -538,28 +455,6 @@ defmodule Satie.TimespanList do
     |> Enum.filter(&Timespan.well_formed?/1)
     |> sort_timespans()
     |> new()
-  end
-
-  defp do_repeat_until([last_timespans | _] = acc, limit, translation_distance) do
-    new_timespans = Enum.map(last_timespans, &Timespan.translate(&1, translation_distance))
-
-    limit_hit = Enum.any?(new_timespans, &Offset.gt(&1.stop_offset, limit))
-
-    case limit_hit do
-      true ->
-        new_timespans = Enum.map(new_timespans, &stop_timespan_at_limit(&1, limit))
-        [new_timespans | acc]
-
-      false ->
-        do_repeat_until([new_timespans | acc], limit, translation_distance)
-    end
-  end
-
-  defp stop_timespan_at_limit(timespan, limit) do
-    case Offset.gt(timespan.stop_offset, limit) do
-      true -> Timespan.stop_offset(timespan, limit)
-      false -> timespan
-    end
   end
 
   def union(%__MODULE__{timespans: []} = timespan_list), do: timespan_list
@@ -622,21 +517,17 @@ defmodule Satie.TimespanList do
     end)
   end
 
-  defp filter_bad_offsets(offsets) when is_list(offsets) do
-    Enum.reject(offsets, fn offset ->
-      is_integer_duple_input(offset) || is_struct(offset, Offset)
-    end)
-  end
+  defp validate_offsets(offsets) when is_list(offsets) do
+    offsets = Enum.map(offsets, &Offset.new/1)
 
-  defp insert_without_overlapping(timespan, sublists) do
-    case Enum.find_index(sublists, &no_overlap?(&1, timespan)) do
-      nil -> sublists ++ [[timespan]]
-      index -> List.update_at(sublists, index, &(&1 ++ [timespan]))
+    case Enum.reject(offsets, &is_struct(&1, Offset)) do
+      [] ->
+        {:ok, offsets}
+
+      invalid_offsets ->
+        {:error, :timespan_list_split_non_offset_equivalent,
+         Enum.map(invalid_offsets, &elem(&1, 2))}
     end
-  end
-
-  defp no_overlap?(list, timespan) do
-    !Enum.any?(list, &Timespan.overlap?(timespan, &1))
   end
 
   defp validate_timespans(timespans) when is_list(timespans) do
@@ -670,6 +561,32 @@ defmodule Satie.TimespanList do
     do_partition(rest, new_acc, func)
   end
 
+  defp translate_timespans(timespans, translation_distance) do
+    Enum.map(timespans, &Timespan.translate(&1, translation_distance))
+  end
+
+  defp do_repeat_until([last_timespans | _] = acc, limit, translation_distance) do
+    new_timespans = Enum.map(last_timespans, &Timespan.translate(&1, translation_distance))
+
+    limit_hit = Enum.any?(new_timespans, &Offset.gt(&1.stop_offset, limit))
+
+    case limit_hit do
+      true ->
+        new_timespans = Enum.map(new_timespans, &stop_timespan_at_limit(&1, limit))
+        [new_timespans | acc]
+
+      false ->
+        do_repeat_until([new_timespans | acc], limit, translation_distance)
+    end
+  end
+
+  defp stop_timespan_at_limit(timespan, limit) do
+    case Offset.gt(timespan.stop_offset, limit) do
+      true -> Timespan.stop_offset(timespan, limit)
+      false -> timespan
+    end
+  end
+
   defimpl Inspect do
     import Inspect.Algebra
 
@@ -693,147 +610,6 @@ defmodule Satie.TimespanList do
   end
 
   defimpl Satie.ToLilypond do
-    @spacer ""
-
-    import Satie.Lilypond.OutputHelpers
-
-    def to_lilypond(%@for{timespans: timespans} = timespan_list, opts) do
-      sorted_offsets =
-        Enum.map(timespans, &Timespan.to_tuple_pair/1)
-        |> List.flatten()
-        |> Enum.sort_by(fn {n, d} -> n / d end)
-        |> Enum.uniq()
-
-      {{min_n, min_d}, {max_n, max_d}} =
-        case Keyword.get(opts, :range, nil) do
-          nil -> Enum.min_max(sorted_offsets)
-          a..b -> {{a, 1}, {b, 1}}
-        end
-
-      min = min_n / min_d
-      max = max_n / max_d
-
-      mapper = mapper_between_ranges({min, max}, {1, 106})
-
-      indexed_sublists =
-        @for.sorted_into_non_overlapping_sublists(timespan_list)
-        |> Enum.with_index()
-
-      output_rows =
-        indexed_sublists
-        |> Enum.map_join("\n\n", fn {sublist, index} ->
-          generate_output_row(sublist, index, mapper)
-        end)
-
-      output_dashes =
-        indexed_sublists
-        |> Enum.drop(1)
-        |> Enum.map_join("\n\n", &generate_output_dashes(&1, mapper))
-
-      [
-        "\\markup \\column {",
-        build_labels(sorted_offsets, mapper),
-        build_postscript(output_rows, output_dashes),
-        "}"
-      ]
-      |> List.flatten()
-      |> Enum.join("\n")
-    end
-
-    defp build_postscript(rows, dashes) do
-      [
-        "  \\postscript #\"",
-        "  0.2 setlinewidth",
-        @spacer,
-        rows,
-        build_dashes(dashes),
-        "  \""
-      ]
-      |> List.flatten()
-      |> Enum.reject(&is_nil/1)
-      |> Enum.join("\n")
-    end
-
-    defp build_dashes(""), do: nil
-
-    defp build_dashes(dashes) do
-      [
-        @spacer,
-        "  0.1 setlinewidth",
-        "  [ 0.4 0.4 ] 0 setdash",
-        @spacer,
-        dashes
-      ]
-    end
-
-    defp build_labels(offsets, mapper) do
-      [
-        "\\overlay {",
-        generate_offset_labels(offsets, mapper),
-        "}"
-      ]
-      |> indent()
-    end
-
-    defp generate_offset_labels(offsets, mapper) do
-      Enum.map_join(offsets, "\n", fn {n, d} ->
-        x = mapper.(n / d)
-
-        [
-          "\\translate #'(#{x} . 1)",
-          "\\fontsize #-2 \\center-align \\fraction #{n} #{d}"
-        ]
-        |> indent()
-        |> Enum.join("\n")
-      end)
-    end
-
-    defp generate_output_row(timespans, index, mapper) do
-      y = 1 - 3 * index
-
-      timespans
-      |> Enum.map(&Timespan.to_tuple_pair/1)
-      |> Enum.map_join("\n", fn [{start_n, start_d}, {stop_n, stop_d}] ->
-        start_x = mapper.(start_n / start_d)
-        stop_x = mapper.(stop_n / stop_d)
-
-        [
-          {start_x, y - 0.5, start_x, y + 0.5},
-          {stop_x, y - 0.5, stop_x, y + 0.5},
-          {start_x, y / 1, stop_x, y / 1}
-        ]
-        |> Enum.map_join("\n", &draw_line/1)
-      end)
-    end
-
-    defp generate_output_dashes({timespans, index}, mapper) do
-      y = 2 - 3 * index
-
-      timespans
-      |> Enum.map(&Timespan.to_tuple_pair/1)
-      |> List.flatten()
-      |> Enum.map_join("\n", fn {n, d} ->
-        x = mapper.(n / d)
-
-        draw_line({x, 2.0, x, y / 1})
-      end)
-    end
-
-    defp draw_line({x1, y1, x2, y2}) do
-      """
-      #{x1} #{y1} moveto
-      #{x2} #{y2} lineto
-      stroke
-      """
-      |> String.trim_trailing()
-      |> indent()
-    end
-
-    defp mapper_between_ranges({in_start, in_stop}, {out_start, out_stop}) do
-      fn input ->
-        (out_start + (out_stop - out_start) / (in_stop - in_start) * (input - in_start))
-        |> Float.round(2)
-      end
-    end
+    defdelegate to_lilypond(timespan_list, opts), to: Satie.TimespanList.ToLilypond
   end
 end

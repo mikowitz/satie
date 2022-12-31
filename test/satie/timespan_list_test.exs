@@ -5,25 +5,6 @@ defmodule Satie.TimespanListTest do
 
   doctest TimespanList
 
-  describe inspect(&TimespanList.sorted_into_non_overlapping_sublists/1) do
-    test "divides a list of timespans into sublists, each of which contains only non-overlapping timespans" do
-      timespan_list =
-        TimespanList.new([
-          Timespan.new(0, 16),
-          Timespan.new(5, 12),
-          Timespan.new(-2, 8),
-          Timespan.new(15, 20),
-          Timespan.new(24, 30)
-        ])
-
-      assert TimespanList.sorted_into_non_overlapping_sublists(timespan_list) == [
-               [Timespan.new(0, 16), Timespan.new(24, 30)],
-               [Timespan.new(5, 12), Timespan.new(15, 20)],
-               [Timespan.new(-2, 8)]
-             ]
-    end
-  end
-
   describe inspect(&TimespanList.well_formed?/1) do
     test "returns true if all timespans are well formed" do
       timespan_list =
