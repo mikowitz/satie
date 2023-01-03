@@ -14,6 +14,8 @@ defmodule Satie.Lilypond.OutputHelpers do
 
   def indent(indentable, depth \\ 1)
 
+  def indent(nil, _), do: nil
+
   def indent(s, depth) when is_bitstring(s) do
     s
     |> String.split("\n", trim: true)
