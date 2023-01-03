@@ -1,5 +1,7 @@
 defmodule Satie.TimespanList.ToLilypond do
-  @moduledoc false
+  @moduledoc """
+    Helper functions for converting a TimespanList to lilypond/postscript output
+  """
 
   @spacer ""
   @for Satie.TimespanList

@@ -1,5 +1,7 @@
 defmodule Satie.TimespanList.Explode do
-  @moduledoc false
+  @moduledoc """
+    Helper functions for Satie.TimespanList.explode
+  """
 
   alias Satie.{Timespan, TimespanList}
 
