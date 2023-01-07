@@ -17,8 +17,8 @@ defmodule Satie.Lilypond.LilypondFile do
 
   def from(%Satie.Markup{} = markup, lilypond_options) do
     content = Enum.at(markup.components[:after], 0)
+
     %__MODULE__{content: content, lilypond_options: lilypond_options}
-    |> IO.inspect()
   end
 
   def from(%Satie.Timespan{} = timespan, lilypond_options) do
