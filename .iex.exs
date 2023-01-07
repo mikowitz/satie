@@ -1,7 +1,9 @@
 alias Satie.{
   Accidental,
+  Chord,
   Container,
   Duration,
+  Fraction,
   Interval,
   IntervalClass,
   Lilypond.LilypondFile,
@@ -9,9 +11,11 @@ alias Satie.{
   Multiplier,
   Note,
   Notehead,
+  Offset,
   Pitch,
   PitchClass,
   Rest,
+  RhythmicStaff,
   Score,
   Spacer,
   Staff,
@@ -22,27 +26,35 @@ alias Satie.{
 }
 
 alias Satie.{
+  Arpeggio,
   Articulation,
+  Barline,
   BreathMark,
   Clef,
   Dynamic,
   Fermata,
   KeySignature,
+  Markup,
   LaissezVibrer,
+  Ottava,
   RepeatTie,
   StartBeam,
+  StartHairpin,
+  StartPedal,
   StartPhrasingSlur,
   StartSlur,
   StopBeam,
+  StopHairpin,
+  StopPedal,
   StopPhrasingSlur,
   StopSlur,
-  Tie
+  Tie,
+
 }
 
 alias Satie.{
-  Offset,
   Timespan,
   TimespanList
 }
 
-import Satie, only: [to_lilypond: 1]
+import Satie, only: [to_lilypond: 1, show: 1, show: 2]

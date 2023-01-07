@@ -15,6 +15,12 @@ defmodule Satie.Lilypond.LilypondFile do
     %__MODULE__{content: container, lilypond_options: lilypond_options}
   end
 
+  def from(%Satie.Markup{} = markup, lilypond_options) do
+    content = Enum.at(markup.components[:after], 0)
+    %__MODULE__{content: content, lilypond_options: lilypond_options}
+    |> IO.inspect()
+  end
+
   def from(%Satie.Timespan{} = timespan, lilypond_options) do
     %__MODULE__{content: timespan, lilypond_options: lilypond_options}
   end
@@ -53,6 +59,17 @@ defmodule Satie.Lilypond.LilypondFile do
 
   defp run(command) do
     command |> to_charlist() |> @runner.()
+  end
+
+  defp build_contents(content, _lilypond_options) when is_bitstring(content) do
+    [
+      ~s(\\version "#{Satie.lilypond_version()}"),
+      ~s(\\language "english"),
+      "",
+      content
+    ]
+    |> List.flatten()
+    |> Enum.join("\n")
   end
 
   defp build_contents(content, lilypond_options) do
