@@ -13,6 +13,7 @@ defmodule Satie do
   def to_lilypond(x, opts \\ []), do: Satie.ToLilypond.to_lilypond(x, opts)
 
   def lilypondable?(%Satie.Markup{} = _markup), do: true
+
   def lilypondable?(%{__struct__: struct}) do
     {:consolidated, impls} = Satie.ToLilypond.__protocol__(:impls)
     struct in impls
