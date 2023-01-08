@@ -8,6 +8,8 @@ defmodule Satie.Fractional.Math do
       alias Satie.Fractional
       import Satie.Guards
 
+      use Satie.Fractional.Comparison
+
       def add(%__MODULE__{} = fraction, %rhs_struct{} = rhs) when is_fractional(rhs) do
         {n1, d1} = Fractional.to_tuple(fraction)
         {n2, d2} = Fractional.to_tuple(rhs)
