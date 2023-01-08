@@ -44,6 +44,37 @@ defmodule Satie.Duration do
     |> Enum.all?(& &1.(duration))
   end
 
+  def equal_or_shorter_printable(%__MODULE__{numerator: n, denominator: d} = duration) do
+    case printable?(duration) do
+      true -> duration
+      false -> equal_or_shorter_printable(new(n - 1, d))
+    end
+  end
+
+  def make_printable_tied_duration(%__MODULE__{} = duration) do
+    case printable?(duration) do
+      true ->
+        [duration]
+
+      false ->
+        first_printable = equal_or_shorter_printable(duration)
+        remainder = subtract(duration, first_printable)
+        [first_printable | make_printable_tied_duration(remainder)]
+    end
+  end
+
+  def sum(durations) when is_list(durations) do
+    Enum.reduce(durations, new(0), &add/2)
+  end
+
+  def negate(%__MODULE__{numerator: n, denominator: d}) do
+    new(-n, d)
+  end
+
+  def abs(%__MODULE__{numerator: n, denominator: d}) do
+    new(Kernel.abs(n), d)
+  end
+
   defp proper_length?(%__MODULE__{numerator: n, denominator: d}) do
     f = n / d
     0 < f && f < 16

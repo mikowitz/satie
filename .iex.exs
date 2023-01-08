@@ -57,4 +57,8 @@ alias Satie.{
   TimespanList
 }
 
+alias Satie.Generators.Rhythm.{
+  Fill
+}
+
 import Satie, only: [to_lilypond: 1, show: 1, show: 2]

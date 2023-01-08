@@ -17,22 +17,26 @@ defmodule Satie.TimeSignature do
       {:ok, [numerator, denominator], ""} ->
         {n, ""} = Integer.parse(numerator)
         {d, ""} = Integer.parse(denominator)
-        new(n, d)
+        Fraction.new(n, d) |> new()
 
       _ ->
         {:error, :time_signature_new, time_signature}
     end
   end
 
-  def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
+  def new(%Fraction{numerator: n, denominator: d} = fraction) do
     %__MODULE__{
-      fraction: Fraction.new(numerator, denominator),
+      fraction: fraction,
       components: [
         before: [
-          "\\time #{numerator}/#{denominator}"
+          "\\time #{n}/#{d}"
         ]
       ]
     }
+  end
+
+  def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
+    Fraction.new(numerator, denominator) |> new()
   end
 
   def new(numerator, denominator), do: {:error, :time_signature_new, {numerator, denominator}}

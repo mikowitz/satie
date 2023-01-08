@@ -14,6 +14,8 @@ defmodule Satie.Fraction do
     new({numerator, denominator})
   end
 
+  def to_float(%__MODULE__{numerator: n, denominator: d}), do: n / d
+
   defimpl Inspect do
     import Inspect.Algebra
 

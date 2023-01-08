@@ -12,7 +12,7 @@ defmodule Satie.Note do
 
   defimpl String.Chars do
     def to_string(%@for{notehead: notehead, written_duration: duration}) do
-      Kernel.to_string(notehead) <> Kernel.to_string(duration)
+      Kernel.to_string(notehead) <> Satie.to_lilypond(duration)
     end
   end
 

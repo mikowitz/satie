@@ -14,6 +14,8 @@ defmodule Satie.Multiplier do
     new({numerator, denominator})
   end
 
+  def to_float(%__MODULE__{numerator: n, denominator: d}), do: n / d
+
   use Satie.Fractional.Math,
     add: [{Fraction, Fraction}],
     subtract: [{Fraction, Fraction}],

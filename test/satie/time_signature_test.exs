@@ -23,6 +23,15 @@ defmodule Satie.TimeSignatureTest do
              }
     end
 
+    test "can be instantiated from a Fraction struct" do
+      assert TimeSignature.new(Fraction.new(3, 4)) == %TimeSignature{
+               fraction: Fraction.new(3, 4),
+               components: [
+                 before: ["\\time 3/4"]
+               ]
+             }
+    end
+
     test "returns an error for an unparseable string" do
       assert TimeSignature.new("\\term 4/5") == {:error, :time_signature_new, "\\term 4/5"}
       assert TimeSignature.new("\\time 4.7/5") == {:error, :time_signature_new, "\\time 4.7/5"}

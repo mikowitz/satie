@@ -60,26 +60,6 @@ defmodule Satie.Offset do
       {Fraction, Fraction}
     ]
 
-  def eq(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
-    to_float(offset1) == to_float(offset2)
-  end
-
-  def gt(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
-    to_float(offset1) > to_float(offset2)
-  end
-
-  def gte(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
-    to_float(offset1) >= to_float(offset2)
-  end
-
-  def lt(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
-    to_float(offset1) < to_float(offset2)
-  end
-
-  def lte(%__MODULE__{} = offset1, %__MODULE__{} = offset2) do
-    to_float(offset1) <= to_float(offset2)
-  end
-
   defimpl String.Chars do
     def to_string(%@for{numerator: n, denominator: d}) do
       "Offset({#{n}, #{d}})"

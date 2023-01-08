@@ -1,12 +1,13 @@
 defmodule Satie.DurationTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
 
   import Satie.RegressionDataStreamer
   alias Satie.{Duration, Fraction, Multiplier, Offset}
 
   doctest Duration
 
-  describe inspect(&Duration.new/1) do
+  describe_function &Duration.new/1 do
     test "can parse a duration from a lilypond string" do
       assert Duration.new("4") == %Duration{
                numerator: 1,
@@ -46,7 +47,7 @@ defmodule Satie.DurationTest do
     end
   end
 
-  describe inspect(&Duration.new/2) do
+  describe_function &Duration.new/2 do
     test "returns a duration from numerator and denominator" do
       assert Duration.new(1, 4) == %Duration{
                numerator: 1,
@@ -91,7 +92,7 @@ defmodule Satie.DurationTest do
     end)
   end
 
-  describe inspect(&Duration.printable?/1) do
+  describe_function &Duration.printable?/1 do
     test "returns true if a duration can be printed on a staff" do
       assert Duration.new(1, 4) |> Duration.printable?()
       assert Duration.new(3, 8) |> Duration.printable?()
@@ -129,7 +130,57 @@ defmodule Satie.DurationTest do
     end)
   end
 
-  describe inspect(&Duration.add/2) do
+  describe_function &Duration.equal_or_shorter_printable/1 do
+    test "returns the input when it is is printable" do
+      assert Duration.equal_or_shorter_printable(Duration.new(1, 8)) == Duration.new(1, 8)
+      assert Duration.equal_or_shorter_printable(Duration.new(2, 8)) == Duration.new(1, 4)
+      assert Duration.equal_or_shorter_printable(Duration.new(3, 8)) == Duration.new(3, 8)
+      assert Duration.equal_or_shorter_printable(Duration.new(4, 8)) == Duration.new(1, 2)
+      assert Duration.equal_or_shorter_printable(Duration.new(6, 8)) == Duration.new(3, 4)
+      assert Duration.equal_or_shorter_printable(Duration.new(7, 8)) == Duration.new(7, 8)
+      assert Duration.equal_or_shorter_printable(Duration.new(8, 8)) == Duration.new(1, 1)
+      assert Duration.equal_or_shorter_printable(Duration.new(12, 8)) == Duration.new(6, 4)
+      assert Duration.equal_or_shorter_printable(Duration.new(14, 8)) == Duration.new(7, 4)
+      assert Duration.equal_or_shorter_printable(Duration.new(15, 8)) == Duration.new(15, 8)
+      assert Duration.equal_or_shorter_printable(Duration.new(16, 8)) == Duration.new(2, 1)
+    end
+
+    test "returns the next smallest printable duration with the same denominator as the input" do
+      assert Duration.equal_or_shorter_printable(Duration.new(5, 8)) == Duration.new(1, 2)
+      assert Duration.equal_or_shorter_printable(Duration.new(9, 8)) == Duration.new(1, 1)
+      assert Duration.equal_or_shorter_printable(Duration.new(10, 8)) == Duration.new(1, 1)
+      assert Duration.equal_or_shorter_printable(Duration.new(11, 8)) == Duration.new(1, 1)
+      assert Duration.equal_or_shorter_printable(Duration.new(13, 8)) == Duration.new(6, 4)
+    end
+  end
+
+  describe_function &Duration.make_printable_tied_duration/1 do
+    test "it returns its input if given a printable duration" do
+      assert Duration.make_printable_tied_duration(Duration.new(1, 4)) == [Duration.new(1, 4)]
+    end
+
+    test "it returns a list of durations that add up to the total input duration" do
+      assert Duration.make_printable_tied_duration(Duration.new(5, 8)) == [
+               Duration.new(1, 2),
+               Duration.new(1, 8)
+             ]
+    end
+  end
+
+  describe_function &Duration.sum/1 do
+    test "returns the total duration of the components" do
+      assert Duration.sum([]) == Duration.new(0)
+
+      assert Duration.sum([
+               Duration.new(1, 16),
+               Duration.new(2, 16),
+               Duration.new(3, 16),
+               Duration.new(4, 16)
+             ]) == Duration.new(5, 8)
+    end
+  end
+
+  describe_function &Duration.add/2 do
     test "returns the sum of two durations" do
       quarter = Duration.new(1, 4)
       third = Duration.new(1, 3)
@@ -159,7 +210,7 @@ defmodule Satie.DurationTest do
     end)
   end
 
-  describe inspect(&Duration.subtract/2) do
+  describe_function &Duration.subtract/2 do
     test "returns the difference of two durations" do
       quarter = Duration.new(1, 4)
       third = Duration.new(1, 3)
@@ -189,7 +240,7 @@ defmodule Satie.DurationTest do
     end)
   end
 
-  describe inspect(&Duration.multiply/2) do
+  describe_function &Duration.multiply/2 do
     test "returns the product of two durations" do
       quarter = Duration.new(1, 4)
       third = Duration.new(1, 3)
@@ -236,7 +287,7 @@ defmodule Satie.DurationTest do
     end)
   end
 
-  describe inspect(&Duration.divide/2) do
+  describe_function &Duration.divide/2 do
     test "returns the product of two durations" do
       quarter = Duration.new(1, 4)
       third = Duration.new(1, 3)
@@ -281,6 +332,26 @@ defmodule Satie.DurationTest do
 
       assert Duration.divide(duration, i) == quotient
     end)
+  end
+
+  describe_function &Duration.negate/1 do
+    test "returns the negation of the duration" do
+      quarter = Duration.new(1, 4)
+      neg_quarter = Duration.new(-1, 4)
+
+      assert Duration.negate(quarter) == neg_quarter
+      assert Duration.negate(neg_quarter) == quarter
+    end
+  end
+
+  describe_function &Duration.abs/1 do
+    test "returns the absolute value of the duration" do
+      quarter = Duration.new(1, 4)
+      neg_quarter = Duration.new(-1, 4)
+
+      assert Duration.abs(quarter) == quarter
+      assert Duration.abs(neg_quarter) == quarter
+    end
   end
 
   describe "arithmetic" do
@@ -332,7 +403,7 @@ defmodule Satie.DurationTest do
     end
   end
 
-  describe inspect(&String.Chars.to_string/1) do
+  describe_function &String.Chars.to_string/1 do
     test "returns a lilypond representation of the duration if it is printable" do
       assert Duration.new(1, 4) |> to_string() == "4"
       assert Duration.new(3, 8) |> to_string() == "4."
@@ -358,7 +429,7 @@ defmodule Satie.DurationTest do
     end
   end
 
-  describe inspect(&Inspect.inspect/2) do
+  describe_function &Inspect.inspect/2 do
     test "returns the duration formatted for IEx" do
       assert Duration.new(1, 4) |> inspect() == "#Satie.Duration<4>"
       assert Duration.new(3, 4) |> inspect() == "#Satie.Duration<2.>"
@@ -366,7 +437,7 @@ defmodule Satie.DurationTest do
     end
   end
 
-  describe inspect(&Satie.ToLilypond.to_lilypond/1) do
+  describe_function &Satie.ToLilypond.to_lilypond/2 do
     test "returns a lilypond representation of a printable duration" do
       assert Duration.new(1, 4) |> Satie.to_lilypond() == "4"
       assert Duration.new(3, 8) |> Satie.to_lilypond() == "4."
