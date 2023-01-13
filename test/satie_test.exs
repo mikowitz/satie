@@ -1,10 +1,11 @@
 defmodule SatieTest do
   use ExUnit.Case, async: true
+  import DescribeFunction
   import ExUnit.CaptureIO
 
-  alias Satie.{Articulation, Clef, Note, Voice}
+  alias Satie.{Articulation, Clef, Container, Note, Tuplet, Voice}
 
-  describe "show/1" do
+  describe_function &Satie.show/1 do
     test "returns an error if the input is not a lilypondable object" do
       assert Satie.show(3) == {:error, "3 cannot be formatted in Lilypond"}
     end
@@ -36,7 +37,7 @@ defmodule SatieTest do
     end
   end
 
-  describe "empty/1" do
+  describe_function &Satie.empty/1 do
     test "returns a container with its contents cleared but all other configuration in place" do
       voice = Voice.new([Note.new("c'4"), Note.new("e'4")], name: "Voice One", simultaneous: true)
 
@@ -48,7 +49,7 @@ defmodule SatieTest do
     end
   end
 
-  describe "attach/2" do
+  describe_function &Satie.attach/2 do
     test "can attach an articulation to a note" do
       note = Note.new("c'4")
       accent = Articulation.new("accent")
@@ -101,6 +102,70 @@ defmodule SatieTest do
                  - \\accent
                """
                |> String.trim()
+    end
+  end
+
+  describe_function &Satie.leaves/1 do
+    test "returns a leaf as itself" do
+      note = Note.new("c4")
+
+      assert Satie.leaves(note) == [{note, []}]
+    end
+
+    test "returns a one-dimensional list of leaf elements, with Access-style paths" do
+      container =
+        ~w(c d e f g)
+        |> Enum.map(&Note.new(&1 <> "4"))
+        |> Container.new()
+
+      assert get_in(container, [3]) == Note.new("f4")
+
+      assert Satie.leaves(container) == [
+               {Note.new("c4"), [0]},
+               {Note.new("d4"), [1]},
+               {Note.new("e4"), [2]},
+               {Note.new("f4"), [3]},
+               {Note.new("g4"), [4]}
+             ]
+    end
+
+    test "handles nested containers without issue" do
+      container =
+        Container.new([
+          Note.new("d8"),
+          Tuplet.new({2, 3}, [
+            Note.new("c4"),
+            Note.new("d4"),
+            Note.new("e4")
+          ]),
+          Note.new("f8")
+        ])
+
+      assert Satie.leaves(container) == [
+               {Note.new("d8"), [0]},
+               {Note.new("c4"), [1, 0]},
+               {Note.new("d4"), [1, 1]},
+               {Note.new("e4"), [1, 2]},
+               {Note.new("f8"), [2]}
+             ]
+    end
+  end
+
+  describe_function &Satie.leaf/1 do
+    test "allows Access by leaf index" do
+      container =
+        Container.new([
+          Note.new("d8"),
+          Tuplet.new({2, 3}, [
+            Note.new("c4"),
+            Note.new("d4"),
+            Note.new("e4")
+          ]),
+          Note.new("f8")
+        ])
+
+      assert is_struct(get_in(container, [-2]), Tuplet)
+      assert get_in(container, [Satie.leaf(-2)]) == Note.new("e4")
     end
   end
 end

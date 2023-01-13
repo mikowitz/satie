@@ -88,4 +88,35 @@ defmodule Satie do
   end
 
   def attach(x, _, _), do: {:error, :cannot_attach_to, x}
+
+  def leaves(%{contents: _} = tree) do
+    do_leaves(tree, []) |> List.flatten()
+  end
+
+  def leaves(leaf), do: [{leaf, []}]
+
+  defp do_leaves(%{contents: contents}, current_path) do
+    contents
+    |> Enum.with_index()
+    |> Enum.map(fn {el, idx} -> do_leaves(el, [idx | current_path]) end)
+  end
+
+  defp do_leaves(leaf, current_path), do: {leaf, Enum.reverse(current_path)}
+
+  def leaf(index) do
+    fn
+      :get, data, next ->
+        {_leaf, path} = Satie.leaves(data) |> Enum.at(index)
+        next.(get_in(data, path))
+
+      :get_and_update, data, next ->
+        {_leaf, path} = Satie.leaves(data) |> Enum.at(index)
+        value = get_in(data, path)
+
+        case next.(value) do
+          {get, update} -> {get, update_in(data, path, fn _ -> update end)}
+          :pop -> pop_in(data, path)
+        end
+    end
+  end
 end
