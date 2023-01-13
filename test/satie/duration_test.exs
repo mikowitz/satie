@@ -334,6 +334,16 @@ defmodule Satie.DurationTest do
     end)
   end
 
+  describe_function &Duration.negative?/1 do
+    test "returns true if the duration's length < 0" do
+      quarter = Duration.new(1, 4)
+      neg_quarter = Duration.new(-1, 4)
+
+      refute Duration.negative?(quarter)
+      assert Duration.negative?(neg_quarter)
+    end
+  end
+
   describe_function &Duration.negate/1 do
     test "returns the negation of the duration" do
       quarter = Duration.new(1, 4)

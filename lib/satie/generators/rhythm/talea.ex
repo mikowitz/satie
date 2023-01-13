@@ -52,8 +52,8 @@ defmodule Satie.Generators.Rhythm.Talea do
     |> then(&Enum.zip([fractions, &1, Stream.cycle(extras)]))
     |> Enum.map(&construct_measure(&1, denom, tie))
     |> clear_ties_to_rests()
-    |> remove_final_tie()
     |> RhythmicStaff.new(name: "Talea Staff")
+    |> remove_final_tie()
   end
 
   defp clear_ties_to_rests(measures) do
@@ -62,7 +62,7 @@ defmodule Satie.Generators.Rhythm.Talea do
     |> Enum.map(fn
       [m1, m2] ->
         case starts_with_rest?(m2) do
-          true -> remove_final_tie_in_measure(m1)
+          true -> remove_final_tie(m1)
           false -> m1
         end
 
@@ -98,9 +98,9 @@ defmodule Satie.Generators.Rhythm.Talea do
   end
 
   defp note_or_rest_from_duration(duration) do
-    case Duration.to_float(duration) do
-      f when f < 0 -> Rest.new(Duration.negate(duration))
-      _ -> Note.new("c", duration)
+    case Duration.negative?(duration) do
+      true -> Rest.new(Duration.negate(duration))
+      false -> Note.new("c", duration)
     end
   end
 
@@ -121,9 +121,13 @@ defmodule Satie.Generators.Rhythm.Talea do
   defp build_measure(fraction, notes, extras, denom) do
     {n, d} = Fraction.divide(fraction, Fraction.new(extras, denom)) |> Fractional.to_tuple()
     original_count = div(n, d)
-    tuplet_multiplier = Multiplier.new(original_count, original_count + extras)
-    time_signature = TimeSignature.new(fraction)
-    Measure.new(time_signature, [Tuplet.new(tuplet_multiplier, notes)])
+
+    Measure.new(
+      TimeSignature.new(fraction),
+      [
+        Tuplet.new(Multiplier.new(original_count, original_count + extras), notes)
+      ]
+    )
   end
 
   defp fill_measure(fraction, extra, denom, current_measure, talea, talea_index) do
@@ -155,7 +159,7 @@ defmodule Satie.Generators.Rhythm.Talea do
         spillover = Duration.subtract(Duration.abs(next_duration), remaining)
 
         {remaining, spillover} =
-          case Duration.to_float(next_duration) < 0 do
+          case Duration.negative?(next_duration) do
             true -> {Duration.negate(remaining), Duration.negate(spillover)}
             false -> {{remaining, :tie}, spillover}
           end
@@ -164,22 +168,13 @@ defmodule Satie.Generators.Rhythm.Talea do
     end
   end
 
-  defp remove_final_tie(measures) do
-    measures
-    |> update_in([Access.at(-1)], &remove_final_tie_in_measure/1)
-  end
-
-  defp remove_final_tie_in_measure(measure) do
-    update_in(measure, [-1], &remove_tie/1)
+  defp remove_final_tie(staff) do
+    update_in(staff, [Satie.leaf(-1)], &remove_tie/1)
   end
 
   defp remove_tie(%{attachments: attachments} = leaf) do
     attachments = Enum.reject(attachments, &is_struct(&1.attachable, Satie.Tie))
     %{leaf | attachments: attachments}
-  end
-
-  defp remove_tie(%{contents: _} = container) do
-    update_in(container, [-1], &remove_tie/1)
   end
 
   defp validate_fractions(fractions) do

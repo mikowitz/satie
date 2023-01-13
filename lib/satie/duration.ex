@@ -67,6 +67,9 @@ defmodule Satie.Duration do
     Enum.reduce(durations, new(0), &add/2)
   end
 
+  def negative?(%__MODULE__{numerator: n}) when n < 0, do: true
+  def negative?(%__MODULE__{}), do: false
+
   def negate(%__MODULE__{numerator: n, denominator: d}) do
     new(-n, d)
   end
