@@ -50,7 +50,6 @@ defmodule Satie.ArpeggioTest do
   end
 
   describe "attaching an arpeggio to a chord" do
-    @tag :focus
     test "returns the correct lilypond" do
       chord =
         Chord.new("< c e g >8")

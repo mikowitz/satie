@@ -21,14 +21,7 @@ defmodule Satie.Generators.Rhythm.TaleaTest do
 
   describe_function &Satie.ToLilypond.to_lilypond/2 do
     setup do
-      measures = [
-        {3, 8},
-        {4, 8},
-        {3, 16},
-        {4, 16},
-        {5, 8},
-        {2, 4}
-      ]
+      measures = [{3, 8}, {4, 8}, {3, 16}, {4, 16}, {5, 8}, {2, 4}]
 
       {:ok, measures: measures}
     end

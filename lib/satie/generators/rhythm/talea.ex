@@ -2,7 +2,16 @@ defmodule Satie.Generators.Rhythm.Talea do
   @moduledoc """
   Models a talea rhythm generator
   """
-  defstruct [:fractions, :talea, :tie_across_boundaries, :denominator, :extra_beats_per_section]
+  defstruct [
+    :fractions,
+    :talea,
+    :tie_across_boundaries,
+    :denominator,
+    :extra_beats_per_section,
+    __generator__: true
+  ]
+
+  use Satie.Generator
   alias Satie.Fraction
 
   def new(fractions, %Satie.Talea{} = talea, options \\ []) when is_list(fractions) do
@@ -104,15 +113,6 @@ defmodule Satie.Generators.Rhythm.Talea do
     end
   end
 
-  defp attach_tie_if_not_tied(%Note{attachments: attachments} = note) do
-    case Enum.any?(attachments, &is_struct(&1.attachable, Satie.Tie)) do
-      true -> note
-      false -> Satie.attach(note, Tie.new())
-    end
-  end
-
-  defp attach_tie_if_not_tied(%Rest{} = rest), do: rest
-
   defp build_measure(fraction, notes, 0, _denom) do
     time_signature = TimeSignature.new(fraction)
     Measure.new(time_signature, notes)
@@ -165,32 +165,6 @@ defmodule Satie.Generators.Rhythm.Talea do
           end
 
         {talea_index + 1, [spillover], Enum.reverse([remaining | current_measure])}
-    end
-  end
-
-  defp remove_final_tie(staff) do
-    update_in(staff, [Satie.leaf(-1)], &remove_tie/1)
-  end
-
-  defp remove_tie(%{attachments: attachments} = leaf) do
-    attachments = Enum.reject(attachments, &is_struct(&1.attachable, Satie.Tie))
-    %{leaf | attachments: attachments}
-  end
-
-  defp validate_fractions(fractions) do
-    fractions = Enum.map(fractions, &Fraction.new/1)
-
-    case Enum.filter(fractions, &is_tuple/1) do
-      [] -> {:ok, fractions}
-      bad_fractions -> {:error, :fill_rhythm_generator_new, Enum.map(bad_fractions, &elem(&1, 2))}
-    end
-  end
-
-  defimpl Satie.ToLilypond do
-    def to_lilypond(%@for{} = talea, options) do
-      talea
-      |> @for.generate()
-      |> @protocol.to_lilypond(options)
     end
   end
 end

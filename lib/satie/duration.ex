@@ -57,9 +57,15 @@ defmodule Satie.Duration do
         [duration]
 
       false ->
-        first_printable = equal_or_shorter_printable(duration)
-        remainder = subtract(duration, first_printable)
-        [first_printable | make_printable_tied_duration(remainder)]
+        case lte(duration, new(0, 1)) do
+          true ->
+            []
+
+          false ->
+            first_printable = equal_or_shorter_printable(duration)
+            remainder = subtract(duration, first_printable)
+            [first_printable | make_printable_tied_duration(remainder)]
+        end
     end
   end
 
