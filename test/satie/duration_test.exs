@@ -165,6 +165,11 @@ defmodule Satie.DurationTest do
                Duration.new(1, 8)
              ]
     end
+
+    test "it returns an empty list if the duration is <= 0" do
+      assert Duration.make_printable_tied_duration(Duration.new(0, 1)) == []
+      assert Duration.make_printable_tied_duration(Duration.new(-3, 8)) == []
+    end
   end
 
   describe_function &Duration.sum/1 do

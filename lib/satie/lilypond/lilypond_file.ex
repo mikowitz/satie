@@ -29,6 +29,10 @@ defmodule Satie.Lilypond.LilypondFile do
     %__MODULE__{content: timespan, lilypond_options: lilypond_options}
   end
 
+  def from(%{__generator__: true} = generator, lilypond_options) do
+    %__MODULE__{content: generator, lilypond_options: lilypond_options}
+  end
+
   def from(leaf, lilypond_options) do
     Satie.Container.new([leaf])
     |> from(lilypond_options)
