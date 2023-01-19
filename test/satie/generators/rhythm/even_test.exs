@@ -44,5 +44,19 @@ defmodule Satie.Generators.Rhythm.EvenTest do
 
       assert Satie.to_lilypond(generator) == expected
     end
+
+    test "can tie across boundaries", context do
+      generator =
+        Even.new(context.measures,
+          denominators: [8],
+          extra_beats_per_section: [0, 1],
+          tie_across_boundaries: true
+        )
+
+      expected =
+        File.read!("test/files/even_rhythm_generator/extra-beats-tied.ly") |> String.trim()
+
+      assert Satie.to_lilypond(generator) == expected
+    end
   end
 end

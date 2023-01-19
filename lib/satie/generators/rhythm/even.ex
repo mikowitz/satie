@@ -3,6 +3,9 @@ defmodule Satie.Generators.Rhythm.Even do
     Generates a sequence where each section is filled with even sub divisions
   """
 
+  # TODO:
+  # cyclic masking and/or burnishing
+
   use Satie.Generator
 
   defstruct [
@@ -30,11 +33,11 @@ defmodule Satie.Generators.Rhythm.Even do
     |> then(
       &Enum.zip([&1, Stream.cycle(denominators), Stream.cycle(generator.extra_beats_per_section)])
     )
-    |> Enum.map(&build_measure/1)
+    |> Enum.map(&build_measure(&1, generator.tie_across_boundaries))
     |> RhythmicStaff.new(name: "Even Staff")
   end
 
-  defp build_measure({fraction, denominator, extra}) do
+  defp build_measure({fraction, denominator, extra}, tie) do
     duration = Duration.new(fraction)
     division = Duration.new(1, denominator)
 
@@ -72,6 +75,11 @@ defmodule Satie.Generators.Rhythm.Even do
         multiplier -> [Tuplet.new(multiplier, notes)]
       end
 
-    Measure.new(TimeSignature.new(fraction), contents)
+    measure = Measure.new(TimeSignature.new(fraction), contents)
+
+    case tie do
+      false -> measure
+      true -> update_in(measure, [Satie.leaf(-1)], &attach_tie_if_not_tied/1)
+    end
   end
 end
